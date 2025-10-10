@@ -22,7 +22,7 @@ const Hero = () => {
         <div className="max-w-4xl mx-auto text-center space-y-8 animate-fade-in-up">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card border border-primary/30">
             <Sparkles className="h-4 w-4 text-primary" />
-            <span className="text-sm text-muted-foreground">Your AI Partner for Every Career Move</span>
+            <span className="text-sm text-muted-foreground cursor-pointer">Your AI Partner for Every Career Move</span>
           </div>
 
           <h1 className="text-5xl md:text-7xl font-bold leading-tight">
@@ -35,13 +35,13 @@ const Hero = () => {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
             <Link href="/auth">
-              <Button variant="hero" size="lg" className="group">
+              <Button variant="hero" size="lg" className="group cursor-pointer">
                 Start Your Journey
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
             <a href="#features">
-              <Button variant="outline" size="lg">
+              <Button variant="outline" size="lg" className="cursor-pointer">
                 Explore Features
               </Button>
             </a>
