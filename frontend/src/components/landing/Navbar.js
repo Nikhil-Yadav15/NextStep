@@ -39,10 +39,10 @@ const Navbar = () => {
             </a>
           </div>
           <div className="hidden md:flex items-center gap-4">
-            <Link href="/auth">
+            <Link href="/auth/login">
               <Button variant="ghost" className="cursor-pointer">Sign In</Button>
             </Link>
-            <Link href="/auth">
+            <Link href="/auth/signup">
               <Button variant="outline" className="cursor-pointer">Get Started</Button>
             </Link>
           </div>
@@ -81,12 +81,12 @@ const Navbar = () => {
               Why Us
             </a>
             <div className="flex flex-col gap-2 pt-4 border-t border-border">
-              <Link href="/auth">
+              <Link href="/auth/signin">
                 <Button variant="ghost" className="w-full">
                   Sign In
                 </Button>
               </Link>
-              <Link href="/auth">
+              <Link href="/auth/signup">
                 <Button variant="hero" className="w-full">
                   Get Started
                 </Button>
