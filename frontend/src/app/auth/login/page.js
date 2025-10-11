@@ -57,7 +57,7 @@ export default function LoginPage() {
         document.cookie = `uniquePresence=${userData.uniquePresence}; path=/; max-age=31536000; SameSite=Lax`;
       }
       setMsg("Login successful!");
-      router.push('/user');
+      router.push('/dashboard');
     } else {
       setMsg("Please check your email to confirm your account.");
     }
