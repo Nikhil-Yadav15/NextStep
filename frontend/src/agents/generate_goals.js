@@ -191,58 +191,131 @@ async function performWebSearch(state) {
 
 async function analyzeContent(state) {
   const { cleanedDocumentText, cleanedGoals, searchResults } = state;
+  
+  const hasDocument = cleanedDocumentText && cleanedDocumentText.trim();
+  const hasGoals = cleanedGoals && cleanedGoals.trim();
+  
+  if (!hasDocument && !hasGoals) {
+    return {
+      ...state,
+      finalOutput: { goals: [], skills: [] }
+    };
+  }
+  
   const context = searchResults.length
     ? `\n\nWeb context:\n${searchResults.map(r => `- ${r.title}: ${r.content}`).join("\n")}`
     : "";
 
-  const systemPrompt = `
-You are an expert career advisor.  
-Given the document text, the user's goals, and optional web search insights, extract:
-- goals (array of strings)
-- skills (array of strings, only explicitly mentioned)
-Return **pure JSON**.
-`;
+  const systemPrompt = `You are an expert career advisor specializing in extracting structured data.
 
-  const userPrompt = `
-Document:
-${cleanedDocumentText || "None"}
+CRITICAL RULES:
+1. You MUST respond ONLY with valid JSON - no explanations, no markdown, no code blocks, no reasoning
+2. Your output must contain EXACTLY two fields: "goals" and "skills"
+3. Both fields must be arrays of strings
+4. Do not add any other fields or text outside the JSON structure
+5. ONLY extract from the provided information - do not infer, assume, or reason about missing sections
+6. Start your response immediately with the opening brace {
 
-Goals:
-${cleanedGoals || "None"}
+OUTPUT FORMAT (follow exactly):
+{"goals":["goal1","goal2"],"skills":["skill1","skill2"]}`;
 
-${context}
-`;
+  let userPrompt = `Extract career goals and technical skills from the following information.\n\n`;
+  
+  if (hasDocument) {
+    userPrompt += `DOCUMENT:\n${cleanedDocumentText}\n\n`;
+  }
+  
+  if (hasGoals) {
+    userPrompt += `USER GOALS:\n${cleanedGoals}\n\n`;
+  }
+  
+  if (context) {
+    userPrompt += context + '\n\n';
+  }
 
-  const parser = new JsonOutputParser();
+  userPrompt += `EXTRACTION RULES:
+- goals: Extract 3-5 career objectives, aspirations, or professional targets ${hasGoals ? 'from USER GOALS section' : 'if mentioned'}
+- skills: Extract only technical skills, tools, languages, or frameworks ${hasDocument ? 'from DOCUMENT section' : 'if mentioned'}
+- CRITICAL: If a section is NOT provided above (e.g., no DOCUMENT or no USER GOALS), do NOT attempt to generate or infer content for that category
+- If extracting from only one section, the other array may be empty
+- Return ONLY the JSON object with no additional text
+
+EXAMPLES:
+
+INPUT: "DOCUMENT: Python, React, AWS. USER GOALS: Become a senior engineer"
+OUTPUT: {"goals":["Become a senior engineer"],"skills":["Python","React","AWS"]}
+
+INPUT: "DOCUMENT: Java developer with Spring Boot experience"
+OUTPUT: {"goals":[],"skills":["Java","Spring Boot"]}
+
+INPUT: "USER GOALS: Lead a team, work in fintech"
+OUTPUT: {"goals":["Lead a development team","Work in fintech industry"],"skills":[]}
+
+Now extract from the provided information above. Output ONLY the JSON object starting with {:`;
+
   try {
     const response = await callLLM([
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt }
     ]);
 
-    console.log("LLM response:", response.content);
-    let parsed;
+
+    let cleanedContent = response.content.trim();
+
+    cleanedContent = cleanedContent.replace(/^``````\s*$/i, '');
+    
+    const firstBrace = cleanedContent.indexOf('{');
+    const lastBrace = cleanedContent.lastIndexOf('}');
+    
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+      cleanedContent = cleanedContent.substring(firstBrace, lastBrace + 1);
+    }
+    
+    let parsed = { goals: [], skills: [] }; 
+    
     try {
-      parsed = parseJsonC(response.content, undefined, { allowTrailingComma: true });
+      parsed = JSON.parse(cleanedContent);
     } catch (err) {
-      console.warn("jsonc-parser failed", err);
+      console.warn("Standard JSON parse failed, trying jsonc-parser", err.message);
+      try {
+        parsed = parseJsonC(cleanedContent, undefined, { allowTrailingComma: true });
+      } catch (err2) {
+        console.warn("jsonc-parser failed, attempting regex extraction", err2.message);
+        const jsonMatch = cleanedContent.match(/\{[\s\S]*?\}/);
+        if (jsonMatch) {
+          try {
+            parsed = JSON.parse(jsonMatch[0]);
+          } catch (err3) {
+            console.error("All parsing methods failed, using fallback", err3.message);
+          }
+        } else {
+          console.error("No JSON object found in response");
+        }
+      }
+    }
+    
+    if (!parsed || typeof parsed !== 'object') {
+      console.warn("Parsed value is not an object, using fallback");
       parsed = { goals: [], skills: [] };
     }
-    return {
-      ...state,
-      finalOutput: {
-        goals: Array.isArray(parsed.goals) ? parsed.goals : [],
-        skills: Array.isArray(parsed.skills) ? parsed.skills : []
-      }
+    
+    const finalOutput = {
+      goals: Array.isArray(parsed.goals) ? parsed.goals.filter(g => typeof g === 'string') : [],
+      skills: Array.isArray(parsed.skills) ? parsed.skills.filter(s => typeof s === 'string') : []
     };
+    
+    
+    return { ...state, finalOutput };
   } catch (err) {
     console.error("Error in analysis node", err);
     return {
       ...state,
-      finalOutput: { goals: cleanedGoals ? [cleanedGoals] : [], skills: [] }
+      finalOutput: { goals: [], skills: [] }
     };
   }
 }
+
+
 
 const workflow = new StateGraph(GraphState)
   .addNode("cleanContent", cleanContent)
