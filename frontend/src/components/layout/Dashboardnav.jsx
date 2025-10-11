@@ -32,7 +32,6 @@ export default function DashboardNav() {
 
   const fetchUserData = async () => {
     try {
-      // Get authentication token from cookies
       const uniquePresence = document.cookie
         .split('; ')
         .find(row => row.startsWith('uniquePresence='))
