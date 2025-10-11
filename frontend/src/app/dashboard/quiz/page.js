@@ -60,7 +60,7 @@ export default function QuizPage() {
     setShowScoreAnimation(false);
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-    const prompt = `Generate a 2-question multiple-choice quiz on the topic "${topic}". Format as valid JSON only: { "questions": [ { "question": "Question text", "options": ["A", "B", "C", "D"], "answer": "Correct option text", "explanation": "Short explanation" } ] }`;
+    const prompt = `Generate a 5-question multiple-choice quiz on the topic "${topic}". Format as valid JSON only: { "questions": [ { "question": "Question text", "options": ["A", "B", "C", "D"], "answer": "Correct option text", "explanation": "Short explanation" } ] }`;
 
     try {
       const result = await model.generateContent(prompt);

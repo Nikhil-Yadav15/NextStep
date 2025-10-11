@@ -175,6 +175,20 @@ export default function DashboardPage() {
         </svg>
       ),
     },
+    {
+      title: "Generate Resume",
+      description: "Create tailored resumes with AI assistance",
+      link: "/dashboard/resume",
+      color: "from-emerald-500 to-teal-500",
+      bgColor: "bg-gradient-to-br from-emerald-900/30 to-teal-900/30",
+      borderColor: "border-emerald-500/20",
+      hoverBorder: "hover:border-emerald-500/50",
+      icon: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+        </svg>
+      ),
+    },
   ];
 
   const handleFileChange = (e) => {
