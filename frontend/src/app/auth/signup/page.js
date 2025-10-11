@@ -75,7 +75,7 @@ export default function SignupPage() {
       }
       if (data.user.created_at) {
         setMsg("Account created successfully!");
-        setTimeout(() => router.push('/user'), 2000);
+        setTimeout(() => router.push('/dashboard'), 2000);
       } else {
         setMsg("Check email for verification link");
       }
