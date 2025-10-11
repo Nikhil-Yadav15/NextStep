@@ -6,9 +6,13 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Sphere, Float } from "@react-three/drei";
 import mammoth from 'mammoth';
 import DashboardNav from "@/components/layout/Dashboardnav";
+<<<<<<< HEAD
+import { MessageCircle } from 'lucide-react';// Document processing functions
+=======
 
 import Analytics from "@/components/dashboard/Analytics";
 
+>>>>>>> origin/main
 const extractPdfText = async (file) => {
   const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
   pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
@@ -158,6 +162,18 @@ export default function DashboardPage() {
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
         </svg>
+      ),
+    },
+        {
+      title: "Chat",
+      description: "Talk to AI mentor about career guidance and tips",
+      link: "/dashboard/chat",
+      color: "from-cyan-500 to-blue-500",
+      bgColor: "bg-gradient-to-br from-cyan-900/30 to-blue-900/30",
+      borderColor: "border-cyan-500/20",
+      hoverBorder: "hover:border-cyan-500/50",
+      icon: (
+        <MessageCircle className="w-8 h-8" />
       ),
     },
     {
@@ -411,7 +427,6 @@ export default function DashboardPage() {
             <p className="text-sm text-gray-500 mt-1">3 in progress</p>
           </div>
         </div>
-        <Analytics />
         <div className="bg-gray-900/50 backdrop-blur-md rounded-3xl p-8 border-2 border-purple-500/20 shadow-2xl">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
