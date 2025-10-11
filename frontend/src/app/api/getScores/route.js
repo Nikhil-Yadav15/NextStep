@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
+import clientPromise from "@/lib/mongodb.js";
 import { createClient } from "@supabase/supabase-js";
-import { saveProfile } from "@/mongowork/saveProfile.js";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -10,7 +10,6 @@ const supabase = createClient(
 async function authenticateRequest(request) {
   const authHeader = request.headers.get("authorization");
   if (!authHeader) throw new Error("Authorization header missing");
-
   const uniquePresence = authHeader.split("Bearer ")[1];
   if (!uniquePresence) throw new Error("Unauthorized - No token provided");
 
@@ -25,53 +24,30 @@ async function authenticateRequest(request) {
   return { user, uniquePresence };
 }
 
-export async function POST(request) {
+export async function GET(request) {
   try {
-    const { user, uniquePresence } = await authenticateRequest(request);
-    const body = await request.json();
-    console.log("SaveProfile body:", body);
-    const {
-      name,
-      email,
-      phone,
-      location,
-      title,
-      bio,
-      linkedin,
-      github,
-      website,
-      joinDate,
-    } = body;
+    const { uniquePresence } = await authenticateRequest(request);
 
-    if (!name || !email) {
-      return NextResponse.json(
-        { status: "error", message: "Missing required fields: name, email" },
-        { status: 400 }
-      );
-    }
+    const client = await clientPromise;
+    const db = client.db("AI_Interview");
+    const collection = db.collection("Scores");
+    
 
-    const result = await saveProfile({
-      user,
-      uniquePresence,
-      name,
-      email,
-      phone,
-      location,
-      title,
-      bio,
-      linkedin,
-      github,
-      website,
-      joinDate,
-    });
+    const userScores = await collection
+      .find(
+        { uniquePresence },
+        { projection: { score: 1, total: 1, createdAt: 1, _id: 0,percentage:1,topic:1, tags:1 } }
+      )
+      .sort({ createdAt: -1 }) 
+      .toArray();
+      
 
     return NextResponse.json({
       status: "success",
-      message: "Profile saved successfully",
-      data: result,
+      data: userScores,
     });
   } catch (error) {
-    console.error("SaveProfile API error:", error);
+    console.error("GetScores API error:", error);
     return NextResponse.json(
       { status: "error", message: error.message },
       { status: 500 }

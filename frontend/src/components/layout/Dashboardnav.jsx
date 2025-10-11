@@ -32,7 +32,6 @@ export default function DashboardNav() {
 
   const fetchUserData = async () => {
     try {
-      // Get authentication token from cookies
       const uniquePresence = document.cookie
         .split('; ')
         .find(row => row.startsWith('uniquePresence='))
@@ -44,20 +43,22 @@ export default function DashboardNav() {
         return;
       }
 
-      const response = await fetch('/api/user/profile', {
+      const response = await fetch('/api/getProfile', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${uniquePresence}`,
           'Content-Type': 'application/json',
         },
       });
+      
 
       if (response.ok) {
         const data = await response.json();
+        
         setUserData({
-          name: data.name || data.username || "User",
-          email: data.email || "user@example.com",
-          profileImage: data.profileImage || data.avatar || null
+          name: data.data.name || data.username || "User",
+          email: data.data.email || "user@example.com",
+          profileImage: data.data.profileImage || data.avatar || null,
         });
       } else {
         console.error("Failed to fetch user data:", response.statusText);

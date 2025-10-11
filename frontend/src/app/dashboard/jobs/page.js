@@ -9,10 +9,11 @@ export default function JobsPage() {
   const [loading, setLoading] = useState(false);
   const [liJobs, setLiJobs] = useState([]);
   const [nkJobs, setNkJobs] = useState([]);
-  const [serpJobs, setSerpJobs] = useState([]); // ✅ NEW: SerpApi jobs state
+  const [serpJobs, setSerpJobs] = useState([]); 
   const [error, setError] = useState("");
   const [savedJobs, setSavedJobs] = useState([]);
   const [showSaved, setShowSaved] = useState(false);
+
 
   const getUniquePresence = () => {
     if (typeof window === "undefined") return null;
@@ -44,13 +45,13 @@ export default function JobsPage() {
     setError("");
     setLiJobs([]);
     setNkJobs([]);
-    setSerpJobs([]); 
+    setSerpJobs([]);
     setLoading(true);
     try {
       const title = encodeURIComponent(role.trim());
       const loc = encodeURIComponent(location.trim());
 
-      
+     
       const sources = {
         linkedin: () => fetchJSON(`/api/linkedin?title=${title}&location=${loc}`),
         naukri: () => fetchJSON(`/api/naukri?query=${title}&location=${loc}`),
@@ -68,7 +69,7 @@ export default function JobsPage() {
         const json = await sources.serpapi();
         setSerpJobs(json.jobs || []);
       } else {
-      
+        
         const [li, nk, sp] = await Promise.all([
           sources.linkedin(),
           sources.naukri(),
@@ -104,7 +105,7 @@ export default function JobsPage() {
     } else {
       updatedSaved = [...savedJobs, jobWithSource];
 
-    
+      // POST to /api/saveBookmarkedJob
       try {
         await fetch("/api/saveBookmarkedJob", {
           method: "POST",
@@ -194,7 +195,7 @@ export default function JobsPage() {
       </div>
 
       {showSaved ? (
-        // --- Saved jobs section ---
+        //Saved jobs section 
         <div className="mb-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-semibold">Saved Jobs</h2>
@@ -256,7 +257,7 @@ export default function JobsPage() {
         </div>
       ) : (
         <>
-  
+          {/* Search Form */}
           <div className="mb-4 grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2">
             <input
               value={role}
@@ -281,7 +282,7 @@ export default function JobsPage() {
             </button>
           </div>
 
-      
+          {/*  added "serpapi" */}
           <div className="mb-6 flex flex-wrap items-center gap-2">
             <span className="text-sm text-gray-600">Source:</span>
             {["both", "linkedin", "naukri", "serpapi"].map((s) => (
@@ -306,7 +307,7 @@ export default function JobsPage() {
             </div>
           )}
 
-        
+          {/*  Added SerpApi section */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <h2 className="text-xl font-semibold mb-3">LinkedIn</h2>
@@ -330,7 +331,7 @@ export default function JobsPage() {
                 )}
               </ul>
             </div>
-  
+            {/* SerpApi results column */}
             <div>
               <h2 className="text-xl font-semibold mb-3">SerpApi (Google Jobs)</h2>
               <ul className="space-y-3">

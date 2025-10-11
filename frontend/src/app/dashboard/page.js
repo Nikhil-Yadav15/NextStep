@@ -6,7 +6,13 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Sphere, Float } from "@react-three/drei";
 import mammoth from 'mammoth';
 import DashboardNav from "@/components/layout/Dashboardnav";
+<<<<<<< HEAD
 import { MessageCircle } from 'lucide-react';// Document processing functions
+=======
+
+import Analytics from "@/components/dashboard/Analytics";
+
+>>>>>>> origin/main
 const extractPdfText = async (file) => {
   const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
   pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
@@ -109,7 +115,6 @@ function Background3D() {
 }
 
 export default function DashboardPage() {
-  // State management
   const [file, setFile] = useState(null);
   const [goals, setGoals] = useState('');
   const [jobDescription, setJobDescription] = useState('');
@@ -175,6 +180,20 @@ export default function DashboardPage() {
       title: "Quiz",
       description: "Test knowledge with AI-generated quizzes",
       link: "/dashboard/quiz",
+      color: "from-emerald-500 to-teal-500",
+      bgColor: "bg-gradient-to-br from-emerald-900/30 to-teal-900/30",
+      borderColor: "border-emerald-500/20",
+      hoverBorder: "hover:border-emerald-500/50",
+      icon: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+        </svg>
+      ),
+    },
+    {
+      title: "Generate Resume",
+      description: "Create tailored resumes with AI assistance",
+      link: "/dashboard/resume",
       color: "from-emerald-500 to-teal-500",
       bgColor: "bg-gradient-to-br from-emerald-900/30 to-teal-900/30",
       borderColor: "border-emerald-500/20",
@@ -372,7 +391,6 @@ export default function DashboardPage() {
             Welcome back! Choose a tool to continue your AI career journey
           </p>
         </div>
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-gray-900/50 backdrop-blur-md rounded-2xl p-6 border-2 border-purple-500/20 shadow-lg hover:shadow-purple-500/30 transition-all duration-300 hover:scale-105">
             <div className="flex items-center justify-between mb-2">
@@ -409,7 +427,6 @@ export default function DashboardPage() {
             <p className="text-sm text-gray-500 mt-1">3 in progress</p>
           </div>
         </div>
-
         <div className="bg-gray-900/50 backdrop-blur-md rounded-3xl p-8 border-2 border-purple-500/20 shadow-2xl">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
