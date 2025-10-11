@@ -12,8 +12,8 @@ async function callLLM(messages, model = "tngtech/deepseek-r1t2-chimera:free") {
       model,
       messages,
       temperature: 0.2,
-      max_tokens: 3000,
-      reason: false,
+      max_tokens: 2000,
+      reasoning: 'disabled',
     });
 
     const firstMessage = completion.choices?.[0]?.message || {};
