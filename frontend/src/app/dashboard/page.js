@@ -161,6 +161,18 @@ export default function DashboardPage() {
         </svg>
       ),
     },
+        {
+      title: "Chat",
+      description: "Talk to AI mentor about career guidance and tips",
+      link: "/dashboard/chat",
+      color: "from-cyan-500 to-blue-500",
+      bgColor: "bg-gradient-to-br from-cyan-900/30 to-blue-900/30",
+      borderColor: "border-cyan-500/20",
+      hoverBorder: "hover:border-cyan-500/50",
+      icon: (
+        <MessageCircle className="w-8 h-8" />
+      ),
+    },
     {
       title: "Quiz",
       description: "Test knowledge with AI-generated quizzes",
