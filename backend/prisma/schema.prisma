@@ -87,3 +87,36 @@ model Report {
   
   @@index([interviewId])
 }
+
+model UserMemory {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String   // "last_summary", "strength", "weakness", "focus_topic"
+  content   String   // textual memory
+  metadata  Json?    // e.g., { score: 72, topic: "databases", createdAt: ... }
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model SkillSnapshot {
+  id        String   @id @default(uuid())
+  userId    String
+  skill     String
+  score     Float
+  source    String   // e.g., "interview_123"
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model UserAggregate {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  avgScore      Float?
+  lastInterview DateTime?
+  strengths     Json?    // ["system design", "testing"]
+  weaknesses    Json?    // ["behavioral", "communication"]
+  updatedAt     DateTime @updatedAt
+}
