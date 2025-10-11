@@ -5,6 +5,7 @@ import { getBookmarkedJobs, getUserSkills } from '@/mongowork/getData_for_roadma
 import { generateRoadmaps } from '@/agents/generate_roadmap.js';
 
 import { createClient } from '@supabase/supabase-js';
+import clientPromise from '@/lib/mongodb';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -84,6 +85,8 @@ export async function POST(request) {
       );
     }
 
+    const { force } = await request.json().catch(() => ({}));
+
     const rateLimitResult = await checkRateLimit(request);
     if (!rateLimitResult.success) {
       console.warn('Rate limit exceeded for IP:', 
@@ -108,6 +111,31 @@ export async function POST(request) {
     }
 
     console.log('Fetching data for uniquePresence:', uniquePresence);
+    console.log("Trying to find Roadmap if already in mongodb");
+    const client = await clientPromise;
+    const db = client.db("AI_Interview");
+    const profiles = db.collection('Profiles');
+
+    const profile = await profiles.findOne({ uniquePresence });
+
+    if (!profile) {
+      return NextResponse.json(
+        { message: 'Profile not found in MongoDB', status: 'error' },
+        { status: 404 }
+      );
+    }
+
+    if (!force && profile.roadmap && Object.keys(profile.roadmap).length > 0) {
+      console.log("Found Existing Generated Roadmap in DB (using cache)");
+      return NextResponse.json({
+        message: 'Loaded roadmap from cache',
+        status: 'success',
+        data: { roadmaps: profile.roadmap },
+        source: 'cache',
+      });
+    } else if (force) {
+      console.log("Force regeneration requested – ignoring cache");
+    }
     
     const [bookmarkedJobs, userSkills] = await Promise.all([
       getBookmarkedJobs(uniquePresence),
@@ -128,6 +156,16 @@ export async function POST(request) {
     }
 
     const roadmapResults = await generateRoadmaps(bookmarkedJobs, userSkills);
+
+    await profiles.updateOne(
+      { _id: profile._id },
+      { 
+        $set: { 
+          roadmap: roadmapResults,
+          updatedAt: new Date(),
+        } 
+      }
+    );
 
     const responseData = {
       timestamp: new Date().toISOString(),

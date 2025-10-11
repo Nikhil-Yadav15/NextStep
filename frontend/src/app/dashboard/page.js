@@ -6,7 +6,9 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Sphere, Float } from "@react-three/drei";
 import mammoth from 'mammoth';
 import DashboardNav from "@/components/layout/Dashboardnav";
-import { MessageCircle } from 'lucide-react';// Document processing functions
+import ChatbotButton from "@/components/dashboard/Chatbot";
+import Analytics from "@/components/dashboard/Analytics";
+
 const extractPdfText = async (file) => {
   const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
   pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
@@ -114,16 +116,13 @@ export default function DashboardPage() {
   const [jobDescription, setJobDescription] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [showUploadSection, setShowUploadSection] = useState(false);
+  const [skills, setSkills] = useState([]);
 
   const features = [
     {
       title: "Jobs",
       description: "Browse AI-matched opportunities tailored to skills",
       link: "/dashboard/jobs",
-      color: "from-purple-500 to-pink-500",
-      bgColor: "bg-gradient-to-br from-purple-900/30 to-pink-900/30",
-      borderColor: "border-purple-500/20",
-      hoverBorder: "hover:border-purple-500/50",
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -134,10 +133,6 @@ export default function DashboardPage() {
       title: "Roadmap",
       description: "Personalized career paths and skill plans",
       link: "/dashboard/roadmap",
-      color: "from-blue-500 to-cyan-500",
-      bgColor: "bg-gradient-to-br from-blue-900/30 to-cyan-900/30",
-      borderColor: "border-blue-500/20",
-      hoverBorder: "hover:border-blue-500/50",
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
@@ -148,36 +143,16 @@ export default function DashboardPage() {
       title: "Mock Interview",
       description: "Practice with an AI interviewer and get feedback",
       link: "/dashboard/interview",
-      color: "from-pink-500 to-rose-500",
-      bgColor: "bg-gradient-to-br from-pink-900/30 to-rose-900/30",
-      borderColor: "border-pink-500/20",
-      hoverBorder: "hover:border-pink-500/50",
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
         </svg>
       ),
     },
-        {
-      title: "Chat",
-      description: "Talk to AI mentor about career guidance and tips",
-      link: "/dashboard/chat",
-      color: "from-cyan-500 to-blue-500",
-      bgColor: "bg-gradient-to-br from-cyan-900/30 to-blue-900/30",
-      borderColor: "border-cyan-500/20",
-      hoverBorder: "hover:border-cyan-500/50",
-      icon: (
-        <MessageCircle className="w-8 h-8" />
-      ),
-    },
     {
       title: "Quiz",
       description: "Test knowledge with AI-generated quizzes",
       link: "/dashboard/quiz",
-      color: "from-emerald-500 to-teal-500",
-      bgColor: "bg-gradient-to-br from-emerald-900/30 to-teal-900/30",
-      borderColor: "border-emerald-500/20",
-      hoverBorder: "hover:border-emerald-500/50",
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
@@ -188,13 +163,9 @@ export default function DashboardPage() {
       title: "Generate Resume",
       description: "Create tailored resumes with AI assistance",
       link: "/dashboard/resume",
-      color: "from-emerald-500 to-teal-500",
-      bgColor: "bg-gradient-to-br from-emerald-900/30 to-teal-900/30",
-      borderColor: "border-emerald-500/20",
-      hoverBorder: "hover:border-emerald-500/50",
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
       ),
     },
@@ -354,87 +325,93 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black text-white">
+    <div className="relative min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
       <Background3D />
+      <ChatbotButton /> 
       
       <div className="relative z-10 container mx-auto px-4 py-8 space-y-8">
         <DashboardNav />
+        
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shadow-lg shadow-purple-500/50">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/50">
                 <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 13a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1v-7z" />
                 </svg>
               </div>
-              <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
+              <h1 className="text-5xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
                 Dashboard
               </h1>
             </div>
 
             <button
               onClick={handleLogout}
-              className="bg-red-600/90 backdrop-blur-sm text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-all duration-200 flex items-center shadow-lg shadow-red-500/20 hover:shadow-red-500/40 hover:scale-105"
+              className="bg-red-500/90 backdrop-blur-sm text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all duration-200 flex items-center shadow-lg shadow-red-500/20 hover:shadow-red-500/40 hover:scale-105"
             >
               <LogOut className="h-5 w-5 mr-2" />
               Logout
             </button>
           </div>
 
-          <p className="text-xl text-gray-400">
+          <p className="text-xl text-slate-400">
             Welcome back! Choose a tool to continue your AI career journey
           </p>
         </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-gray-900/50 backdrop-blur-md rounded-2xl p-6 border-2 border-purple-500/20 shadow-lg hover:shadow-purple-500/30 transition-all duration-300 hover:scale-105">
+          <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-6 shadow-lg hover:shadow-primary/10 transition-all duration-300 hover:scale-105">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-semibold text-gray-400">Applications</p>
-              <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                <FileText className="w-5 h-5 text-purple-400" />
+              <p className="text-sm font-semibold text-slate-400">Applications</p>
+              <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                <FileText className="w-5 h-5 text-primary" />
               </div>
             </div>
             <p className="text-3xl font-bold text-white">24</p>
-            <p className="text-sm text-gray-500 mt-1">+3 this week</p>
+            <p className="text-sm text-slate-500 mt-1">+3 this week</p>
           </div>
 
-          <div className="bg-gray-900/50 backdrop-blur-md rounded-2xl p-6 border-2 border-blue-500/20 shadow-lg hover:shadow-blue-500/30 transition-all duration-300 hover:scale-105">
+          <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-6 shadow-lg hover:shadow-primary/10 transition-all duration-300 hover:scale-105">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-semibold text-gray-400">Interviews</p>
-              <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <p className="text-sm font-semibold text-slate-400">Interviews</p>
+              <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
             </div>
             <p className="text-3xl font-bold text-white">8</p>
-            <p className="text-sm text-gray-500 mt-1">2 scheduled</p>
+            <p className="text-sm text-slate-500 mt-1">2 scheduled</p>
           </div>
 
-          <div className="bg-gray-900/50 backdrop-blur-md rounded-2xl p-6 border-2 border-pink-500/20 shadow-lg hover:shadow-pink-500/30 transition-all duration-300 hover:scale-105">
+          <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-6 shadow-lg hover:shadow-primary/10 transition-all duration-300 hover:scale-105">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-semibold text-gray-400">Skills</p>
-              <div className="w-10 h-10 rounded-lg bg-pink-500/20 flex items-center justify-center">
-                <CheckCircle className="w-5 h-5 text-pink-400" />
+              <p className="text-sm font-semibold text-slate-400">Skills</p>
+              <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                <CheckCircle className="w-5 h-5 text-primary" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-white">15</p>
-            <p className="text-sm text-gray-500 mt-1">3 in progress</p>
+            <p className="text-3xl font-bold text-white">{skills.length}</p>
+            <p className="text-sm text-slate-500 mt-1">3 in progress</p>
           </div>
         </div>
-        <div className="bg-gray-900/50 backdrop-blur-md rounded-3xl p-8 border-2 border-purple-500/20 shadow-2xl">
+
+        <Analytics />
+
+        <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-8 shadow-2xl">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-primary to-primary/80 flex items-center justify-center">
                 <Upload className="w-6 h-6 text-white" />
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-white">Document Processing</h2>
-                <p className="text-gray-400">Upload resume, set goals, and check ATS compatibility</p>
+                <p className="text-slate-400">Upload resume, set goals, and check ATS compatibility</p>
               </div>
             </div>
             <button
               onClick={() => setShowUploadSection(!showUploadSection)}
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors text-sm font-semibold"
+              className="px-4 py-2 bg-primary hover:bg-primary/80 rounded-lg transition-colors text-sm font-semibold"
             >
               {showUploadSection ? 'Hide' : 'Show'}
             </button>
@@ -443,7 +420,7 @@ export default function DashboardPage() {
           {showUploadSection && (
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2">
+                <label className="block text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
                   <Upload className="w-4 h-4" />
                   Upload Resume
                 </label>
@@ -451,28 +428,28 @@ export default function DashboardPage() {
                   type="file"
                   onChange={handleFileChange}
                   accept=".pdf,.doc,.docx"
-                  className="block w-full text-sm text-gray-400
+                  className="block w-full text-sm text-slate-400
                     file:mr-4 file:py-3 file:px-6
                     file:rounded-lg file:border-0
                     file:text-sm file:font-semibold
-                    file:bg-purple-600 file:text-white
-                    hover:file:bg-purple-700
-                    border-2 border-gray-700 rounded-lg
-                    bg-gray-800/50
-                    focus:outline-none focus:border-purple-500 transition-colors"
+                    file:bg-primary file:text-white
+                    hover:file:bg-primary/80
+                    border border-slate-800 rounded-lg
+                    bg-slate-950/50
+                    focus:outline-none focus:border-primary transition-colors"
                 />
                 {file && (
-                  <div className="mt-3 p-3 bg-purple-900/30 border border-purple-500/30 rounded-lg">
-                    <p className="text-sm text-gray-300">
-                      <span className="font-semibold text-purple-400">Selected:</span> {file.name}
-                      <span className="text-gray-500 ml-2">({(file.size / 1024).toFixed(2)} KB)</span>
+                  <div className="mt-3 p-3 bg-primary/10 border border-primary/30 rounded-lg">
+                    <p className="text-sm text-slate-300">
+                      <span className="font-semibold text-primary">Selected:</span> {file.name}
+                      <span className="text-slate-500 ml-2">({(file.size / 1024).toFixed(2)} KB)</span>
                     </p>
                   </div>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2">
+                <label className="block text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
                   <Target className="w-4 h-4" />
                   Your Goals
                 </label>
@@ -481,14 +458,14 @@ export default function DashboardPage() {
                   onChange={(e) => setGoals(e.target.value)}
                   placeholder="Enter your career goals and objectives..."
                   rows={4}
-                  className="w-full px-4 py-3 border-2 border-gray-700 rounded-lg
-                    bg-gray-800/50 text-white placeholder-gray-500
-                    focus:outline-none focus:border-purple-500 transition-colors resize-none"
+                  className="w-full px-4 py-3 border border-slate-800 rounded-lg
+                    bg-slate-950/50 text-white placeholder-slate-500
+                    focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2">
+                <label className="block text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
                   <FileText className="w-4 h-4" />
                   Job Description (Optional - for ATS Check)
                 </label>
@@ -497,9 +474,9 @@ export default function DashboardPage() {
                   onChange={(e) => setJobDescription(e.target.value)}
                   placeholder="Paste the job description to check ATS compatibility..."
                   rows={5}
-                  className="w-full px-4 py-3 border-2 border-gray-700 rounded-lg
-                    bg-gray-800/50 text-white placeholder-gray-500
-                    focus:outline-none focus:border-purple-500 transition-colors resize-none"
+                  className="w-full px-4 py-3 border border-slate-800 rounded-lg
+                    bg-slate-950/50 text-white placeholder-slate-500
+                    focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none"
                 />
                 {file && jobDescription.trim() && (
                   <p className="mt-3 text-sm text-green-400 flex items-center gap-2">
@@ -512,9 +489,9 @@ export default function DashboardPage() {
               <button
                 onClick={handleProcess}
                 disabled={isProcessing}
-                className="w-full py-4 px-6 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-lg
-                  hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-900
-                  transition-all shadow-lg hover:shadow-purple-500/50 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed disabled:shadow-none
+                className="w-full py-4 px-6 bg-gradient-to-r from-primary to-primary/80 text-white font-bold rounded-lg
+                  hover:shadow-lg hover:shadow-primary/25 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-slate-900
+                  transition-all disabled:opacity-50 disabled:cursor-not-allowed
                   transform hover:scale-[1.02] active:scale-[0.98]"
               >
                 {isProcessing ? (
@@ -533,29 +510,29 @@ export default function DashboardPage() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, index) => (
             <a
               key={index}
               href={feature.link}
-              className={`group relative overflow-hidden rounded-3xl border-2 ${feature.borderColor} ${feature.hoverBorder} ${feature.bgColor} backdrop-blur-md p-8 shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300`}
+              className="group relative overflow-hidden rounded-2xl border border-slate-800/50 bg-slate-900/50 backdrop-blur-xl p-8 shadow-lg hover:shadow-primary/20 hover:border-primary/50 transform hover:scale-105 transition-all duration-300"
             >
-              <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-20 transition-opacity duration-300`} />
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="relative z-10 space-y-4">
-                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center text-white shadow-lg group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300`}>
+                <div className="w-16 h-16 rounded-xl bg-gradient-to-r from-primary to-primary/80 flex items-center justify-center text-white shadow-lg group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
                   {feature.icon}
                 </div>
 
                 <div>
-                  <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:bg-clip-text group-hover:from-purple-400 group-hover:to-pink-400 transition-all">
+                  <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-primary transition-colors">
                     {feature.title}
                   </h3>
-                  <p className="text-gray-400 leading-relaxed">
+                  <p className="text-slate-400 leading-relaxed">
                     {feature.description}
                   </p>
                 </div>
 
-                <div className="flex items-center text-purple-400 font-semibold group-hover:gap-3 gap-2 transition-all">
+                <div className="flex items-center text-primary font-semibold group-hover:gap-3 gap-2 transition-all">
                   <span>Get started</span>
                   <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -566,13 +543,13 @@ export default function DashboardPage() {
           ))}
         </div>
 
-        <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 rounded-3xl p-8 text-white shadow-2xl shadow-purple-500/30">
+        <div className="bg-gradient-to-r from-primary to-primary/80 rounded-2xl p-8 text-white shadow-2xl shadow-primary/30">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="space-y-2">
               <h3 className="text-3xl font-bold">Ready to level up?</h3>
               <p className="text-white/90 text-lg">Complete your profile to unlock personalized recommendations</p>
             </div>
-            <button className="px-8 py-4 bg-white text-purple-600 font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 whitespace-nowrap">
+            <button className="px-8 py-4 bg-white text-primary font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 whitespace-nowrap">
               Complete Profile
             </button>
           </div>

@@ -1,6 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 
 export default function RoadmapPage() {
   const [loading, setLoading] = useState(false);
@@ -9,7 +10,43 @@ export default function RoadmapPage() {
   const [selectedJob, setSelectedJob] = useState(null);
   const [expandedSteps, setExpandedSteps] = useState({});
 
-  const handleGenerateRoadmap = async () => {
+  useEffect(() => {
+    const fetchExistingRoadmap = async () => {
+      const uniquePresence = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("uniquePresence="))
+        ?.split("=")[1];
+
+      if (!uniquePresence) return;
+
+      try {
+        setLoading(true);
+        const response = await fetch("/api/roadmap", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${uniquePresence}`,
+          },
+        });
+
+        const data = await response.json();
+        if (data.status === "success" && data.data?.roadmaps) {
+          setRoadmaps(data.data.roadmaps);
+          const firstJobId = Object.keys(data.data.roadmaps)[0];
+          setSelectedJob(firstJobId);
+          toast.success("Loaded your saved roadmap 🚀");
+        }
+      } catch (err) {
+        console.warn("No cached roadmap found:", err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchExistingRoadmap();
+  }, []);
+
+  const handleGenerateRoadmap = async (force = false) => {
     setLoading(true);
     setError(null);
     
@@ -29,6 +66,7 @@ export default function RoadmapPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${uniquePresence}`
         },
+        body: JSON.stringify({ force }),
       });
 
       const data = await response.json();
@@ -41,8 +79,14 @@ export default function RoadmapPage() {
         setRoadmaps(data.data.roadmaps);
         const firstJobId = Object.keys(data.data.roadmaps)[0];
         setSelectedJob(firstJobId);
+
+        if (data.source === "cache") {
+          toast.success("Loaded roadmap from saved profile 🚀");
+        } else {
+          toast.success("Generated and saved new roadmap ✅");
+        }
       } else {
-        throw new Error('Invalid response format');
+        toast.error(data.message || "Failed to Load Roadmap");
       }
     } catch (err) {
       console.error('Error generating roadmap:', err);
@@ -121,7 +165,6 @@ export default function RoadmapPage() {
   return (
     <section className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6 md:p-8">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -240,8 +283,6 @@ export default function RoadmapPage() {
                   </div>
                 </motion.div>
               )}
-
-              {/* Roadmap Display */}
               {roadmaps && (
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                   <motion.div
@@ -295,6 +336,7 @@ export default function RoadmapPage() {
                           setRoadmaps(null);
                           setSelectedJob(null);
                           setExpandedSteps({});
+                          handleGenerateRoadmap(true);
                         }}
                         className="mt-6 w-full px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
                       >
@@ -302,8 +344,6 @@ export default function RoadmapPage() {
                       </button>
                     </div>
                   </motion.div>
-
-                  {/* Roadmap Steps */}
                   <motion.div
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -339,7 +379,6 @@ export default function RoadmapPage() {
                           </div>
                         </div>
 
-                        {/* Steps */}
                         <div className="space-y-4">
                           {currentRoadmap.map((step, index) => (
                             <motion.div
@@ -349,7 +388,6 @@ export default function RoadmapPage() {
                               transition={{ delay: index * 0.1 }}
                               className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
                             >
-                              {/* Step Header */}
                               <button
                                 onClick={() => toggleStep(index)}
                                 className="w-full p-6 flex items-start gap-4 text-left hover:bg-gray-50 transition-colors"
@@ -431,7 +469,6 @@ export default function RoadmapPage() {
                                     className="border-t border-gray-100"
                                   >
                                     <div className="p-6 bg-gray-50 space-y-4">
-                                      {/* Skills */}
                                       {step.skills && step.skills.length > 0 && (
                                         <div>
                                           <h4 className="text-sm font-semibold text-gray-700 mb-2">
@@ -449,8 +486,6 @@ export default function RoadmapPage() {
                                           </div>
                                         </div>
                                       )}
-
-                                      {/* Resources */}
                                       {step.resources && step.resources.length > 0 && (
                                         <div>
                                           <h4 className="text-sm font-semibold text-gray-700 mb-2">
