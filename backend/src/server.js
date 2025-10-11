@@ -68,6 +68,10 @@ app.use(cors({
 
 app.use(express.json({limit: "50mb"}));
 
+app.get("/test", (req, res) => {
+  res.json({ status: "Backend is working!" });
+});
+
 app.get('/', (req, res) => {
   res.send('API Working... 😭');
 });
@@ -80,7 +84,7 @@ try {
   console.error("Stack:", error.stack);
 }
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 async function startServer() {
   try {

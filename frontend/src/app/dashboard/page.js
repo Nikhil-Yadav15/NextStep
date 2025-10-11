@@ -4,45 +4,9 @@ import React, { useState, useRef, useEffect } from "react";
 import { LogOut, Upload, Target, FileText, CheckCircle } from "lucide-react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Sphere, Float } from "@react-three/drei";
-import mammoth from 'mammoth';
 import DashboardNav from "@/components/layout/Dashboardnav";
 import ChatbotButton from "@/components/dashboard/Chatbot";
 import Analytics from "@/components/dashboard/Analytics";
-
-const extractPdfText = async (file) => {
-  const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
-
-  const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-  let fullText = '';
-
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const textContent = await page.getTextContent();
-    const pageText = textContent.items.map(item => item.str).join(' ');
-    fullText += pageText + '\n';
-  }
-  return fullText;
-};
-
-const extractDocxText = async (file) => {
-  const arrayBuffer = await file.arrayBuffer();
-  const result = await mammoth.extractRawText({ arrayBuffer });
-  return result.value;
-};
-
-const extractTextFromDocument = async (file) => {
-  switch (file.type) {
-    case 'application/pdf':
-      return await extractPdfText(file);
-    case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-    case 'application/msword':
-      return await extractDocxText(file);
-    default:
-      throw new Error(`Unsupported file type: ${file.type}`);
-  }
-};
 
 function AnimatedSphere({ position, color, speed }) {
   const meshRef = useRef(null);
@@ -216,7 +180,21 @@ export default function DashboardPage() {
 
       if (file) {
         try {
-          extractedText = await extractTextFromDocument(file);
+          const formData = new FormData();
+          formData.append('file', file);
+
+          const extractResponse = await fetch('/api/extract-text', {
+            method: 'POST',
+            body: formData,
+          });
+
+          if (!extractResponse.ok) {
+            throw new Error('Failed to extract text from document');
+          }
+
+          const extractData = await extractResponse.json();
+          extractedText = extractData.text;
+          
         } catch (error) {
           console.error('Error extracting text:', error);
           alert('Error processing the document. Please try again.');
@@ -236,7 +214,6 @@ export default function DashboardPage() {
       if (goals.trim()) {
         processingBody.goals = goals;
       }
-      console.log('Processing Body:', processingBody);
       apiCalls.push(
         fetch('/api/user/processing', {
           method: 'POST',
@@ -268,7 +245,6 @@ export default function DashboardPage() {
       }
 
       const results = await Promise.allSettled(apiCalls);
-      console.log('API Call Results:', results);
 
       const processingResult = results[0];
       if (processingResult.status === 'fulfilled') {

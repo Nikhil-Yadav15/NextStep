@@ -775,7 +775,6 @@ const AIInterviewerVideo = ({ isListening, isSpeaking, videoRef }) => {
 };
 
 const InterviewPlatform = () => {
-  // 🎯 NEW: Generate and persist userId
   const [userId] = useState(() => {
     if (typeof window === 'undefined') return null;
     const stored = localStorage.getItem('interview_userId');
@@ -801,7 +800,6 @@ const InterviewPlatform = () => {
   const [analysisStatus, setAnalysisStatus] = useState(null);
   const [report, setReport] = useState(null);
   
-  // 🎯 NEW: Track if context was used
   const [contextUsed, setContextUsed] = useState(false);
   const [previousInterviewCount, setPreviousInterviewCount] = useState(0);
   
@@ -815,7 +813,6 @@ const InterviewPlatform = () => {
   const analysisPollingRef = useRef(null);
   const interviewerVideoRef = useRef(null);
 
-  // 🎯 NEW: Fetch user's interview history on mount
   useEffect(() => {
     if (userId) {
       fetchUserHistory();
@@ -826,7 +823,6 @@ const InterviewPlatform = () => {
     try {
       const response = await fetch(`${API_URL}/interviews`);
       const allInterviews = await response.json();
-      // Count how many times this user has done interviews
       const userInterviews = allInterviews.filter(i => 
         i.userName === userName || i.userId === userId
       );
@@ -923,7 +919,6 @@ const InterviewPlatform = () => {
     }
   };
 
-  // 🎯 UPDATED: Pass userId to backend
   const createInterview = async () => {
     try {
       const skillsArray = skills.split(',').map(s => s.trim()).filter(Boolean);
@@ -934,14 +929,12 @@ const InterviewPlatform = () => {
           role, 
           skills: skillsArray,
           userName: userName || 'Anonymous',
-          userId: userId  // 🎯 NEW: Send userId for context retrieval
+          userId: userId
         })
       });
       
       const data = await response.json();
       setInterview(data);
-      
-      // 🎯 NEW: Check if context was used
       setContextUsed(data.contextUsed || false);
       console.log('🎯 Context used:', data.contextUsed);
       
@@ -1065,8 +1058,6 @@ const InterviewPlatform = () => {
       }
     }
   };
-
-  // 🎯 UPDATED: Pass userId to fetch report (triggers memory update)
   const fetchFinalReport = async () => {
     try {
       const response = await fetch(
@@ -1092,7 +1083,6 @@ const InterviewPlatform = () => {
               <h1 className="text-3xl font-bold text-gray-800 mb-2">AI Interview Copilot</h1>
               <p className="text-gray-600">Practice with a virtual AI interviewer</p>
               
-              {/* 🎯 NEW: Show user status */}
               {previousInterviewCount > 0 && (
                 <div className="mt-4 inline-flex items-center gap-2 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 px-4 py-2 rounded-full">
                   <TrendingUp className="w-4 h-4 text-green-600" />
@@ -1174,7 +1164,6 @@ const InterviewPlatform = () => {
     return (
       <div className="min-h-screen bg-gray-900 p-4">
         <div className="max-w-7xl mx-auto">
-          {/* 🎯 NEW: Context indicator header */}
           {contextUsed && (
             <div className="mb-4 bg-gradient-to-r from-green-900 to-blue-900 border border-green-700 rounded-lg p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -1190,11 +1179,9 @@ const InterviewPlatform = () => {
             </div>
           )}
 
-          {/* Main Grid Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4" style={{ height: 'calc(100vh - 2rem)' }}>
             
             <div className="flex flex-col gap-4" style={{ height: 'calc(100vh - 2rem)' }}>
-              {/* AI Interviewer Video - Fixed height */}
               <div className="bg-black rounded-2xl overflow-hidden shadow-2xl" style={{ height: '60%', minHeight: '400px' }}>
                 <AIInterviewerVideo 
                   isListening={isRecording} 
@@ -1203,7 +1190,6 @@ const InterviewPlatform = () => {
                 />
               </div>
 
-              {/* Your Video Feed - Fixed height */}
               <div className="bg-white rounded-xl shadow-lg p-4" style={{ height: '35%', minHeight: '250px' }}>
                 <h3 className="text-sm font-semibold text-gray-700 mb-2">Your Video</h3>
                 <div className="bg-gray-900 rounded-lg overflow-hidden relative" style={{ height: 'calc(100% - 28px)' }}>
@@ -1273,7 +1259,6 @@ const InterviewPlatform = () => {
                   </div>
                 )}
 
-                {/* Analysis Status */}
                 {analysisStatus?.active && (
                   <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg">
                     <div className="text-sm font-medium text-gray-700 mb-3">📊 Real-time Analysis</div>
@@ -1444,8 +1429,6 @@ const InterviewPlatform = () => {
             </div>
             <h1 className="text-3xl font-bold text-gray-800 mb-2">Interview Complete!</h1>
             <p className="text-gray-600">Great job, {userName || 'Candidate'}! Here's your detailed feedback.</p>
-            
-            {/* 🎯 NEW: Memory saved indicator */}
             <div className="mt-4 inline-flex items-center gap-2 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 px-4 py-2 rounded-full">
               <Brain className="w-4 h-4 text-green-600" />
               <span className="text-sm font-medium text-gray-700">
