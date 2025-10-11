@@ -6,6 +6,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Sphere, Float } from "@react-three/drei";
 import mammoth from 'mammoth';
 import DashboardNav from "@/components/layout/Dashboardnav";
+import ChatbotButton from "@/components/dashboard/Chatbot";
 import { MessageCircle } from 'lucide-react';// Document processing functions
 const extractPdfText = async (file) => {
   const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
@@ -345,6 +346,7 @@ export default function DashboardPage() {
     try {
       localStorage.removeItem("user_id");
       localStorage.removeItem("role");
+      localStorage.removeItem("chatHistory");
       await fetch("/api/auth/logout", { method: "POST" });
     } catch (e) {
       console.error("Logout error:", e);
@@ -356,7 +358,7 @@ export default function DashboardPage() {
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black text-white">
       <Background3D />
-      
+      <ChatbotButton />
       <div className="relative z-10 container mx-auto px-4 py-8 space-y-8">
         <DashboardNav />
         <div className="space-y-4">
