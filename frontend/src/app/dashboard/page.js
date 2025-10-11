@@ -6,13 +6,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Sphere, Float } from "@react-three/drei";
 import mammoth from 'mammoth';
 import DashboardNav from "@/components/layout/Dashboardnav";
-<<<<<<< HEAD
 import { MessageCircle } from 'lucide-react';// Document processing functions
-=======
-
-import Analytics from "@/components/dashboard/Analytics";
-
->>>>>>> origin/main
 const extractPdfText = async (file) => {
   const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
   pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
