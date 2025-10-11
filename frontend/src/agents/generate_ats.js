@@ -147,7 +147,7 @@ Provide detailed ATS analysis in the exact JSON format specified. Focus on keywo
 
   let response;
   try {
-    console.log("[ATS] Calling LLM for analysis...");
+    console.log("[ATS] Calling LLM");
     response = await callLLM([
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt },
@@ -174,7 +174,7 @@ Provide detailed ATS analysis in the exact JSON format specified. Focus on keywo
     }
     
   } catch (err) {
-    console.error("❌ [ATS] JSON parsing failed:", err);
+    console.error("JSON parsing failed:", err);
     return generateFallbackATSAnalysis(resumeText, jobDescription);
   }
 
@@ -222,7 +222,7 @@ Provide detailed ATS analysis in the exact JSON format specified. Focus on keywo
     return result;
     
   } catch (validationError) {
-    console.error("❌ [ATS] Validation failed:", validationError);
+    console.error("Validation failed:", validationError);
     return generateFallbackATSAnalysis(resumeText, jobDescription);
   }
 }
