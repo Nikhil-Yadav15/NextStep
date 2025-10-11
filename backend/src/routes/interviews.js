@@ -4,13 +4,58 @@ import { generateQuestions, startAnalysisSession } from "../services/llm.js";
 import { transcribeAudio } from "../services/deepgram.js";
 import { synthesizeSpeech } from "../services/elevenlabs.js";
 import { enqueueEvaluation } from "../services/worker.js";
+import { updateMemoryFromReport, getInterviewContext } from "../services/memory.js";
 
 const router = express.Router();
 const prisma = new PrismaClient();
 
+// router.post("/", async (req, res) => {
+//   try {
+//     const { role, skills, userName, userId } = req.body; 
+
+//     if (!role || !skills || skills.length === 0) {
+//       return res.status(400).json({ 
+//         error: "Role and skills are required" 
+//       });
+//     }
+//     const context = userId ? await getInterviewContext(userId, skills) : null;
+//     const questionTexts = await generateQuestions({ role, skills, context });
+
+
+//     const interview = await prisma.interview.create({
+//       data: {
+//         role,
+//         skills,
+//         userName: userName || "Anonymous", 
+//         questions: {
+//           create: questionTexts.map((text, index) => ({ 
+//             text,
+//             order: index 
+//           })),
+//         },
+//       },
+//       include: { questions: true },
+//     });
+
+//     const analysisSession = await startAnalysisSession(interview.id);
+//     console.log("Analysis session started:", analysisSession);
+
+//     res.json({
+//       ...interview,
+//       analysisSession: analysisSession.status === 'success'
+//     });
+//   } catch (error) {
+//     console.error("Error creating interview:", error);
+//     res.status(500).json({ 
+//       error: "Failed to create interview",
+//       details: error.message 
+//     });
+//   }
+// });
+
 router.post("/", async (req, res) => {
   try {
-    const { role, skills, userName } = req.body; 
+    const { role, skills, userName, userId } = req.body; // Add userId
 
     if (!role || !skills || skills.length === 0) {
       return res.status(400).json({ 
@@ -18,7 +63,22 @@ router.post("/", async (req, res) => {
       });
     }
 
-    const questionTexts = await generateQuestions({ role, skills });
+    let context = null;
+    if (userId) {
+      try {
+        context = await getInterviewContext(userId, skills);
+        console.log("📚 Fetched context for user:", userId);
+        console.log("Context preview:", context?.text?.substring(0, 200));
+      } catch (error) {
+        console.warn("⚠️ Could not fetch context, proceeding without it:", error.message);
+      }
+    }
+
+    const questionTexts = await generateQuestions({ 
+      role, 
+      skills, 
+      context
+    });
 
     const interview = await prisma.interview.create({
       data: {
@@ -40,7 +100,8 @@ router.post("/", async (req, res) => {
 
     res.json({
       ...interview,
-      analysisSession: analysisSession.status === 'success'
+      analysisSession: analysisSession.status === 'success',
+      contextUsed: context !== null
     });
   } catch (error) {
     console.error("Error creating interview:", error);
@@ -50,7 +111,6 @@ router.post("/", async (req, res) => {
     });
   }
 });
-
 
 
 router.get("/:id", async (req, res) => {
@@ -191,6 +251,8 @@ router.get("/transcripts/:transcriptId/evaluation", async (req, res) => {
 
 router.get("/:id/report", async (req, res) => {
   try {
+    const { userId } = req.query;
+
     const report = await prisma.report.findFirst({
       where: { interviewId: req.params.id },
       orderBy: { createdAt: 'desc' }
@@ -211,11 +273,17 @@ router.get("/:id/report", async (req, res) => {
       }
     }
 
+    if(userId) {
+      await updateMemoryFromReport(req.params.id, userId).catch(err => {
+        console.error("error updating memory", err);
+      });
+    }
     res.json({
       content: report.content,
       analysisData: analysisData,
       createdAt: report.createdAt
     });
+    // const userId = req.query;
   } catch (error) {
     console.error("Error fetching report:", error);
     res.status(500).json({ error: "Failed to fetch report" });
