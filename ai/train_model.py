@@ -11,25 +11,21 @@ from sklearn.metrics import classification_report, confusion_matrix
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Set seed for reproducibility
 np.random.seed(42)
 tf.random.set_seed(42)
 
-print("✅ Libraries loaded.")
+print("Libraries loaded.")
 
-# Check available GPUs
 gpus = tf.config.experimental.list_physical_devices('GPU')
 print(f"GPUs Available: {len(gpus)}")
 for gpu in gpus:
     tf.config.experimental.set_memory_growth(gpu, True)
 
-# Multi-GPU strategy
 strategy = tf.distribute.MirroredStrategy()
 print(f'Number of devices: {strategy.num_replicas_in_sync}')
 
 
 def extract_frames_from_video(video_path, max_frames=30):
-    """Extract frames from video"""
     cap = cv2.VideoCapture(video_path)
     frames = []
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -52,7 +48,6 @@ def extract_frames_from_video(video_path, max_frames=30):
 
 
 def load_dataset(data_folder='sorted_data', img_size=(96, 96)):
-    """Load images and video frames"""
     X = []
     y = []
     
@@ -68,7 +63,7 @@ def load_dataset(data_folder='sorted_data', img_size=(96, 96)):
         class_folder = os.path.join(data_folder, class_name)
         
         if not os.path.exists(class_folder):
-            print(f"⚠️ Warning: {class_folder} not found!")
+            print(f" Warning: {class_folder} not found!")
             continue
         
         print(f"\n{'='*60}")
@@ -95,7 +90,6 @@ def load_dataset(data_folder='sorted_data', img_size=(96, 96)):
             except Exception as e:
                 stats[class_name]['failed'] += 1
         
-        # Process videos
         video_files = []
         for ext in video_exts:
             video_files.extend(glob.glob(os.path.join(class_folder, ext)))
@@ -121,9 +115,8 @@ def load_dataset(data_folder='sorted_data', img_size=(96, 96)):
 
 
 def build_cnn_model(input_shape=(96, 96, 3)):
-    """Build improved CNN model"""
     model = models.Sequential([
-        # Block 1
+        
         layers.Conv2D(32, (3, 3), activation='relu', padding='same', input_shape=input_shape),
         layers.BatchNormalization(),
         layers.Conv2D(32, (3, 3), activation='relu', padding='same'),
@@ -131,7 +124,7 @@ def build_cnn_model(input_shape=(96, 96, 3)):
         layers.MaxPooling2D((2, 2)),
         layers.Dropout(0.25),
         
-        # Block 2
+        
         layers.Conv2D(64, (3, 3), activation='relu', padding='same'),
         layers.BatchNormalization(),
         layers.Conv2D(64, (3, 3), activation='relu', padding='same'),
@@ -139,7 +132,7 @@ def build_cnn_model(input_shape=(96, 96, 3)):
         layers.MaxPooling2D((2, 2)),
         layers.Dropout(0.25),
         
-        # Block 3
+        
         layers.Conv2D(128, (3, 3), activation='relu', padding='same'),
         layers.BatchNormalization(),
         layers.Conv2D(128, (3, 3), activation='relu', padding='same'),
@@ -147,7 +140,7 @@ def build_cnn_model(input_shape=(96, 96, 3)):
         layers.MaxPooling2D((2, 2)),
         layers.Dropout(0.25),
         
-        # Dense layers
+        
         layers.Flatten(),
         layers.Dense(256, activation='relu'),
         layers.BatchNormalization(),
@@ -161,26 +154,23 @@ def build_cnn_model(input_shape=(96, 96, 3)):
 
 
 def train_model():
-    """Train CNN model"""
     print("\n" + "="*60)
     print(" "*15 + "CNN MODEL TRAINING")
     print("="*60)
     
     if not os.path.exists('sorted_data'):
-        print("\n❌ Error: 'sorted_data' folder not found!")
+        print("\n Error: 'sorted_data' folder not found!")
         return None
-    
-    # Load dataset
-    print("\n📂 Loading dataset...")
+    print("\nLoading dataset...")
     X, y, stats = load_dataset('sorted_data')
     
     if len(X) == 0:
-        print("\n❌ No data loaded!")
+        print("\n No data loaded!")
         return None
     
     # Print statistics
     print("\n" + "="*60)
-    print("📊 DATASET STATISTICS")
+    print("DATASET STATISTICS")
     print("="*60)
     
     for class_name in ['confident', 'unconfident']:
@@ -202,36 +192,32 @@ def train_model():
     print(f"Image shape: {X.shape}")
     print(f"Confident: {confident_count} | Unconfident: {unconfident_count}")
     
-    # Normalize images
     X = X.astype('float32') / 255.0
     
-    # Split dataset
+
     print(f"\n{'='*60}")
-    print("📊 Splitting dataset...")
+    print(" Splitting dataset...")
     try:
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.2, random_state=42, stratify=y
         )
-        print("  ✅ Stratified split successful")
+        print("  Stratified split successful")
     except ValueError:
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.2, random_state=42
         )
-        print("  ⚠️ Using regular split")
+        print(" Using regular split")
     
     print(f"  Training: {len(X_train)} samples")
     print(f"  Testing: {len(X_test)} samples")
     
-    # Calculate class weights for imbalanced data
     class_weight = {
         0: len(y_train) / (2 * np.sum(y_train == 0)),
         1: len(y_train) / (2 * np.sum(y_train == 1))
     }
-    print(f"\n⚖️ Class weights: {class_weight}")
+    print(f"\n Class weights: {class_weight}")
     
-    # Build model
     print(f"\n{'='*60}")
-    print("🏗️ Building CNN model...")
     
     with strategy.scope():
         model = build_cnn_model()
@@ -243,15 +229,13 @@ def train_model():
     
     model.summary()
     
-    # Callbacks
     callbacks = [
         EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True),
         ModelCheckpoint('best_model.h5', monitor='val_accuracy', save_best_only=True)
     ]
     
-    # Train model
     print(f"\n{'='*60}")
-    print("🚀 Training model...")
+    print(" Training model...")
     
     history = model.fit(
         X_train, y_train,
@@ -263,16 +247,16 @@ def train_model():
         verbose=1
     )
     
-    # Evaluate
+
     print(f"\n{'='*60}")
-    print("📈 Evaluating on test set...")
+    print(" Evaluating on test set...")
     
     y_pred_prob = model.predict(X_test, verbose=0)
     y_pred = (y_pred_prob > 0.5).astype(int).flatten()
     
     test_loss, test_acc, test_precision, test_recall = model.evaluate(X_test, y_test, verbose=0)
     
-    print(f"\n✅ TEST ACCURACY: {test_acc*100:.2f}%")
+    print(f"\n TEST ACCURACY: {test_acc*100:.2f}%")
     print(f"   Precision: {test_precision*100:.2f}%")
     print(f"   Recall: {test_recall*100:.2f}%")
     print("="*60)
@@ -285,7 +269,6 @@ def train_model():
     cm = confusion_matrix(y_test, y_pred)
     print(cm)
     
-    # Plot training history
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
     
     axes[0].plot(history.history['accuracy'], label='Train Accuracy')
@@ -306,7 +289,7 @@ def train_model():
     
     plt.tight_layout()
     plt.savefig('training_history.png')
-    print("\n📊 Training plots saved to 'training_history.png'")
+    print("\nTraining plots saved to 'training_history.png'")
     
     # Confusion matrix heatmap
     plt.figure(figsize=(8, 6))
@@ -317,16 +300,16 @@ def train_model():
     plt.ylabel('Actual')
     plt.xlabel('Predicted')
     plt.savefig('confusion_matrix.png')
-    print("📊 Confusion matrix saved to 'confusion_matrix.png'")
+    print(" Confusion matrix saved to 'confusion_matrix.png'")
     
     # Save model
     print(f"\n{'='*60}")
-    print("💾 Saving model...")
+    print(" Saving model...")
     model.save('confidence_cnn_model.h5')
-    print("  ✅ Model saved to 'confidence_cnn_model.h5'")
+    print("  Model saved to 'confidence_cnn_model.h5'")
     
     print("\n" + "="*60)
-    print("🎉 TRAINING COMPLETE!")
+    print("TRAINING COMPLETE!")
     print("="*60)
     
     return model, history
