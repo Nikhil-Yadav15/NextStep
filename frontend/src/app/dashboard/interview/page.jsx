@@ -6,11 +6,9 @@ import { Camera, Mic, Square, Play, AlertCircle, CheckCircle, Loader, Volume2, V
 const API_URL = 'http://localhost:3000';
 const FLASK_URL = 'http://127.0.0.1:5001';
 
-// AI Interviewer Video Component
 const AIInterviewerVideo = ({ isListening, isSpeaking, videoRef }) => {
   return (
     <div className="relative w-full h-full bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
-      {/* Video Element */}
       <video
         ref={videoRef}
         className="w-full h-full object-cover"
@@ -21,9 +19,7 @@ const AIInterviewerVideo = ({ isListening, isSpeaking, videoRef }) => {
         Your browser does not support the video tag.
       </video>
 
-      {/* Overlay Effects */}
       <div className="absolute inset-0 pointer-events-none">
-        {/* Speaking indicator */}
         {isSpeaking && (
           <div className="absolute top-4 left-4 bg-green-500 text-white px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 shadow-lg">
             <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
@@ -31,7 +27,6 @@ const AIInterviewerVideo = ({ isListening, isSpeaking, videoRef }) => {
           </div>
         )}
 
-        {/* Listening indicator */}
         {isListening && (
           <div className="absolute top-4 left-4 bg-red-500 text-white px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 shadow-lg">
             <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
@@ -39,7 +34,6 @@ const AIInterviewerVideo = ({ isListening, isSpeaking, videoRef }) => {
           </div>
         )}
 
-        {/* Status text at bottom */}
         <div className="absolute bottom-6 left-0 right-0 text-center">
           <div className="inline-block bg-black bg-opacity-60 backdrop-blur-sm px-6 py-3 rounded-full">
             <p className="text-white text-lg font-semibold">
@@ -65,7 +59,6 @@ const InterviewPlatform = () => {
   const [analysisStatus, setAnalysisStatus] = useState(null);
   const [report, setReport] = useState(null);
   
-  // Audio state
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoadingAudio, setIsLoadingAudio] = useState(false);
   const [audioError, setAudioError] = useState(null);
@@ -76,7 +69,6 @@ const InterviewPlatform = () => {
   const analysisPollingRef = useRef(null);
   const interviewerVideoRef = useRef(null);
 
-  // Auto-play question audio when question changes
   useEffect(() => {
     if (step === 'interview' && interview && interview.questions[currentQuestionIndex]) {
       playQuestionAudio();
@@ -93,7 +85,6 @@ const InterviewPlatform = () => {
     };
   }, [currentQuestionIndex, step]);
 
-  // Sync video with audio playback
   useEffect(() => {
     const video = interviewerVideoRef.current;
     if (!video) return;
@@ -396,7 +387,6 @@ const InterviewPlatform = () => {
           {/* Main Grid Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4" style={{ height: 'calc(100vh - 2rem)' }}>
             
-{/* Left Column: Videos */}
             <div className="flex flex-col gap-4" style={{ height: 'calc(100vh - 2rem)' }}>
               {/* AI Interviewer Video - Fixed height */}
               <div className="bg-black rounded-2xl overflow-hidden shadow-2xl" style={{ height: '60%', minHeight: '400px' }}>
@@ -426,9 +416,7 @@ const InterviewPlatform = () => {
               </div>
             </div>
 
-            {/* Right Column: Interview Controls */}
             <div className="lg:col-span-2 flex flex-col gap-4">
-              {/* Progress */}
               <div className="bg-white rounded-xl shadow-lg p-4">
                 <div className="flex justify-between text-sm text-gray-600 mb-2">
                   <span>Question {currentQuestionIndex + 1} of {interview.questions.length}</span>
@@ -442,14 +430,12 @@ const InterviewPlatform = () => {
                 </div>
               </div>
 
-              {/* Question Display */}
               <div className="bg-white rounded-xl shadow-lg p-6 flex-grow overflow-y-auto">
                 <div className="flex items-start justify-between gap-4 mb-4">
                   <h2 className="text-xl font-bold text-gray-800 flex-1">
                     {currentQuestion?.text}
                   </h2>
                   
-                  {/* Audio Controls */}
                   <div className="flex gap-2">
                     {isLoadingAudio ? (
                       <div className="p-3 bg-gray-100 rounded-lg">
@@ -477,7 +463,7 @@ const InterviewPlatform = () => {
 
                 {audioError && (
                   <div className="text-sm text-amber-600 mb-4">
-                    ⚠️ {audioError}
+                     {audioError}
                   </div>
                 )}
 
@@ -508,7 +494,6 @@ const InterviewPlatform = () => {
                   </div>
                 )}
 
-                {/* Recording Controls */}
                 <div className="flex flex-col items-center space-y-4">
                   {!isRecording && !isProcessing && (
                     <>
@@ -522,7 +507,7 @@ const InterviewPlatform = () => {
                       </button>
                       {isPlaying && (
                         <p className="text-sm text-gray-600">
-                          ⏳ Wait for AI to finish speaking...
+                           Wait for AI to finish speaking...
                         </p>
                       )}
                     </>
@@ -546,10 +531,8 @@ const InterviewPlatform = () => {
                   )}
                 </div>
 
-                {/* Real-time Feedback Display */}
                 {transcripts.length > 0 && transcripts[transcripts.length - 1] && (
                   <div className="mt-6 space-y-4">
-                    {/* Transcription */}
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                       <div className="flex items-center gap-2 mb-2">
                         <Mic className="w-4 h-4 text-blue-600" />
@@ -560,12 +543,10 @@ const InterviewPlatform = () => {
                       </p>
                     </div>
 
-                    {/* Evaluation Results */}
                     {transcripts[transcripts.length - 1].evaluation && (
                       <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4">
                         <h3 className="font-semibold text-purple-900 text-sm mb-3">AI Evaluation:</h3>
                         
-                        {/* Score Badges */}
                         <div className="grid grid-cols-4 gap-2 mb-4">
                           <div className="bg-white rounded-lg p-2 text-center">
                             <div className="text-xs text-gray-600">Response</div>
@@ -593,7 +574,6 @@ const InterviewPlatform = () => {
                           </div>
                         </div>
 
-                        {/* Detailed Feedback */}
                         <div className="space-y-3 text-sm">
                           <div className="bg-white rounded-lg p-3">
                             <div className="font-semibold text-gray-700 mb-1">💬 Notes:</div>
@@ -616,7 +596,6 @@ const InterviewPlatform = () => {
                             </p>
                           </div>
 
-                          {/* Voice Analysis Details */}
                           {transcripts[transcripts.length - 1].evaluation.voiceAnalysis && (
                             <div className="bg-blue-50 rounded-lg p-3">
                               <div className="font-semibold text-blue-800 mb-2">🎤 Voice Analysis:</div>
@@ -649,7 +628,6 @@ const InterviewPlatform = () => {
     );
   }
 
-  // Results screen
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
       <div className="max-w-4xl mx-auto">
@@ -706,7 +684,6 @@ const InterviewPlatform = () => {
                         </div>
                       </div>
                       
-                      {/* Question Details */}
                       <div className="mt-4 pt-4 border-t border-gray-200">
                         <p className="text-sm text-gray-600 mb-2">
                           <span className="font-medium">Your Answer:</span> {t.transcript}
