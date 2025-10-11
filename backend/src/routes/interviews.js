@@ -259,8 +259,8 @@ router.get("/:id/report", async (req, res) => {
     });
 
     if (!report) {
-      return res.status(404).json({ 
-        error: "Report not yet generated. Complete all questions first." 
+      return res.status(404).json({
+        error: "Report not yet generated. Complete all questions first."
       });
     }
 
@@ -273,17 +273,23 @@ router.get("/:id/report", async (req, res) => {
       }
     }
 
-    if(userId) {
+    if (userId) {
       await updateMemoryFromReport(req.params.id, userId).catch(err => {
         console.error("error updating memory", err);
       });
     }
-    res.json({
-      content: report.content,
+
+    // Check if content exists before including it in the response
+    const responseData = {
       analysisData: analysisData,
-      createdAt: report.createdAt
-    });
-    // const userId = req.query;
+      createdAt: report.createdAt,
+    };
+
+    if (report.content) {
+      responseData.content = report.content;
+    }
+
+    res.json(responseData);
   } catch (error) {
     console.error("Error fetching report:", error);
     res.status(500).json({ error: "Failed to fetch report" });
