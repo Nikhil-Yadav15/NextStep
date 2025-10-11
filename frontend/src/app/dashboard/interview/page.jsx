@@ -1103,7 +1103,7 @@ const InterviewPlatform = () => {
                   value={userName}
                   onChange={(e) => setUserName(e.target.value)}
                   placeholder="John Doe"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  className="w-full px-4 py-3 border border-gray-300 text-black rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                 />
               </div>
 
@@ -1116,7 +1116,7 @@ const InterviewPlatform = () => {
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
                   placeholder="e.g., Software Engineer"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  className="w-full px-4 py-3 border border-gray-300 text-black rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                 />
               </div>
 
@@ -1129,7 +1129,7 @@ const InterviewPlatform = () => {
                   value={skills}
                   onChange={(e) => setSkills(e.target.value)}
                   placeholder="e.g., React, Node.js, Python"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  className="w-full px-4 py-3 border border-gray-300 text-black rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                 />
               </div>
 
