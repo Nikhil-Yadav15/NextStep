@@ -11,6 +11,7 @@ import {
   Bookmark,
   Edit2,
   Save,
+  ArrowLeft,
   X,
   Linkedin,
   Github,
@@ -26,9 +27,9 @@ export default function ProfilePage() {
   const [bannerImage, setBannerImage] = useState(null);
   const fileInputRef = useRef(null);
   const bannerInputRef = useRef(null);
-   const [loading, setLoading] = useState(false); // ✅ for save status
+   const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [fetching, setFetching] = useState(true); // ✅ for initial fetch
+    const [fetching, setFetching] = useState(true);
 
     const getUniquePresence = () => {
     if (typeof window === "undefined") return null;
@@ -50,9 +51,9 @@ export default function ProfilePage() {
     github: "",
     website: "",
     joinDate: "",
-    bookmarkedJobs: [], // ✅
-  skills: [],         // ✅
-  goals: []           // ✅
+    bookmarkedJobs: [], 
+  skills: [],         
+  goals: []           
   });
 
   const [tempData, setTempData] = useState(profileData);
@@ -100,7 +101,7 @@ export default function ProfilePage() {
   // ];
   const uniquePresence = getUniquePresence();
 
-     // ✅ Fetch real data
+    
   useEffect(() => {
     const fetchProfile = async () => {
       if (!uniquePresence) return;
@@ -144,6 +145,7 @@ export default function ProfilePage() {
 
     fetchProfile();
   }, [uniquePresence]);
+  console.log('Profile Data:', profileData);
     // --- Save to DB ---
   const saveUserProfile = async () => {
     setLoading(true);
@@ -155,7 +157,7 @@ console.log('Saving profile with uniquePresence:', uniquePresence);
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${uniquePresence}`, // Supabase token
+          Authorization: `Bearer ${uniquePresence}`, 
         },
         body: JSON.stringify(tempData),
       });
@@ -163,7 +165,7 @@ console.log('Saving profile with uniquePresence:', uniquePresence);
 
       const result = await response.json();
       if (result.status === "success") {
-        setProfileData(tempData); // update main state
+        setProfileData(tempData); 
         setIsEditing(false);
         alert("svaed to db");
       } else {
@@ -225,7 +227,26 @@ console.log('Saving profile with uniquePresence:', uniquePresence);
   };
 
   return (
+    
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black text-white">
+       {/* Loading Bar */}
+      {(fetching || loading) && (
+        <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-slate-800">
+          <div className="h-full bg-gradient-to-r from-primary to-primary/60 animate-pulse" style={{ width: '100%' }}></div>
+        </div>
+      )}
+
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="mb-6">
+          <a
+            href="/dashboard"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-xl text-slate-300 hover:text-white hover:border-primary/50 transition-all shadow-lg hover:shadow-primary/10"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span className="font-semibold">Back to Dashboard</span>
+          </a>
+        </div>
+          </div>
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header Section */}
         <div className="bg-gray-900/50 backdrop-blur-md rounded-3xl border-2 border-purple-500/20 shadow-2xl overflow-hidden mb-8">
@@ -398,12 +419,11 @@ console.log('Saving profile with uniquePresence:', uniquePresence);
     <Bookmark className="w-6 h-6 text-purple-400" />
     Bookmarked Jobs
   </h2>
-
   <div className="space-y-4">
     {profileData.bookmarkedJobs && profileData.bookmarkedJobs.length > 0 ? (
       profileData.bookmarkedJobs.map((job, index) => (
         <div
-          key={job.id || index} // fallback in case job.id is missing
+          key={job.id || index} 
           className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700 hover:border-purple-500/50 transition-all hover:shadow-lg hover:shadow-purple-500/20"
         >
           <div className="flex items-start justify-between mb-3">
@@ -419,16 +439,22 @@ console.log('Saving profile with uniquePresence:', uniquePresence);
           <div className="flex flex-wrap gap-3 text-sm text-gray-400">
             <span className="flex items-center gap-1">
               <MapPin className="w-4 h-4" />
-              {job.location || "N/A"}
+              {job.location || "India"}
             </span>
             <span className="flex items-center gap-1">
               <Briefcase className="w-4 h-4" />
-              {job.type || "N/A"}
+              {job.title || "N/A"}
             </span>
-            <span className="flex items-center gap-1">
-              <TrendingUp className="w-4 h-4" />
-              {job.salary || "N/A"}
-            </span>
+            <a 
+  href={job.link} 
+  target="_blank" 
+  rel="noopener noreferrer"
+  className="flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline"
+>
+  <TrendingUp className="w-4 h-4" />
+  {job.link ? "Visit " : "N/A"}
+</a>
+            
           </div>
 
           <div className="mt-3 pt-3 border-t border-gray-700">
