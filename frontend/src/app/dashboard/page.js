@@ -169,6 +169,16 @@ export default function DashboardPage() {
         </svg>
       ),
     },
+     {
+      title: "Chat",
+      description: "AI Career Copilot chat",
+      link: "/dashboard/chat",
+      icon: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      ),
+    }
   ];
 
   const handleFileChange = (e) => {
@@ -332,30 +342,12 @@ export default function DashboardPage() {
       <div className="relative z-10 container mx-auto px-4 py-8 space-y-8">
         <DashboardNav />
         
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/50">
-                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zM14 13a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1v-7z" />
-                </svg>
-              </div>
-              <h1 className="text-5xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                Dashboard
-              </h1>
-            </div>
-
-            <button
-              onClick={handleLogout}
-              className="bg-red-500/90 backdrop-blur-sm text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all duration-200 flex items-center shadow-lg shadow-red-500/20 hover:shadow-red-500/40 hover:scale-105"
-            >
-              <LogOut className="h-5 w-5 mr-2" />
-              Logout
-            </button>
-          </div>
-
-          <p className="text-xl text-slate-400">
-            Welcome back! Choose a tool to continue your AI career journey
+        <div className="text-center space-y-3 py-6">
+          <h1 className="text-4xl md:text-5xl font-bold font-serif text-white">
+            Welcome Back
+          </h1>
+          <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+            Choose a tool to continue your AI career journey
           </p>
         </div>
 
