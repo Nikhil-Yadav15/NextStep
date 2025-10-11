@@ -232,10 +232,10 @@ export default function ChatPage() {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-50">
+      <div className="flex h-screen items-center justify-center bg-black">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading chat...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-300">Loading chat...</p>
         </div>
       </div>
     );
@@ -243,20 +243,20 @@ export default function ChatPage() {
 
   if (error) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-50">
+      <div className="flex h-screen items-center justify-center bg-black">
         <div className="text-center">
           <MessageCircle className="h-16 w-16 mx-auto mb-4 text-red-500 opacity-50" />
-          <p className="text-red-600">{error}</p>
+          <p className="text-red-400">{error}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <div className="flex h-screen bg-black overflow-hidden">
       {/* Users List Sidebar */}
-      <div className={`${showUserList ? 'w-full md:w-80' : 'hidden md:block md:w-80'} bg-white border-r border-gray-200 flex flex-col overflow-hidden`}>
-        <div className="p-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white flex-shrink-0">
+      <div className={`${showUserList ? 'w-full md:w-80' : 'hidden md:block md:w-80'} bg-gray-900 border-r border-gray-800 flex flex-col overflow-hidden`}>
+        <div className="p-4 bg-blue-600 text-white flex-shrink-0">
           <div className="flex items-center gap-2">
             <MessageCircle className="h-6 w-6" />
             <h2 className="text-xl font-bold">Messages</h2>
@@ -274,16 +274,16 @@ export default function ChatPage() {
               <button
                 key={user.uniquePresence}
                 onClick={() => selectUser(user)}
-                className={`w-full p-4 flex items-center gap-3 hover:bg-gray-50 transition-colors border-b border-gray-100 flex-shrink-0 ${
-                  selectedUser?.uniquePresence === user.uniquePresence ? 'bg-purple-50' : ''
+                className={`w-full p-4 flex items-center gap-3 hover:bg-gray-800 transition-colors border-b border-gray-800 flex-shrink-0 ${
+                  selectedUser?.uniquePresence === user.uniquePresence ? 'bg-gray-800' : ''
                 }`}
               >
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white font-bold flex-shrink-0">
+                <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold flex-shrink-0">
                   {user.name?.charAt(0).toUpperCase() || 'U'}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-800 truncate">{user.name}</p>
-                  <p className="text-sm text-gray-500 truncate">{user.email}</p>
+                  <p className="font-semibold text-gray-100 truncate">{user.name}</p>
+                  <p className="text-sm text-gray-400 truncate">{user.email}</p>
                 </div>
                 {user.unreadCount > 0 && (
                   <div className="bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center flex-shrink-0">
@@ -301,7 +301,7 @@ export default function ChatPage() {
         {selectedUser ? (
           <>
             {/* Chat Header */}
-            <div className="p-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white flex items-center gap-3 flex-shrink-0">
+            <div className="p-4 bg-blue-600 text-white flex items-center gap-3 flex-shrink-0">
               <button
                 onClick={() => setShowUserList(true)}
                 className="md:hidden p-2 hover:bg-white/20 rounded-lg"
@@ -318,7 +318,7 @@ export default function ChatPage() {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-black">
               {messages.length === 0 ? (
                 <div className="text-center text-gray-500 mt-8">
                   <MessageCircle className="h-12 w-12 mx-auto mb-2 opacity-30" />
@@ -332,15 +332,15 @@ export default function ChatPage() {
                   >
                     <div className="max-w-xs lg:max-w-md">
                       {!msg.isMine && (
-                        <p className="text-xs text-gray-600 mb-1 ml-2 font-semibold">
+                        <p className="text-xs text-gray-400 mb-1 ml-2 font-semibold">
                           {msg.senderName}
                         </p>
                       )}
                       <div
                         className={`px-4 py-2 rounded-2xl ${
                           msg.isMine
-                            ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-br-none'
-                            : 'bg-gray-100 text-gray-800 rounded-bl-none'
+                            ? 'bg-blue-600 text-white rounded-br-none'
+                            : 'bg-gray-800 text-gray-100 rounded-bl-none'
                         }`}
                       >
                         <p className="break-words">{msg.message}</p>
@@ -359,7 +359,7 @@ export default function ChatPage() {
             </div>
 
             {/* Message Input */}
-            <div className="p-4 bg-white border-t border-gray-200 flex-shrink-0">
+            <div className="p-4 bg-gray-900 border-t border-gray-800 flex-shrink-0">
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -367,12 +367,12 @@ export default function ChatPage() {
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Type a message..."
-                  className="flex-1 px-4 py-2 border border-gray-300 text-black rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="flex-1 px-4 py-2 border border-gray-700 bg-gray-800 text-white rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500"
                 />
                 <button
                   onClick={sendMessage}
                   disabled={!newMessage.trim()}
-                  className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-black rounded-full hover:shadow-lg transition-shadow flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                  className="px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
                 >
                   <Send className="h-4 w-4" />
                   Send
@@ -381,7 +381,7 @@ export default function ChatPage() {
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-gray-500 bg-white">
+          <div className="flex-1 flex items-center justify-center text-gray-500 bg-black">
             <div className="text-center">
               <MessageCircle className="h-16 w-16 mx-auto mb-4 opacity-20" />
               <p className="text-lg">Select a user to start chatting</p>

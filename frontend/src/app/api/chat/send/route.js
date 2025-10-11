@@ -1,4 +1,3 @@
-// app/api/chat/send/route.js
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb.js';
 import { createClient } from '@supabase/supabase-js';
@@ -56,7 +55,6 @@ export async function POST(request) {
     const db = client.db('AI_Interview');
     const chatsCollection = db.collection('Chats');
 
-    // Create chat message document
     const chatMessage = {
       _id: new ObjectId(),
       senderId: uniquePresence,
@@ -69,7 +67,6 @@ export async function POST(request) {
       conversationId: [uniquePresence, receiverId].sort().join('_'),
     };
 
-    // Insert message
     const result = await chatsCollection.insertOne(chatMessage);
 
     if (!result.insertedId) {

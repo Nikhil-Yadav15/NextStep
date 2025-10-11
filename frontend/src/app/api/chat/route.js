@@ -1,4 +1,3 @@
-// app/api/chat/route.js
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb.js';
 import { createClient } from '@supabase/supabase-js';
@@ -25,12 +24,9 @@ async function authenticateRequest(request) {
   return { user, uniquePresence };
 }
 
-// GET: Fetch all users for chat list with unread counts
 export async function GET(request) {
   try {
     const { user, uniquePresence } = await authenticateRequest(request);
-
-    // Get all users from Supabase except current user
     const { data: allUsers, error: usersError } = await supabase
       .from('users')
       .select('name, email, uniquePresence')
@@ -40,21 +36,15 @@ export async function GET(request) {
       console.error('Supabase users fetch error:', usersError);
       throw new Error('Failed to fetch users');
     }
-
-    // If no users found, return empty array
     if (!allUsers || allUsers.length === 0) {
       return NextResponse.json({
         status: 'success',
         data: [],
       });
     }
-
-    // Get MongoDB connection for unread counts
     const client = await clientPromise;
     const db = client.db('AI_Interview');
     const chatsCollection = db.collection('Chats');
-
-    // Get unread message counts
     const unreadCounts = await chatsCollection
       .aggregate([
         {
@@ -71,8 +61,6 @@ export async function GET(request) {
         },
       ])
       .toArray();
-
-    // Combine users with unread counts
     const usersWithUnread = allUsers.map((u) => {
       const unread = unreadCounts.find((uc) => uc._id === u.uniquePresence);
       return {
@@ -97,8 +85,6 @@ export async function GET(request) {
     );
   }
 }
-
-// POST: Get chat history between two users
 export async function POST(request) {
   try {
     const { user, uniquePresence } = await authenticateRequest(request);
@@ -136,7 +122,6 @@ export async function POST(request) {
       .sort({ timestamp: 1 })
       .toArray();
 
-    // Mark messages as read
     if (messages.length > 0) {
       await chatsCollection.updateMany(
         {
@@ -167,7 +152,6 @@ export async function POST(request) {
   }
 }
 
-// PUT: Mark messages as read
 export async function PUT(request) {
   try {
     const { user, uniquePresence } = await authenticateRequest(request);

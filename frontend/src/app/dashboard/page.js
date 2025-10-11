@@ -6,8 +6,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Sphere, Float } from "@react-three/drei";
 import mammoth from 'mammoth';
 import DashboardNav from "@/components/layout/Dashboardnav";
-
-// Document processing functions
+import { MessageCircle } from 'lucide-react';// Document processing functions
 const extractPdfText = async (file) => {
   const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
   pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
@@ -43,7 +42,6 @@ const extractTextFromDocument = async (file) => {
   }
 };
 
-// 3D Background Components
 function AnimatedSphere({ position, color, speed }) {
   const meshRef = useRef(null);
   
@@ -348,7 +346,6 @@ export default function DashboardPage() {
       
       <div className="relative z-10 container mx-auto px-4 py-8 space-y-8">
         <DashboardNav />
-        {/* Header Section */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -376,7 +373,6 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-gray-900/50 backdrop-blur-md rounded-2xl p-6 border-2 border-purple-500/20 shadow-lg hover:shadow-purple-500/30 transition-all duration-300 hover:scale-105">
             <div className="flex items-center justify-between mb-2">
@@ -414,7 +410,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Document Upload Section */}
         <div className="bg-gray-900/50 backdrop-blur-md rounded-3xl p-8 border-2 border-purple-500/20 shadow-2xl">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
@@ -527,7 +522,6 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Main Feature Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {features.map((feature, index) => (
             <a
@@ -561,7 +555,6 @@ export default function DashboardPage() {
           ))}
         </div>
 
-        {/* Quick Actions CTA */}
         <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 rounded-3xl p-8 text-white shadow-2xl shadow-purple-500/30">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="space-y-2">
