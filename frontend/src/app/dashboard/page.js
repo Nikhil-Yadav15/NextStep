@@ -245,6 +245,7 @@ export default function DashboardPage() {
       }
 
       const results = await Promise.allSettled(apiCalls);
+      console.log('API call results:', results);
 
       const processingResult = results[0];
       if (processingResult.status === 'fulfilled') {
@@ -366,117 +367,117 @@ export default function DashboardPage() {
 
         <Analytics />
 
-        <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-8 shadow-2xl">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-primary to-primary/80 flex items-center justify-center">
-                <Upload className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-white">Document Processing</h2>
-                <p className="text-slate-400">Upload resume, set goals, and check ATS compatibility</p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowUploadSection(!showUploadSection)}
-              className="px-4 py-2 bg-primary hover:bg-primary/80 rounded-lg transition-colors text-sm font-semibold"
-            >
-              {showUploadSection ? 'Hide' : 'Show'}
-            </button>
-          </div>
+        <div 
+  className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-8 shadow-2xl"
+  onMouseEnter={() => setShowUploadSection(true)}
+  onMouseLeave={() => setShowUploadSection(false)}
+>
+  <div className="flex items-center justify-between mb-6">
+    <div className="flex items-center gap-3">
+      <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-primary to-primary/80 flex items-center justify-center">
+        <Upload className="w-6 h-6 text-white" />
+      </div>
+      <div>
+        <h2 className="text-2xl font-bold text-white">Document Processing</h2>
+        <p className="text-slate-400">Upload resume, set goals, and check ATS compatibility</p>
+      </div>
+    </div>
+  </div>
 
-          {showUploadSection && (
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
-                  <Upload className="w-4 h-4" />
-                  Upload Resume
-                </label>
-                <input
-                  type="file"
-                  onChange={handleFileChange}
-                  accept=".pdf,.doc,.docx"
-                  className="block w-full text-sm text-slate-400
-                    file:mr-4 file:py-3 file:px-6
-                    file:rounded-lg file:border-0
-                    file:text-sm file:font-semibold
-                    file:bg-primary file:text-white
-                    hover:file:bg-primary/80
-                    border border-slate-800 rounded-lg
-                    bg-slate-950/50
-                    focus:outline-none focus:border-primary transition-colors"
-                />
-                {file && (
-                  <div className="mt-3 p-3 bg-primary/10 border border-primary/30 rounded-lg">
-                    <p className="text-sm text-slate-300">
-                      <span className="font-semibold text-primary">Selected:</span> {file.name}
-                      <span className="text-slate-500 ml-2">({(file.size / 1024).toFixed(2)} KB)</span>
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
-                  <Target className="w-4 h-4" />
-                  Your Goals
-                </label>
-                <textarea
-                  value={goals}
-                  onChange={(e) => setGoals(e.target.value)}
-                  placeholder="Enter your career goals and objectives..."
-                  rows={4}
-                  className="w-full px-4 py-3 border border-slate-800 rounded-lg
-                    bg-slate-950/50 text-white placeholder-slate-500
-                    focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
-                  <FileText className="w-4 h-4" />
-                  Job Description (Optional - for ATS Check)
-                </label>
-                <textarea
-                  value={jobDescription}
-                  onChange={(e) => setJobDescription(e.target.value)}
-                  placeholder="Paste the job description to check ATS compatibility..."
-                  rows={5}
-                  className="w-full px-4 py-3 border border-slate-800 rounded-lg
-                    bg-slate-950/50 text-white placeholder-slate-500
-                    focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none"
-                />
-                {file && jobDescription.trim() && (
-                  <p className="mt-3 text-sm text-green-400 flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4" />
-                    ATS analysis will be performed in parallel
-                  </p>
-                )}
-              </div>
-
-              <button
-                onClick={handleProcess}
-                disabled={isProcessing}
-                className="w-full py-4 px-6 bg-gradient-to-r from-primary to-primary/80 text-white font-bold rounded-lg
-                  hover:shadow-lg hover:shadow-primary/25 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-slate-900
-                  transition-all disabled:opacity-50 disabled:cursor-not-allowed
-                  transform hover:scale-[1.02] active:scale-[0.98]"
-              >
-                {isProcessing ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    Processing...
-                  </span>
-                ) : (
-                  'Process Document'
-                )}
-              </button>
-            </div>
-          )}
+  <div className={`space-y-6 transition-all duration-800 overflow-hidden ${
+    showUploadSection 
+      ? 'max-h-[2000px] opacity-100 translate-y-0' 
+      : 'max-h-0 opacity-0 -translate-y-4'
+  }`}>
+    <div>
+      <label className="block text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
+        <Upload className="w-4 h-4" />
+        Upload Resume
+      </label>
+      <input
+        type="file"
+        onChange={handleFileChange}
+        accept=".pdf,.doc,.docx"
+        className="block w-full text-sm text-slate-400
+          file:mr-4 file:py-3 file:px-6
+          file:rounded-lg file:border-0
+          file:text-sm file:font-semibold
+          file:bg-primary file:text-white
+          hover:file:bg-primary/80
+          border border-slate-800 rounded-lg
+          bg-slate-950/50
+          focus:outline-none focus:border-primary transition-colors"
+      />
+      {file && (
+        <div className="mt-3 p-3 bg-primary/10 border border-primary/30 rounded-lg">
+          <p className="text-sm text-slate-300">
+            <span className="font-semibold text-primary">Selected:</span> {file.name}
+            <span className="text-slate-500 ml-2">({(file.size / 1024).toFixed(2)} KB)</span>
+          </p>
         </div>
+      )}
+    </div>
+
+    <div>
+      <label className="block text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
+        <Target className="w-4 h-4" />
+        Your Goals
+      </label>
+      <textarea
+        value={goals}
+        onChange={(e) => setGoals(e.target.value)}
+        placeholder="Enter your career goals and objectives..."
+        rows={4}
+        className="w-full px-4 py-3 border border-slate-800 rounded-lg
+          bg-slate-950/50 text-white placeholder-slate-500
+          focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none"
+      />
+    </div>
+
+    <div>
+      <label className="block text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
+        <FileText className="w-4 h-4" />
+        Job Description (Optional - for ATS Check)
+      </label>
+      <textarea
+        value={jobDescription}
+        onChange={(e) => setJobDescription(e.target.value)}
+        placeholder="Paste the job description to check ATS compatibility..."
+        rows={5}
+        className="w-full px-4 py-3 border border-slate-800 rounded-lg
+          bg-slate-950/50 text-white placeholder-slate-500
+          focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none"
+      />
+      {file && jobDescription.trim() && (
+        <p className="mt-3 text-sm text-green-400 flex items-center gap-2">
+          <CheckCircle className="w-4 h-4" />
+          ATS analysis will be performed in parallel
+        </p>
+      )}
+    </div>
+
+    <button
+      onClick={handleProcess}
+      disabled={isProcessing}
+      className="w-full py-4 px-6 bg-gradient-to-r from-primary to-primary/80 text-white font-bold rounded-lg
+        hover:shadow-lg hover:shadow-primary/25 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-slate-900
+        transition-all disabled:opacity-50 disabled:cursor-not-allowed
+        transform hover:scale-[1.02] active:scale-[0.98]"
+    >
+      {isProcessing ? (
+        <span className="flex items-center justify-center gap-2">
+          <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          </svg>
+          Processing...
+        </span>
+      ) : (
+        'Process Document'
+      )}
+    </button>
+  </div>
+</div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, index) => (
