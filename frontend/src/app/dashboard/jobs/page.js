@@ -14,7 +14,6 @@ export default function JobsPage() {
   const [savedJobs, setSavedJobs] = useState([]);
   const [showSaved, setShowSaved] = useState(false);
 
-  // --- Get uniquePresence dynamically at the time of API call ---
   const getUniquePresence = () => {
     if (typeof window === "undefined") return null;
     const match = document.cookie
@@ -45,20 +44,20 @@ export default function JobsPage() {
     setError("");
     setLiJobs([]);
     setNkJobs([]);
-    setSerpJobs([]); // ✅ NEW: reset SerpApi jobs
+    setSerpJobs([]); 
     setLoading(true);
     try {
       const title = encodeURIComponent(role.trim());
       const loc = encodeURIComponent(location.trim());
 
-      // ✅ Define reusable fetchers for each source
+      
       const sources = {
         linkedin: () => fetchJSON(`/api/linkedin?title=${title}&location=${loc}`),
         naukri: () => fetchJSON(`/api/naukri?query=${title}&location=${loc}`),
         serpapi: () => fetchJSON(`/api/serpapi?title=${title}&location=${loc}`), // ✅ NEW: SerpApi route
       };
 
-      // ✅ Fetch based on user-selected source
+  
       if (source === "linkedin") {
         const json = await sources.linkedin();
         setLiJobs(json.jobs || []);
@@ -69,7 +68,7 @@ export default function JobsPage() {
         const json = await sources.serpapi();
         setSerpJobs(json.jobs || []);
       } else {
-        // ✅ If "both" is selected, fetch all three sources in parallel
+      
         const [li, nk, sp] = await Promise.all([
           sources.linkedin(),
           sources.naukri(),
@@ -105,7 +104,7 @@ export default function JobsPage() {
     } else {
       updatedSaved = [...savedJobs, jobWithSource];
 
-      // --- POST to /api/saveBookmarkedJob ---
+    
       try {
         await fetch("/api/saveBookmarkedJob", {
           method: "POST",
@@ -257,7 +256,7 @@ export default function JobsPage() {
         </div>
       ) : (
         <>
-          {/* Search Form */}
+  
           <div className="mb-4 grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2">
             <input
               value={role}
@@ -282,7 +281,7 @@ export default function JobsPage() {
             </button>
           </div>
 
-          {/* ✅ Source Filter: added "serpapi" */}
+      
           <div className="mb-6 flex flex-wrap items-center gap-2">
             <span className="text-sm text-gray-600">Source:</span>
             {["both", "linkedin", "naukri", "serpapi"].map((s) => (
@@ -307,7 +306,7 @@ export default function JobsPage() {
             </div>
           )}
 
-          {/* ✅ Jobs List: Added SerpApi section */}
+        
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <h2 className="text-xl font-semibold mb-3">LinkedIn</h2>
@@ -331,7 +330,7 @@ export default function JobsPage() {
                 )}
               </ul>
             </div>
-            {/* ✅ NEW: SerpApi results column */}
+  
             <div>
               <h2 className="text-xl font-semibold mb-3">SerpApi (Google Jobs)</h2>
               <ul className="space-y-3">

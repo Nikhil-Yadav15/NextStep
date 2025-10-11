@@ -1,4 +1,3 @@
-// app/api/naukri/route.js
 import { NextResponse } from 'next/server';
 import { ApifyClient } from 'apify-client';
 
@@ -15,7 +14,6 @@ export async function GET(req) {
     }
     const client = new ApifyClient({ token });
 
-    // Run the actor synchronously and wait for finish
     const { defaultDatasetId } = await client
       .actor('muhammetakkurtt/naukri-job-scraper')
       .call({
@@ -24,10 +22,8 @@ export async function GET(req) {
         max_results: Number.isFinite(max) ? max : 5,
       });
 
-    // Fetch dataset items (results)
     const { items } = await client.dataset(defaultDatasetId).listItems();
 
-    // Normalize fields
     const jobs = (items || []).map((j) => ({
       title: j['Job Title'] || j.title || j.jobTitle || null,
       company: j['Company'] || j.company || j.companyName || null,

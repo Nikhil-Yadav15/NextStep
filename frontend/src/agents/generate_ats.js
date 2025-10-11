@@ -7,7 +7,6 @@ const llmClient = new OpenAI({
 });
 
 async function callLLM(messages, model = "tngtech/deepseek-r1t2-chimera:free") {
-  console.log("🧠 [LLM] Sending request to model:", model);
   try {
     const completion = await llmClient.chat.completions.create({
       model,
@@ -32,7 +31,6 @@ async function callLLM(messages, model = "tngtech/deepseek-r1t2-chimera:free") {
       }
     }
 
-    console.log("✅ [LLM] Response received successfully.");
     return { content: textContent.trim() };
   } catch (err) {
     console.error("❌ [LLM] Error during API call:", err);
@@ -41,10 +39,8 @@ async function callLLM(messages, model = "tngtech/deepseek-r1t2-chimera:free") {
 }
 
 export async function processATSAnalysis(resumeText = "", jobDescription = "") {
-  console.log("🚀 Starting ATS Analysis...");
 
   if (!resumeText || !jobDescription) {
-    console.warn("⚠️ Missing resume or job description input.");
     return {
       error: "Missing resume or job description",
       matchScore: 0,
@@ -57,8 +53,6 @@ export async function processATSAnalysis(resumeText = "", jobDescription = "") {
     };
   }
 
-  console.log("📄 Resume Length:", resumeText.length);
-  console.log("📋 Job Description Length:", jobDescription.length);
 
   const systemPrompt = `
 You are an advanced Applicant Tracking System (ATS) analyzer.
@@ -97,7 +91,6 @@ Job Description:
 ${jobDescription}
 `;
 
-  console.log("🧾 [Prompt] Sending to LLM...");
   let response;
   try {
     response = await callLLM([
@@ -105,28 +98,22 @@ ${jobDescription}
       { role: "user", content: userPrompt },
     ]);
   } catch (err) {
-    console.error("❌ [LLM Error] Failed before parsing:", err);
     response = { content: "" };
   }
 
-  console.log("🧩 [Raw LLM Output]:", response?.content?.substring(0, 500) + "...");
 
   let parsed = {};
   try {
     parsed = parseJsonC(response.content || "{}", undefined, { allowTrailingComma: true });
     if (typeof parsed !== "object" || parsed === null) parsed = {};
-    console.log("✅ [JSON Parsing] Successful.");
   } catch (err) {
-    console.warn("⚠️ [JSON Parsing] Failed, using fallback:", err);
+    console.warn(" [JSON Parsing] Failed, using fallback:", err);
   }
 
-  // Ensure valid structure before accessing nested fields
   const analysis = parsed?.analysis || {};
   const extractedKeywords = parsed?.extractedKeywords || { resume: [], jd: [] };
 
-  // If parsing failed and no analysis, fallback to keyword-based rough match
   if (!analysis || Object.keys(analysis).length === 0) {
-    console.log("⚙️ [Fallback] Generating simple keyword comparison...");
     const resumeWords = resumeText.toLowerCase().split(/\W+/);
     const jdWords = jobDescription.toLowerCase().split(/\W+/);
     const matched = jdWords.filter((word) => resumeWords.includes(word));
@@ -163,7 +150,6 @@ ${jobDescription}
     extractedKeywords,
   };
 
-  console.log("✅ [Final Output Ready]:", {
     matchScore: result.matchScore,
     missing: result.missingKeywords.length,
     present: result.presentKeywords.length,
