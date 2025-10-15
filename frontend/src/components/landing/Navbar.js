@@ -17,7 +17,7 @@ const Navbar = () => {
             <div className="relative">
               <Sparkles className="h-8 w-8 text-primary animate-glow" />
             </div>
-            <span className="text-xl font-bold text-primary">Career AI</span>
+            <span className="text-xl font-bold text-primary">NextStep</span>
           </Link>
 
           {/* Desktop Navigation */}
