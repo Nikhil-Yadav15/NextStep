@@ -1,8 +1,7 @@
 import { StateGraph, Annotation } from '@langchain/langgraph';
-import { TavilySearchResults } from "@langchain/community/tools/tavily_search";
+import {TavilySearch} from '@langchain/tavily'
 import OpenAI from "openai";
 import { parse as parseJsonC } from 'jsonc-parser';
-
 
 const llmClient = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
@@ -77,7 +76,7 @@ const RoadmapState = Annotation.Root({
 });
 
 
-const webSearchTool = new TavilySearchResults({
+const webSearchTool = new TavilySearch({
   maxResults: 5,
   apiKey: process.env.TAVILY_API_KEY,
 });
