@@ -129,7 +129,7 @@ export default function DashboardNav() {
               </div>
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent hidden sm:block">
-              CareerAI
+              NextStep
             </span>
           </a>
 
