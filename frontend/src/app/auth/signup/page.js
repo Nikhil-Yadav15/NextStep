@@ -1,34 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@supabase/supabase-js";
 import { useRouter } from 'next/navigation';
-
-// Supabase client (browser-safe)
-const supabase = typeof window !== "undefined"
-  ? createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
-      {
-        auth: {
-          storage: {
-            getItem: (key) => {
-              return document.cookie
-                .split('; ')
-                .find(row => row.startsWith(key + '='))
-                ?.split('=')[1];
-            },
-            setItem: (key, value) => {
-              document.cookie = `${key}=${value}; path=/; max-age=31536000; SameSite=Lax`;
-            },
-            removeItem: (key) => {
-              document.cookie = `${key}=; path=/; max-age=0`;
-            },
-          },
-        },
-      }
-    )
-  : null;
 
 export default function SignupPage() {
   const [name, setName] = useState("");
@@ -40,48 +13,37 @@ export default function SignupPage() {
 
   async function onSubmit(e) {
     e.preventDefault();
-    if (!supabase) {
-        console.error("Supabase client is not initialized.");
-        return;
-    }
 
     console.log("🚀 Form submitted. Creating account...");
     setMsg("Creating account...");
 
     try {
-      // 1️⃣ Sign up user in Supabase Auth
-      console.log("1️⃣ Attempting Supabase Auth signup for:", { email });
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password: pass
+      // 1️⃣ Create user through server auth route
+      console.log("1️⃣ Calling server signup endpoint for:", { email });
+      const signupResponse = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          email,
+          phone,
+          password: pass,
+        }),
       });
 
-      console.log("   Supabase Auth response:", { data, error });
-      if (error) throw new Error(error.message);
-      if (!data.user) throw new Error("User not created in Supabase Auth");
-      console.log("   ✅ Supabase Auth signup successful. User ID:", data.user.id);
+      const signupResult = await signupResponse.json();
+      console.log("   Signup endpoint response:", {
+        status: signupResponse.status,
+        body: signupResult,
+      });
 
-      // 2️⃣ Insert user info into Supabase 'users' table
-      const userPayload = {
-        id: data.user.id,
-        name,
-        email,
-        phone,
-        password: pass // Note: Storing plain text passwords is not recommended.
-      };
-      console.log("2️⃣ Inserting user into 'users' table:", userPayload);
-      const { data: insertData, error: insertError } = await supabase
-        .from('users')
-        .insert([userPayload])
-        .select('uniquePresence')
-        .single();
+      if (!signupResponse.ok) {
+        throw new Error(signupResult?.message || "Failed to create account");
+      }
 
-      console.log("   Supabase insert response:", { insertData, insertError });
-      if (insertError) throw new Error(insertError.message);
-      
-      const uniquePresence = insertData?.uniquePresence;
+      const uniquePresence = signupResult?.uniquePresence;
       if (!uniquePresence) throw new Error("Failed to get uniquePresence token from insert response");
-      console.log("   ✅ User insert successful. uniquePresence token:", uniquePresence);
+      console.log("   ✅ Signup successful. uniquePresence token:", uniquePresence);
       
       // Store token in cookie
       document.cookie = `uniquePresence=${uniquePresence}; path=/; max-age=31536000; SameSite=Lax`;
@@ -125,7 +87,11 @@ export default function SignupPage() {
 
     } catch (err) {
       console.error("❌ Signup error caught:", err);
-      setMsg(err.message || "Failed to create account");
+      if (err instanceof TypeError && /fetch/i.test(err.message || "")) {
+        setMsg("Could not reach auth API. Check that frontend dev server is running.");
+      } else {
+        setMsg(err.message || "Failed to create account");
+      }
     }
   }
 

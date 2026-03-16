@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -12,30 +11,6 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sparkles, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-const supabase =
-  typeof window !== "undefined"
-    ? createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
-        {
-          auth: {
-            storage: {
-              getItem: (key) =>
-                document.cookie
-                  .split("; ")
-                  .find((row) => row.startsWith(key + "="))
-                  ?.split("=")[1],
-              setItem: (key, value) => {
-                document.cookie = `${key}=${value}; path=/; max-age=31536000; SameSite=Lax`;
-              },
-              removeItem: (key) => {
-                document.cookie = `${key}=; path=/; max-age=0`;
-              },
-            },
-          },
-        }
-      )
-    : null;
 
 export default function Auth() {
   const router = useRouter();
@@ -49,88 +24,76 @@ export default function Auth() {
   });
   const handleSignIn = async (e) => {
     e.preventDefault();
-    if (!supabase) return;
     setIsLoading(true);
 
     const { email, password } = signinData;
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const payload = await res.json();
 
-    if (error) {
-      toast.error(error.message);
-      setIsLoading(false);
-      return;
-    }
-
-    if (data.session) {
-      const { data: userData } = await supabase
-        .from("users")
-        .select("uniquePresence")
-        .eq("id", data.user.id)
-        .single();
-
-      if (userData?.uniquePresence) {
-        document.cookie = `uniquePresence=${userData.uniquePresence}; path=/; max-age=31536000; SameSite=Lax`;
+      if (!res.ok) {
+        toast.error(payload?.message || 'Signin failed');
+        setIsLoading(false);
+        return;
       }
 
-      toast.success("Welcome back!");
-      router.push("/dashboard");
-    } else {
-      toast.info("Please check your email to confirm your account.");
+      if (payload?.session) {
+        if (payload?.uniquePresence) {
+          document.cookie = `uniquePresence=${payload.uniquePresence}; path=/; max-age=31536000; SameSite=Lax`;
+        }
+
+        toast.success("Welcome back!");
+        router.push("/dashboard");
+      } else {
+        toast.info("Please check your email to confirm your account.");
+      }
+    } catch (err) {
+      if (err instanceof TypeError) {
+        toast.error("Could not reach auth API. Check that frontend dev server is running.");
+      } else {
+        toast.error(err?.message || "Signin failed");
+      }
     }
 
     setIsLoading(false);
   };
   const handleSignUp = async (e) => {
     e.preventDefault();
-    if (!supabase) return;
     setIsLoading(true);
 
     const { name, email, phone, password } = signupData;
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    try {
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, phone, password }),
+      });
 
-    if (error) {
-      toast.error(error.message);
-      setIsLoading(false);
-      return;
-    }
-
-    if (data.user) {
-      const { data: insertData, error: insertError } = await supabase
-        .from("users")
-        .insert([
-          {
-            id: data.user.id,
-            name: name,
-            email: email,
-            phone: phone,
-            password: password,
-          },
-        ])
-        .select("uniquePresence")
-        .single();
-
-      if (insertError) {
-        toast.error("Profile creation failed: " + insertError.message);
+      const payload = await res.json();
+      if (!res.ok) {
+        toast.error(payload?.message || 'Signup failed');
         setIsLoading(false);
         return;
       }
 
-      if (insertData?.uniquePresence) {
-        document.cookie = `uniquePresence=${insertData.uniquePresence}; path=/; max-age=31536000; SameSite=Lax`;
+      if (payload?.uniquePresence) {
+        document.cookie = `uniquePresence=${payload.uniquePresence}; path=/; max-age=31536000; SameSite=Lax`;
       }
 
       toast.success("Account created successfully!");
       setTimeout(() => router.push("/dashboard"), 1500);
-    } else {
-      toast.info("Check your email for the verification link.");
+    } catch (err) {
+      if (err instanceof TypeError) {
+        toast.error("Could not reach auth API. Check that frontend dev server is running.");
+      } else {
+        toast.error(err?.message || "Signup failed");
+      }
     }
 
     setIsLoading(false);

@@ -390,7 +390,7 @@ export default function DashboardPage() {
       : 'max-h-0 opacity-0 -translate-y-4'
   }`}>
     <div>
-      <label className="block text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
+      <label className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
         <Upload className="w-4 h-4" />
         Upload Resume
       </label>
@@ -419,7 +419,7 @@ export default function DashboardPage() {
     </div>
 
     <div>
-      <label className="block text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
+      <label className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
         <Target className="w-4 h-4" />
         Your Goals
       </label>
@@ -435,7 +435,7 @@ export default function DashboardPage() {
     </div>
 
     <div>
-      <label className="block text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
+      <label className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
         <FileText className="w-4 h-4" />
         Job Description (Optional - for ATS Check)
       </label>
