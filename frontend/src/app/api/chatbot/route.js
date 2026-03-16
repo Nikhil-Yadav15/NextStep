@@ -49,6 +49,33 @@ function extractRetrySeconds(error) {
   return null;
 }
 
+async function generateWithOpenRouter(prompt) {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) return null;
+
+  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: "openai/gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.3,
+      max_tokens: 350,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`OpenRouter error: ${err}`);
+  }
+
+  const json = await res.json();
+  return json?.choices?.[0]?.message?.content || null;
+}
+
 const urlRef = getProjectRefFromUrl(supabaseUrl);
 const serviceRef = getProjectRefFromJwt(serviceRoleKey);
 const selectedKey =
@@ -268,15 +295,33 @@ Your response:
       reply = result.response.text() || reply;
     } catch (geminiError) {
       if (isGeminiQuotaError(geminiError)) {
-        const retrySeconds = extractRetrySeconds(geminiError);
-        const retryHint = retrySeconds
-          ? ` Please retry in about ${retrySeconds} seconds.`
-          : " Please retry in a short while.";
+        try {
+          const openRouterReply = await generateWithOpenRouter(prompt);
+          if (openRouterReply) {
+            reply = openRouterReply;
+          } else {
+            const retrySeconds = extractRetrySeconds(geminiError);
+            const retryHint = retrySeconds
+              ? ` Please retry in about ${retrySeconds} seconds.`
+              : " Please retry in a short while.";
 
-        reply =
-          "I hit a temporary AI quota limit while generating your response." +
-          retryHint +
-          " In the meantime, I can still help with concise guidance if you ask a specific career question.";
+            reply =
+              "I hit a temporary AI quota limit while generating your response." +
+              retryHint +
+              " In the meantime, I can still help with concise guidance if you ask a specific career question.";
+          }
+        } catch (openRouterError) {
+          const retrySeconds = extractRetrySeconds(geminiError);
+          const retryHint = retrySeconds
+            ? ` Please retry in about ${retrySeconds} seconds.`
+            : " Please retry in a short while.";
+
+          reply =
+            "I hit a temporary AI quota limit while generating your response." +
+            retryHint +
+            " In the meantime, I can still help with concise guidance if you ask a specific career question.";
+          console.warn("OpenRouter fallback failed:", openRouterError?.message || openRouterError);
+        }
 
         console.warn("Gemini quota/rate-limit reached:", geminiError?.message || geminiError);
       } else {

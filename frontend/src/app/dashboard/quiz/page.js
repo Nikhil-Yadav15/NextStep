@@ -1,8 +1,5 @@
 "use client";
 import React, { useState } from "react";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY);
 
 export default function QuizPage() {
   const [topic, setTopic] = useState("");
@@ -59,17 +56,23 @@ export default function QuizPage() {
     setShowExplanations({});
     setShowScoreAnimation(false);
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-    const prompt = `Generate a 5-question multiple-choice quiz on the topic "${topic}". Format as valid JSON only: { "questions": [ { "question": "Question text", "options": ["A", "B", "C", "D"], "answer": "Correct option text", "explanation": "Short explanation" } ] }`;
-
     try {
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
-      const jsonText = text.match(/\{[\s\S]*\}/)?.[0];
-      const data = JSON.parse(jsonText);
-      setQuiz(data.questions);
+      const response = await fetch("/api/quiz", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic }),
+      });
+
+      const payload = await response.json();
+      const questions = payload?.data?.questions;
+
+      if (!response.ok || !Array.isArray(questions) || questions.length === 0) {
+        throw new Error(payload?.message || "Failed to generate quiz");
+      }
+
+      setQuiz(questions);
     } catch (err) {
-      console.error("Gemini error:", err);
+      console.error("Quiz generation error:", err);
       alert("Failed to generate quiz. Try again!");
     } finally {
       setLoading(false);
