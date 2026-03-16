@@ -21,36 +21,36 @@ function cleanLLMResponse(resp) {
 
 async function getAnalysisScores(sessionId, transcript, questionId) {
   try {
-    const response = await fetch(`${FLASK_ANALYSIS_URL}/api/analyze/transcript`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        sessionId,
-        transcript,
-        questionId
-      })
-    });
+    const [transcriptRes, statusRes] = await Promise.all([
+      fetch(`${FLASK_ANALYSIS_URL}/api/analyze/transcript`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId, transcript, questionId })
+      }),
+      fetch(`${FLASK_ANALYSIS_URL}/api/session/status?sessionId=${sessionId}`)
+    ]);
 
-    if (!response.ok) {
+    if (!transcriptRes.ok) {
       console.warn("⚠️ Flask analysis unavailable, using defaults");
-      return {
-        voiceToneScore: 50,
-        bodyLanguageScore: 50
-      };
+      return { voiceToneScore: 50, bodyLanguageScore: 50 };
     }
 
-    const data = await response.json();
+    const transcriptData = await transcriptRes.json();
+    let bodyLanguageScore = 50;
+
+    if (statusRes.ok) {
+      const statusData = await statusRes.json();
+      bodyLanguageScore = statusData.results?.body_language_score || 50;
+    }
+
     return {
-      voiceToneScore: data.voiceAnalysis?.voice_tone_score || 50,
-      bodyLanguageScore: 50,
-      voiceAnalysis: data.voiceAnalysis
+      voiceToneScore: transcriptData.voiceAnalysis?.voice_tone_score || 50,
+      bodyLanguageScore,
+      voiceAnalysis: transcriptData.voiceAnalysis
     };
   } catch (error) {
     console.error("❌ Error fetching analysis scores:", error.message);
-    return {
-      voiceToneScore: 50,
-      bodyLanguageScore: 50
-    };
+    return { voiceToneScore: 50, bodyLanguageScore: 50 };
   }
 }
 

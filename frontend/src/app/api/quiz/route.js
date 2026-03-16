@@ -96,6 +96,33 @@ function fallbackQuiz(topic) {
   ];
 }
 
+async function generateWithOpenRouter(prompt) {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) return null;
+
+  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: "openai/gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.3,
+      max_tokens: 1200,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`OpenRouter error: ${err}`);
+  }
+
+  const json = await res.json();
+  return json?.choices?.[0]?.message?.content || null;
+}
+
 export async function POST(request) {
   try {
     const { topic } = await request.json();
@@ -105,37 +132,49 @@ export async function POST(request) {
       return NextResponse.json({ message: "Topic is required" }, { status: 400 });
     }
 
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json({
-        status: "success",
-        source: "fallback",
-        data: { questions: fallbackQuiz(cleanTopic) },
-      });
-    }
-
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-
     const prompt = `Generate a 5-question multiple-choice quiz on the topic "${cleanTopic}". Return strict JSON only in this exact format: {"questions":[{"question":"...","options":["A","B","C","D"],"answer":"...","explanation":"..."}]}. Ensure the answer value exactly matches one option.`;
 
+    // Try Gemini first
+    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+    if (apiKey) {
+      try {
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        const result = await model.generateContent(prompt);
+        const text = result.response.text();
+        const parsed = extractJsonObject(text);
+        const normalized = normalizeQuestions(parsed?.questions, cleanTopic);
+
+        if (normalized.length >= 5) {
+          return NextResponse.json({
+            status: "success",
+            source: "gemini",
+            data: { questions: normalized },
+          });
+        }
+      } catch (geminiError) {
+        console.warn("Gemini quiz failed, trying OpenRouter:", geminiError?.message || geminiError);
+      }
+    }
+
+    // Fallback to OpenRouter
     try {
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
+      const text = await generateWithOpenRouter(prompt);
       const parsed = extractJsonObject(text);
       const normalized = normalizeQuestions(parsed?.questions, cleanTopic);
 
       if (normalized.length >= 5) {
         return NextResponse.json({
           status: "success",
-          source: "gemini",
+          source: "openrouter",
           data: { questions: normalized },
         });
       }
-    } catch (error) {
-      console.warn("Quiz generation AI fallback triggered:", error?.message || error);
+    } catch (openRouterError) {
+      console.warn("OpenRouter quiz failed:", openRouterError?.message || openRouterError);
     }
 
+    // Static fallback
     return NextResponse.json({
       status: "success",
       source: "fallback",
