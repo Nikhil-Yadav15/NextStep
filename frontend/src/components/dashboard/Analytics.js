@@ -31,44 +31,57 @@ export default function Analytics() {
   const [weeklyData, setWeeklyData] = useState([]);
   const [topicData, setTopicData] = useState([]);
   useEffect(() => {
-  if (!uniquePresence) return;
+    if (!uniquePresence) return;
 
-  fetch("/api/getScores", {
-    headers: {
-      Authorization: `Bearer ${uniquePresence}`,
-    },
-  })
-    .then((res) => res.json())
-    .then((tests) => {
-      const sorted = tests.data.sort(
-        (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
-      );
-      setData(sorted);
-      const weekly = {};
-      sorted.forEach((test) => {
-        const week = format(startOfWeek(parseISO(test.createdAt)), "MMM d");
-        weekly[week] = (weekly[week] || 0) + 1;
-      });
-      setWeeklyData(
-        Object.entries(weekly).map(([week, count]) => ({ week, count }))
-      );
-      console.log(sorted);
-      const tagMap = {};
-      sorted.forEach((t) => {
-        if(t.tags && Array.isArray(t.tags)) {
-          console.log(t.tags)
-          t.tags.forEach((tag) => {
-            tagMap[tag] = (tagMap[tag] || 0) + 1;
-          });
-        }
-      });
-      setTopicData(
-        Object.entries(tagMap).map(([tag, value]) => ({ topic: tag, value }))
-      );
-      console.log(topicData);
-      
-    });
-}, [uniquePresence]);
+    const fetchScores = async () => {
+      try {
+        const res = await fetch("/api/getScores", {
+          headers: {
+            Authorization: `Bearer ${uniquePresence}`,
+          },
+        });
+
+        const payload = await res.json();
+        const rows = Array.isArray(payload?.data) ? payload.data : [];
+
+        const sorted = rows.sort(
+          (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+        );
+        setData(sorted);
+
+        const weekly = {};
+        sorted.forEach((test) => {
+          if (!test?.createdAt) return;
+          const week = format(startOfWeek(parseISO(test.createdAt)), "MMM d");
+          weekly[week] = (weekly[week] || 0) + 1;
+        });
+
+        setWeeklyData(
+          Object.entries(weekly).map(([week, count]) => ({ week, count }))
+        );
+
+        const tagMap = {};
+        sorted.forEach((t) => {
+          if (t.tags && Array.isArray(t.tags)) {
+            t.tags.forEach((tag) => {
+              tagMap[tag] = (tagMap[tag] || 0) + 1;
+            });
+          }
+        });
+
+        setTopicData(
+          Object.entries(tagMap).map(([tag, value]) => ({ topic: tag, value }))
+        );
+      } catch (error) {
+        console.error("Failed to load analytics:", error);
+        setData([]);
+        setWeeklyData([]);
+        setTopicData([]);
+      }
+    };
+
+    fetchScores();
+  }, [uniquePresence]);
 
   const COLORS = ["#22c55e", "#3b82f6", "#f97316", "#ef4444", "#a855f7"];
   return (
