@@ -125,11 +125,21 @@ export async function POST(request) {
       joinDate,
     });
 
-    return NextResponse.json({
-      status: "success",
-      message: "Profile saved successfully",
-      data: result,
-    });
+    if (!result?.success) {
+      return NextResponse.json(
+        { status: "error", message: result?.error || "Failed to save profile" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        status: "success",
+        message: "Profile saved successfully",
+        data: result,
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("SaveProfile API error:", error);
     return NextResponse.json(

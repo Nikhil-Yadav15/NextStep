@@ -94,16 +94,39 @@ export async function GET(request) {
     const collection = db.collection("Profiles");
 
    
-    const profile = await collection.findOne(
+    let profile = await collection.findOne(
       { uniquePresence },
       { projection: { _id: 0 } } 
     );
 
     if (!profile) {
-      return NextResponse.json(
-        { status: "error", message: "Profile not found" },
-        { status: 404 }
-      );
+      const now = new Date();
+      const freshProfile = {
+        userId: user.id,
+        uniquePresence,
+        name: user.name || "New User",
+        email: user.email || "",
+        phone: "",
+        location: "",
+        title: "",
+        bio: "Add a short summary about yourself.",
+        linkedin: "",
+        github: "",
+        website: "",
+        joinDate: now.toLocaleString("default", { month: "long", year: "numeric" }),
+        createdAt: now,
+        updatedAt: now,
+      };
+
+      const insertResult = await collection.insertOne(freshProfile);
+      if (!insertResult.acknowledged) {
+        return NextResponse.json(
+          { status: "error", message: "Failed to create profile" },
+          { status: 500 }
+        );
+      }
+
+      profile = freshProfile;
     }
      // Fetch bookmarked jobs
     const bookmarkedJobs = await db.collection("BookmarkedJobs")
