@@ -10,7 +10,7 @@ const llmClient = new OpenAI({
   apiKey: process.env.OPENROUTER_API_KEY,
 });
 
-async function callLLM(messages, model = "tngtech/deepseek-r1t2-chimera:free") {
+async function callLLM(messages, model = "meta-llama/llama-3.3-70b-instruct:free") {
   try {
     const completion = await llmClient.chat.completions.create({
       model,

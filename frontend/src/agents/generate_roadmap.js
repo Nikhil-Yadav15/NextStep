@@ -9,7 +9,7 @@ const llmClient = new OpenAI({
 });
 
 
-async function callLLM(messages, model = "tngtech/deepseek-r1t2-chimera:free") {
+async function callLLM(messages, model = "meta-llama/llama-3.3-70b-instruct:free") {
   try {
     const completion = await llmClient.chat.completions.create({
       model,
@@ -244,7 +244,7 @@ Return ONLY the JSON array, no additional text.
     const response = await callLLM([
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt }
-    ], "tngtech/deepseek-r1t2-chimera:free");
+    ], "meta-llama/llama-3.3-70b-instruct:free");
 
     let roadmapArray;
     try {
