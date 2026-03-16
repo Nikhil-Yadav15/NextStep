@@ -17,7 +17,6 @@ async function callLLM(messages, model = "tngtech/deepseek-r1t2-chimera:free") {
       messages,
       temperature: 0.1,
       max_tokens: 1000,
-      reasoning: 'disabled',
     });
 
     const firstMessage = completion.choices[0].message;
@@ -28,8 +27,10 @@ async function callLLM(messages, model = "tngtech/deepseek-r1t2-chimera:free") {
           .filter(c => c.type === "text")
           .map(c => c.text)
           .join("\n");
-      } else if (firstMessage.content.text) {
-        textContent = firstMessage.content.text;
+      } else {
+        textContent = typeof firstMessage.content === 'string'
+          ? firstMessage.content
+          : firstMessage.content.text || "";
       }
     }
     if (!textContent || textContent.trim() === "") {

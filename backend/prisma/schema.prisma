@@ -40,7 +40,7 @@ model Question {
   
   interview   Interview    @relation(fields: [interviewId], references: [id], onDelete: Cascade)
   transcripts Transcript[]
-  
+
   @@index([interviewId])
 }
 
@@ -64,7 +64,7 @@ model Transcript {
   
   interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
   question    Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  
+
   @@index([interviewId])
   @@index([questionId])
 }
@@ -84,7 +84,7 @@ model Report {
   createdAt   DateTime @default(now())
   
   interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
-  
+
   @@index([interviewId])
 }
 
