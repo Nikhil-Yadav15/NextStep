@@ -263,7 +263,7 @@ console.log('Saving profile with uniquePresence:', uniquePresence);
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <a
             href="/dashboard"
-            className="inline-flex items-center gap-2 self-start rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-slate-200 backdrop-blur hover:border-white/20 hover:bg-white/10 transition"
+            className="inline-flex items-center gap-2 self-start rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-slate-200 backdrop-blur hover:border-white/20 hover:bg-white/10 transition cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to dashboard
@@ -275,15 +275,15 @@ console.log('Saving profile with uniquePresence:', uniquePresence);
                 <button
                   onClick={handleSave}
                   disabled={loading}
-                  className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition hover:shadow-emerald-500/30 disabled:cursor-not-allowed disabled:opacity-60"
-                >
+                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition hover:shadow-emerald-500/30 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+              >
                   <Save className="w-4 h-4" />
                   Save profile
                 </button>
                 <button
                   onClick={handleCancel}
-                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2 text-sm font-semibold text-slate-200 hover:border-white/20 hover:bg-white/10 transition"
-                >
+                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2 text-sm font-semibold text-slate-200 hover:border-white/20 hover:bg-white/10 transition cursor-pointer"
+              >
                   <X className="w-4 h-4" />
                   Cancel
                 </button>
@@ -291,8 +291,8 @@ console.log('Saving profile with uniquePresence:', uniquePresence);
             ) : (
               <button
                 onClick={handleEdit}
-                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition hover:shadow-indigo-500/30"
-              >
+              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition hover:shadow-indigo-500/30 cursor-pointer"
+            >
                 <Edit2 className="w-4 h-4" />
                 Edit profile
               </button>
@@ -305,12 +305,12 @@ console.log('Saving profile with uniquePresence:', uniquePresence);
             {bannerImage ? (
               <img src={bannerImage} alt="Banner" className="h-full w-full object-cover" />
             ) : (
-              <div className="h-full w-full bg-gradient-to-r from-indigo-600 via-fuchsia-600 to-emerald-500" />
+              <div className="h-full w-full bg-slate-800" />
             )}
             <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/10 to-slate-950/80" />
             <button
               onClick={() => bannerInputRef.current?.click()}
-              className="absolute right-5 top-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/40 px-4 py-2 text-sm font-semibold text-white backdrop-blur transition hover:border-white/30 hover:bg-black/60"
+              className="absolute right-5 top-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/40 px-4 py-2 text-sm font-semibold text-white backdrop-blur transition hover:border-white/30 hover:bg-black/60 cursor-pointer"
             >
               <Camera className="w-4 h-4" />
               Update cover
@@ -327,16 +327,16 @@ console.log('Saving profile with uniquePresence:', uniquePresence);
           <div className="px-8 pb-10 -mt-16">
             <div className="flex flex-col gap-6 md:flex-row md:items-end">
               <div className="relative">
-                <div className="flex h-32 w-32 items-center justify-center rounded-2xl border-4 border-slate-900 bg-gradient-to-br from-indigo-500 via-fuchsia-500 to-emerald-400 text-4xl font-bold text-white shadow-2xl overflow-hidden">
-                  {profileImage ? (
-                    <img src={profileImage} alt="Profile" className="h-full w-full object-cover" />
-                  ) : (
-                    <span>{initials}</span>
-                  )}
+                <div className="flex h-32 w-32 items-center justify-center rounded-2xl border-4 border-slate-900 bg-white shadow-2xl overflow-hidden">
+                  <img
+                    src={profileImage || "/profile_default.jpg"}
+                    alt="Profile"
+                    className="h-full w-full object-cover"
+                  />
                 </div>
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="absolute -bottom-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-semibold text-white backdrop-blur hover:border-white/30 hover:bg-white/15"
+                  className="absolute -bottom-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-semibold text-white backdrop-blur hover:border-white/30 hover:bg-white/15 cursor-pointer"
                 >
                   <Camera className="w-3 h-3" />
                   Change photo
@@ -526,7 +526,7 @@ console.log('Saving profile with uniquePresence:', uniquePresence);
                               href={job.link}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-3 py-2 text-sm font-semibold text-indigo-100 hover:border-indigo-300/50 hover:bg-indigo-500/20 transition"
+                              className="inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-3 py-2 text-sm font-semibold text-indigo-100 hover:border-indigo-300/50 hover:bg-indigo-500/20 transition cursor-pointer"
                             >
                               <TrendingUp className="w-4 h-4" />
                               View listing
@@ -536,7 +536,7 @@ console.log('Saving profile with uniquePresence:', uniquePresence);
                               No link provided
                             </span>
                           )}
-                          <button className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-indigo-200 transition hover:border-indigo-300/50 hover:bg-indigo-500/10">
+                          <button className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-indigo-200 transition hover:border-indigo-300/50 hover:bg-indigo-500/10 cursor-pointer">
                             <Bookmark className="w-4 h-4" />
                           </button>
                         </div>
@@ -637,7 +637,7 @@ console.log('Saving profile with uniquePresence:', uniquePresence);
                       href={profileData.linkedin ? `https://${profileData.linkedin}` : "#"}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-3 rounded-2xl border border-white/10 bg-blue-500/10 px-4 py-3 text-slate-50 transition hover:border-blue-300/40 hover:bg-blue-500/20"
+                      className="flex items-center gap-3 rounded-2xl border border-white/10 bg-blue-500/10 px-4 py-3 text-slate-50 transition hover:border-blue-300/40 hover:bg-blue-500/20 cursor-pointer"
                     >
                       <Linkedin className="w-5 h-5 text-blue-300" />
                       <span>{profileData.linkedin || "Add LinkedIn"}</span>
@@ -646,7 +646,7 @@ console.log('Saving profile with uniquePresence:', uniquePresence);
                       href={profileData.github ? `https://${profileData.github}` : "#"}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-slate-50 transition hover:border-white/20 hover:bg-white/10"
+                      className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-slate-50 transition hover:border-white/20 hover:bg-white/10 cursor-pointer"
                     >
                       <Github className="w-5 h-5 text-slate-200" />
                       <span>{profileData.github || "Add GitHub"}</span>
@@ -655,7 +655,7 @@ console.log('Saving profile with uniquePresence:', uniquePresence);
                       href={profileData.website ? `https://${profileData.website}` : "#"}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-3 rounded-2xl border border-purple-400/30 bg-purple-500/10 px-4 py-3 text-slate-50 transition hover:border-purple-300/50 hover:bg-purple-500/20"
+                      className="flex items-center gap-3 rounded-2xl border border-purple-400/30 bg-purple-500/10 px-4 py-3 text-slate-50 transition hover:border-purple-300/50 hover:bg-purple-500/20 cursor-pointer"
                     >
                       <Globe className="w-5 h-5 text-purple-200" />
                       <span>{profileData.website || "Add portfolio"}</span>

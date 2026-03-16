@@ -160,17 +160,11 @@ export default function DashboardNav() {
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 className="flex items-center gap-3 px-3 py-2 rounded-xl bg-slate-900/50 hover:bg-slate-800/50 transition-all duration-200 border border-slate-800/50 hover:border-blue-500/30 group"
               >
-                {userData.profileImage ? (
-                  <img 
-                    src={userData.profileImage} 
-                    alt="Profile" 
-                    className="w-8 h-8 rounded-lg object-cover shadow-lg"
-                  />
-                ) : (
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold text-sm shadow-lg">
-                    {getInitials(userData.name)}
-                  </div>
-                )}
+                <img 
+                  src={userData.profileImage || "/profile_default.jpg"} 
+                  alt="Profile" 
+                  className="w-8 h-8 rounded-lg object-cover shadow-lg cursor-pointer"
+                />
                 <div className="text-left hidden lg:block">
                   <p className="text-sm font-semibold text-white">{isLoading ? "Loading..." : userData.name}</p>
                   <p className="text-xs text-slate-400">View Profile</p>
@@ -255,17 +249,11 @@ export default function DashboardNav() {
             {/* Mobile User Section */}
             <div className="mt-4 pt-4 border-t border-slate-800/50">
               <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-800/50 mb-2">
-                {userData.profileImage ? (
-                  <img 
-                    src={userData.profileImage} 
-                    alt="Profile" 
-                    className="w-10 h-10 rounded-lg object-cover shadow-lg"
-                  />
-                ) : (
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold shadow-lg">
-                    {getInitials(userData.name)}
-                  </div>
-                )}
+                <img 
+                  src={userData.profileImage || "/profile_default.jpg"} 
+                  alt="Profile" 
+                  className="w-10 h-10 rounded-lg object-cover shadow-lg cursor-pointer"
+                />
                 <div>
                   <p className="text-sm font-semibold text-white">{isLoading ? "Loading..." : userData.name}</p>
                   <p className="text-xs text-slate-400">{userData.email}</p>

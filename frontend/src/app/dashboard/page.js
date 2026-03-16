@@ -461,7 +461,7 @@ export default function DashboardPage() {
       disabled={isProcessing}
       className="w-full py-4 px-6 bg-gradient-to-r from-primary to-primary/80 text-white font-bold rounded-lg
         hover:shadow-lg hover:shadow-primary/25 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-slate-900
-        transition-all disabled:opacity-50 disabled:cursor-not-allowed
+        transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed
         transform hover:scale-[1.02] active:scale-[0.98]"
     >
       {isProcessing ? (
@@ -484,7 +484,7 @@ export default function DashboardPage() {
             <a
               key={index}
               href={feature.link}
-              className="group relative overflow-hidden rounded-2xl border border-slate-800/50 bg-slate-900/50 backdrop-blur-xl p-8 shadow-lg hover:shadow-primary/20 hover:border-primary/50 transform hover:scale-105 transition-all duration-300"
+              className="group relative overflow-hidden rounded-2xl border border-slate-800/50 bg-slate-900/50 backdrop-blur-xl p-8 shadow-lg hover:shadow-primary/20 hover:border-primary/50 transform hover:scale-105 transition-all duration-300 cursor-pointer"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="relative z-10 space-y-4">
@@ -518,7 +518,7 @@ export default function DashboardPage() {
               <h3 className="text-3xl font-bold">Ready to level up?</h3>
               <p className="text-white/90 text-lg">Complete your profile to unlock personalized recommendations</p>
             </div>
-            <button className="px-8 py-4 bg-white text-primary font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 whitespace-nowrap">
+            <button className="px-8 py-4 bg-white text-primary font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 whitespace-nowrap cursor-pointer">
               Complete Profile
             </button>
           </div>
