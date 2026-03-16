@@ -3,28 +3,103 @@ import clientPromise from "@/lib/mongodb";
 import { GoogleGenerativeAI } from "@google/generative-ai"; 
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+function getProjectRefFromUrl(url) {
+  try {
+    return new URL(url).hostname.split(".")[0] || null;
+  } catch {
+    return null;
+  }
+}
+
+function getProjectRefFromJwt(token) {
+  try {
+    const payload = token?.split(".")[1];
+    if (!payload) return null;
+    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized + "=".repeat((4 - (normalized.length % 4 || 4)) % 4);
+    const decoded = JSON.parse(Buffer.from(padded, "base64").toString("utf8"));
+    return decoded?.ref || null;
+  } catch {
+    return null;
+  }
+}
+
+function isMissingUniquePresenceColumn(error) {
+  const msg = (error?.message || "").toLowerCase();
+  return msg.includes("uniquepresence") && msg.includes("does not exist");
+}
+
+function isGeminiQuotaError(error) {
+  const msg = (error?.message || "").toLowerCase();
+  return msg.includes("quota") || msg.includes("too many requests") || msg.includes("429");
+}
+
+function extractRetrySeconds(error) {
+  const msg = error?.message || "";
+  const retryInfoMatch = msg.match(/retry in\s+([\d.]+)s/i);
+  if (retryInfoMatch) return Math.ceil(Number(retryInfoMatch[1]));
+
+  const retryDelayMatch = msg.match(/"retryDelay":"(\d+)s"/i);
+  if (retryDelayMatch) return Number(retryDelayMatch[1]);
+
+  return null;
+}
+
+const urlRef = getProjectRefFromUrl(supabaseUrl);
+const serviceRef = getProjectRefFromJwt(serviceRoleKey);
+const selectedKey =
+  serviceRoleKey && serviceRef && serviceRef === urlRef
+    ? serviceRoleKey
+    : anonKey;
+
+const supabase = createClient(supabaseUrl, selectedKey);
 
 
 async function authenticateRequest(request) {
   const authHeader = request.headers.get("authorization");
   if (!authHeader) throw new Error("Authorization header missing");
 
-  const uniquePresence = authHeader.split("Bearer ")[1];
-  if (!uniquePresence) throw new Error("Unauthorized - No token provided");
+  const token = authHeader.split("Bearer ")[1];
+  if (!token) throw new Error("Unauthorized - No token provided");
+
+  if (token.startsWith("uid:")) {
+    const userId = token.slice(4).trim();
+    if (!userId) throw new Error("Unauthorized - Invalid token");
+
+    const { data: user, error } = await supabase
+      .from("users")
+      .select("id, name, email")
+      .eq("id", userId)
+      .single();
+
+    if (error || !user) throw new Error("Unauthorized - User not found");
+    return { user, uniquePresence: token };
+  }
 
   const { data: user, error } = await supabase
     .from("users")
     .select("id, name, email, uniquePresence")
-    .eq("uniquePresence", uniquePresence)
+    .eq("uniquePresence", token)
     .single();
+
+  if (error && isMissingUniquePresenceColumn(error)) {
+    const { data: byId, error: byIdError } = await supabase
+      .from("users")
+      .select("id, name, email")
+      .eq("id", token)
+      .single();
+
+    if (byIdError || !byId) throw new Error("Unauthorized - User not found");
+    return { user: byId, uniquePresence: `uid:${byId.id}` };
+  }
 
   if (error || !user) throw new Error("Unauthorized - User not found");
 
-  return { user, uniquePresence };
+  return { user, uniquePresence: token };
 }
 
 
@@ -187,8 +262,27 @@ Your response:
     console.log("🧠 Final Gemini Prompt:\n", prompt);
 
     // Generate content using Gemini
-    const result = await model.generateContent(prompt);
-    const reply = result.response.text() || "⚠️ Sorry, I couldn't generate a response.";
+    let reply = "⚠️ Sorry, I couldn't generate a response.";
+    try {
+      const result = await model.generateContent(prompt);
+      reply = result.response.text() || reply;
+    } catch (geminiError) {
+      if (isGeminiQuotaError(geminiError)) {
+        const retrySeconds = extractRetrySeconds(geminiError);
+        const retryHint = retrySeconds
+          ? ` Please retry in about ${retrySeconds} seconds.`
+          : " Please retry in a short while.";
+
+        reply =
+          "I hit a temporary AI quota limit while generating your response." +
+          retryHint +
+          " In the meantime, I can still help with concise guidance if you ask a specific career question.";
+
+        console.warn("Gemini quota/rate-limit reached:", geminiError?.message || geminiError);
+      } else {
+        throw geminiError;
+      }
+    }
 
     console.log("✅ Gemini response:", reply);
 
@@ -196,6 +290,11 @@ Your response:
     return NextResponse.json({ reply });
   } catch (error) {
     console.error("Chatbot route error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const status =
+      (error?.message || "").includes("Unauthorized") ||
+      (error?.message || "").includes("Authorization header")
+        ? 401
+        : 500;
+    return NextResponse.json({ error: error.message }, { status });
   }
 }
