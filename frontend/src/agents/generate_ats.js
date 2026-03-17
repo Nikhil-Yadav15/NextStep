@@ -104,8 +104,13 @@ ${jobDescription}
 
   let parsed = {};
   try {
-    // Strip markdown code fences that LLMs commonly wrap JSON with
-    const raw = (response.content || "{}").replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
+    let raw = (response.content || "{}").trim();
+    // Strip markdown code fences: handle text before/after fences
+    const fenceMatch = raw.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/i);
+    if (fenceMatch) {
+      raw = fenceMatch[1].trim();
+    }
+    console.log("[ATS LLM raw response]", raw.slice(0, 500));
     parsed = parseJsonC(raw || "{}", undefined, { allowTrailingComma: true });
     if (typeof parsed !== "object" || parsed === null) parsed = {};
   } catch (err) {

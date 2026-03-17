@@ -183,7 +183,12 @@ async function performWebSearch(state) {
   for (const query of searchQueries.slice(0, 2)) {
     try {
       const res = await webSearchTool.invoke({ query });
-      results.push(...res);
+      const items = Array.isArray(res)
+        ? res
+        : typeof res === "string"
+          ? JSON.parse(res)
+          : [res];
+      results.push(...items);
     } catch (err) {
       console.warn("Search error", err);
     }
