@@ -2,8 +2,10 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function RoadmapPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [roadmaps, setRoadmaps] = useState(null);
   const [error, setError] = useState(null);
@@ -124,6 +126,15 @@ export default function RoadmapPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 mb-4 transition-colors cursor-pointer"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back
+          </button>
           <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
             Learning Roadmap
           </h1>

@@ -10,7 +10,7 @@ const llmClient = new OpenAI({
   apiKey: process.env.OPENROUTER_API_KEY,
 });
 
-async function callLLM(messages, model = "meta-llama/llama-3.3-70b-instruct:free") {
+async function callLLM(messages, model = "openrouter/healer-alpha") {
   try {
     const completion = await llmClient.chat.completions.create({
       model,

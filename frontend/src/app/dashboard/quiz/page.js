@@ -1,7 +1,9 @@
 "use client";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function QuizPage() {
+  const router = useRouter();
   const [topic, setTopic] = useState("");
   const [quiz, setQuiz] = useState([]);
   const [answers, setAnswers] = useState({});
@@ -148,6 +150,13 @@ export default function QuizPage() {
         <div className="absolute bottom-0 -right-40 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse delay-700"></div>
         <div className="absolute top-1/2 left-1/2 w-72 h-72 bg-primary/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
       </div>
+
+      <button
+        onClick={() => router.back()}
+        className="fixed top-6 left-6 z-40 px-5 py-2.5 rounded-lg bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/80 hover:bg-zinc-800/80 hover:border-zinc-700 text-sm font-medium text-zinc-400 hover:text-zinc-100 transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-primary/10 cursor-pointer"
+      >
+        ← Back
+      </button>
 
       <button
         onClick={openScoresModal}
