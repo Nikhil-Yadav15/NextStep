@@ -81,6 +81,61 @@ export default function DashboardPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showUploadSection, setShowUploadSection] = useState(false);
   const [skills, setSkills] = useState([]);
+  const [interviews, setInterviews] = useState([]);
+  const [quizScores, setQuizScores] = useState([]);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      const uniquePresence = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('uniquePresence='))
+        ?.split('=')[1];
+
+      // Fetch interviews from backend
+      try {
+        const res = await fetch('http://localhost:3001/interviews');
+        const data = await res.json();
+        setInterviews(Array.isArray(data) ? data : (data.interviews || []));
+      } catch (err) {
+        console.error('Error fetching interviews:', err);
+      }
+
+      if (uniquePresence) {
+        // Fetch profile for skills
+        try {
+          const res = await fetch('/api/getProfile', {
+            headers: { 'Authorization': `Bearer ${uniquePresence}` }
+          });
+          const data = await res.json();
+          if (data.status === 'success') {
+            setSkills(data.data.skills || []);
+          }
+        } catch (err) {
+          console.error('Error fetching profile:', err);
+        }
+
+        // Fetch quiz scores
+        try {
+          const res = await fetch('/api/getScores', {
+            headers: { 'Authorization': `Bearer ${uniquePresence}` }
+          });
+          const data = await res.json();
+          if (data.status === 'success') {
+            setQuizScores(data.data || []);
+          }
+        } catch (err) {
+          console.error('Error fetching scores:', err);
+        }
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  const completedInterviews = interviews.filter(i => i.reports && i.reports.length > 0).length;
+  const avgQuizScore = quizScores.length > 0
+    ? Math.round(quizScores.reduce((sum, s) => sum + (s.percentage || 0), 0) / quizScores.length)
+    : 0;
 
   const features = [
     {
@@ -331,13 +386,13 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-6 shadow-lg hover:shadow-primary/10 transition-all duration-300 hover:scale-105">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-semibold text-slate-400">Applications</p>
+              <p className="text-sm font-semibold text-slate-400">Quizzes</p>
               <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
                 <FileText className="w-5 h-5 text-primary" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-white">24</p>
-            <p className="text-sm text-slate-500 mt-1">+3 this week</p>
+            <p className="text-3xl font-bold text-white">{quizScores.length}</p>
+            <p className="text-sm text-slate-500 mt-1">{quizScores.length > 0 ? `${avgQuizScore}% avg score` : 'No quizzes yet'}</p>
           </div>
 
           <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-6 shadow-lg hover:shadow-primary/10 transition-all duration-300 hover:scale-105">
@@ -349,8 +404,8 @@ export default function DashboardPage() {
                 </svg>
               </div>
             </div>
-            <p className="text-3xl font-bold text-white">8</p>
-            <p className="text-sm text-slate-500 mt-1">2 scheduled</p>
+            <p className="text-3xl font-bold text-white">{interviews.length}</p>
+            <p className="text-sm text-slate-500 mt-1">{completedInterviews} completed</p>
           </div>
 
           <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-6 shadow-lg hover:shadow-primary/10 transition-all duration-300 hover:scale-105">
@@ -361,7 +416,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <p className="text-3xl font-bold text-white">{skills.length}</p>
-            <p className="text-sm text-slate-500 mt-1">3 in progress</p>
+            <p className="text-sm text-slate-500 mt-1">{skills.length > 0 ? `${skills.slice(0, 3).join(', ')}` : 'No skills added'}</p>
           </div>
         </div>
 
