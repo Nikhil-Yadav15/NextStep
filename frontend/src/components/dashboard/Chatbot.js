@@ -21,6 +21,7 @@ export default function ChatbotUI() {
   const audioChunksRef = useRef([]);
   const wasVoiceInputRef = useRef(false);
   const currentAudioRef = useRef(null);
+  const ttsCache = useRef(new Map());
 
   // ✅ Read uniquePresence from cookies
   const getUniquePresence = () => {
@@ -150,23 +151,38 @@ export default function ChatbotUI() {
     setIsSpeaking(false);
   };
 
-  // ✅ Play bot reply as speech via Deepgram TTS
+  // ✅ Play bot reply as speech via Deepgram TTS (with caching)
   const speakText = async (text) => {
     try {
-      // Stop any currently playing audio
       if (currentAudioRef.current) {
         currentAudioRef.current.pause();
         currentAudioRef.current = null;
       }
       setIsSpeaking(true);
-      const res = await fetch("/api/chatbot/speak", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
-      });
-      const data = await res.json();
-      if (data.audioBase64) {
-        const audio = new Audio(`data:audio/wav;base64,${data.audioBase64}`);
+
+      let audioBase64 = ttsCache.current.get(text);
+
+      if (!audioBase64) {
+        const res = await fetch("/api/chatbot/speak", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text }),
+        });
+        const data = await res.json();
+        audioBase64 = data.audioBase64;
+
+        if (audioBase64) {
+          // Cache and limit to 10 most recent entries
+          ttsCache.current.set(text, audioBase64);
+          if (ttsCache.current.size > 10) {
+            const oldest = ttsCache.current.keys().next().value;
+            ttsCache.current.delete(oldest);
+          }
+        }
+      }
+
+      if (audioBase64) {
+        const audio = new Audio(`data:audio/wav;base64,${audioBase64}`);
         currentAudioRef.current = audio;
         audio.onended = () => {
           setIsSpeaking(false);
