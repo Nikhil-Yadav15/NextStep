@@ -11,6 +11,7 @@ export default function ChatbotUI() {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [uniquePresence, setUniquePresence] = useState(null);
   const chatEndRef = useRef(null);
 
@@ -73,6 +74,7 @@ export default function ChatbotUI() {
     setInput("");
     setMessages((prev) => [...prev, { sender: "user", text: userMessage }]);
     setIsLoading(true);
+    setIsRedirecting(false);
 
     console.log("Send clicked ✅", userMessage, "with token:", uniquePresence);
 
@@ -94,7 +96,8 @@ export default function ChatbotUI() {
 
       if (data.intent && data.intent !== "NONE") {
         // Show the redirect message in chat
-        setMessages((prev) => [...prev, { sender: "bot", text: data.reply }]);
+        setMessages((prev) => [...prev, { sender: "bot", text: data.reply, type: "redirect" }]);
+        setIsRedirecting(true);
 
         // Build redirect URL
         const routes = {
@@ -148,8 +151,8 @@ export default function ChatbotUI() {
       {/* Floating Chat Icon */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-6 right-6 z-50 p-4 rounded-full shadow-lg transition-all duration-300
-          ${isOpen ? "bg-red-500 hover:bg-red-600" : "bg-gradient-to-br from-blue-500 to-indigo-600 hover:scale-110"}
+        className={`fixed bottom-6 right-6 z-50 p-4 rounded-full shadow-[0_10px_30px_-8px_rgba(0,0,0,0.35)] transition-all duration-300
+          ${isOpen ? "bg-red-500 hover:bg-red-600" : "bg-blue-600 hover:bg-blue-700 hover:scale-105"}
           text-white flex items-center justify-center cursor-pointer`}
       >
         {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
@@ -158,68 +161,99 @@ export default function ChatbotUI() {
       {/* Chat Window */}
       {isOpen && (
         <div
-          className="fixed bottom-20 right-6 z-50 w-80 sm:w-96 h-[500px] 
-                     bg-white/90 dark:bg-gray-900/95 backdrop-blur-lg rounded-2xl shadow-2xl 
-                     border border-gray-200 dark:border-gray-700 flex flex-col overflow-hidden animate-fade-in"
+          className="fixed bottom-20 right-6 z-50 w-96 sm:w-[440px] h-[560px] 
+                     bg-white/90 text-gray-900
+                     backdrop-blur-xl rounded-3xl shadow-[0_20px_60px_-12px_rgba(0,0,0,0.25)]
+                     border border-gray-200/80 flex flex-col overflow-hidden animate-fade-in"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
-            <h2 className="text-base font-semibold">AI Career Copilot</h2>
+          <div className="flex items-center justify-between px-4 py-3 bg-white/85 text-gray-900 border-b border-gray-200/80 backdrop-blur">
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-semibold">AI Career Copilot</h2>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-900/10 text-gray-700 uppercase tracking-wide">AI</span>
+            </div>
             <div className="flex items-center gap-2">
               <button 
                 onClick={clearChat} 
-                className="text-xs px-2 py-1 hover:bg-white/20 rounded cursor-pointer"
+                className="text-xs px-2 py-1 hover:bg-gray-900/5 rounded cursor-pointer text-gray-700"
                 title="Clear chat"
               >
                 Clear
               </button>
-              <button onClick={() => setIsOpen(false)} className="p-1 hover:bg-white/20 rounded-full cursor-pointer">
+            <button onClick={() => setIsOpen(false)} className="p-1 hover:bg-white/20 rounded-full cursor-pointer" aria-label="Close chat">
                 <X size={18} />
               </button>
             </div>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-700 flex flex-col">
-            {messages.map((msg, i) => (
-              <div
-                key={i}
-                className={`max-w-[75%] px-3 py-2 rounded-lg text-sm ${
-                  msg.sender === "bot"
-                    ? "bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 self-start"
-                    : "bg-blue-500 text-white self-end"
-                }`}
-              >
-                {msg.text}
-              </div>
-            ))}
+          <div className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent flex flex-col bg-gradient-to-b from-white/40 via-white/20 to-white/10">
+            {messages.map((msg, i) => {
+              const isBot = msg.sender === "bot";
+              const isRedirect = msg.type === "redirect";
+              const paragraphs = msg.text.split(/\n\s*\n/).filter(Boolean);
+              return (
+                <div
+                  key={i}
+                  className={`max-w-[82%] px-3 py-2 rounded-2xl text-sm leading-relaxed shadow-sm ${
+                    isBot
+                      ? isRedirect
+                        ? "bg-amber-50 text-amber-900 border border-amber-200 self-start"
+                        : "bg-gray-100 text-gray-900 border border-gray-200 self-start"
+                      : "bg-blue-500 text-white self-end"
+                  }`}
+                >
+                  {paragraphs.length > 0
+                    ? paragraphs.map((p, idx) => (
+                        <p
+                          key={idx}
+                          className={`whitespace-pre-wrap leading-relaxed ${
+                            isRedirect
+                              ? "text-amber-900"
+                              : isBot
+                              ? "text-gray-900"
+                              : "text-white"
+                          } ${idx > 0 ? "mt-2" : ""}`}
+                        >
+                          {p}
+                        </p>
+                      ))
+                    : msg.text}
+                </div>
+              );
+            })}
             {isLoading && (
               <div className="flex items-center gap-2 text-gray-500 text-sm self-start">
-                <Loader2 className="animate-spin" size={16} />
-                Thinking...
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.2s]" />
+                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.1s]" />
+                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+                </span>
+                <span>Thinking...</span>
               </div>
             )}
             <div ref={chatEndRef} />
           </div>
 
           {/* Input Bar */}
-          <div className="p-3 border-t dark:border-gray-700 flex items-center gap-2 bg-gray-50 dark:bg-gray-800">
+          <div className="p-3 border-t border-gray-200/80 flex items-center gap-2 bg-white/85 backdrop-blur">
             <input
               type="text"
-              className="flex-1 text-black dark:text-white p-2 rounded-lg border border-gray-300 dark:border-gray-600 
-                         dark:bg-gray-800 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 text-gray-900 placeholder:text-gray-500 p-2 rounded-xl border border-gray-200 
+                         bg-white/80 text-sm outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60"
               placeholder="Ask me anything..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
+              disabled={isLoading || isRedirecting}
             />
             <button
               type="button"
               onClick={handleSend}
-              className={`p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center justify-center ${
-                isLoading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+              className={`p-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition ${
+                isLoading || isRedirecting ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
               }`}
-              disabled={isLoading}
+              disabled={isLoading || isRedirecting}
             >
               {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
             </button>
