@@ -1,5 +1,6 @@
 import fetch from "node-fetch";
 import dotenv from "dotenv";
+import { jsonrepair } from "jsonrepair";
 
 // import { createEmbedding, queryNearestVectors } from "./qdrant.js";
 
@@ -152,7 +153,7 @@ export async function generateQuestions({ role, skills, context = null }) {
 
   const content = cleanLLMResponse(data.choices[0].message.content);
   try {
-    return JSON.parse(content);
+    return JSON.parse(jsonrepair(content));
   } catch (e) {
     console.error("❌ Failed to parse LLM question response:", content);
     throw new Error("LLM returned invalid JSON for questions. Please try again.");
@@ -208,7 +209,7 @@ Format: { "score": <number 0-100>, "notes": <string>, "strengths": <string>, "im
 
   let evaluation;
   try {
-    evaluation = JSON.parse(content);
+    evaluation = JSON.parse(jsonrepair(content));
   } catch (e) {
     console.error("❌ Failed to parse LLM evaluation response:", content);
     // Fallback: return a default low-score evaluation instead of crashing
