@@ -569,17 +569,6 @@ export default function DashboardPage() {
           ))}
         </div>
 
-        <div className="bg-gradient-to-r from-primary to-primary/80 rounded-2xl p-8 text-white shadow-2xl shadow-primary/30">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="space-y-2">
-              <h3 className="text-3xl font-bold">{t("dashboardHome.readyTitle")}</h3>
-              <p className="text-white/90 text-lg">{t("dashboardHome.readySubtitle")}</p>
-            </div>
-            <button className="px-8 py-4 bg-white text-primary font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 whitespace-nowrap cursor-pointer">
-              {t("dashboardHome.completeProfile")}
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );
