@@ -372,144 +372,152 @@ export default function ChatbotUI() {
         {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
       </button>
 
-      {/* Chat Window */}
+      {/* Overlay */}
       {isOpen && (
         <div
-          className="fixed bottom-20 right-6 z-50 w-96 sm:w-[440px] h-[560px] 
-                     bg-white/90 text-gray-900
-                     backdrop-blur-xl rounded-3xl shadow-[0_20px_60px_-12px_rgba(0,0,0,0.25)]
-                     border border-gray-200/80 flex flex-col overflow-hidden animate-fade-in"
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 bg-white/85 text-gray-900 border-b border-gray-200/80 backdrop-blur">
-            <div className="flex items-center gap-2">
-              <h2 className="text-base font-semibold">AI Career Copilot</h2>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-900/10 text-gray-700 uppercase tracking-wide">AI</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={clearChat} 
-                className="text-xs px-2 py-1 hover:bg-gray-900/5 rounded cursor-pointer text-gray-700"
-                title="Clear chat"
-              >
-                Clear
-              </button>
-            <button onClick={() => setIsOpen(false)} className="p-1 hover:bg-white/20 rounded-full cursor-pointer" aria-label="Close chat">
-                <X size={18} />
-              </button>
-            </div>
-          </div>
+          className="fixed inset-0 z-40 bg-black/30 transition-opacity duration-300"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent flex flex-col bg-gradient-to-b from-white/40 via-white/20 to-white/10">
-            {messages.map((msg, i) => {
-              const isBot = msg.sender === "bot";
-              const isRedirect = msg.type === "redirect";
-              const paragraphs = msg.text.split(/\n\s*\n/).filter(Boolean);
-              return (
-                <div
-                  key={i}
-                  className={`max-w-[82%] px-3 py-2 rounded-2xl text-sm leading-relaxed shadow-sm ${
-                    isBot
-                      ? isRedirect
-                        ? "bg-amber-50 text-amber-900 border border-amber-200 self-start"
-                        : "bg-gray-100 text-gray-900 border border-gray-200 self-start"
-                      : "bg-blue-500 text-white self-end"
-                  }`}
-                >
-                  {paragraphs.length > 0
-                    ? paragraphs.map((p, idx) => (
-                        <p
-                          key={idx}
-                          className={`whitespace-pre-wrap leading-relaxed ${
-                            isRedirect
-                              ? "text-amber-900"
-                              : isBot
-                              ? "text-gray-900"
-                              : "text-white"
-                          } ${idx > 0 ? "mt-2" : ""}`}
-                        >
-                          {p}
-                        </p>
-                      ))
-                    : msg.text}
-                  {isBot && !isRedirect && i > 0 && (
-                    <button
-                      onClick={() => speakText(msg.text)}
-                      className="mt-1 p-1 rounded-full hover:bg-gray-200/60 text-gray-400 hover:text-blue-500 transition cursor-pointer"
-                      title="Listen to this message"
-                      disabled={isSpeaking}
-                    >
-                      <Volume2 size={18} />
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-            {isLoading && (
-              <div className="flex items-center gap-2 text-gray-500 text-sm self-start">
-                <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.2s]" />
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.1s]" />
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                </span>
-                <span>Thinking...</span>
-              </div>
-            )}
-            {isSpeaking && (
-              <div className="flex items-center gap-2 text-blue-500 text-sm self-start">
-                <Volume2 size={18} className="animate-pulse" />
-                <span>Speaking...</span>
-                <button
-                  onClick={stopSpeaking}
-                  className="p-1 rounded-full hover:bg-red-100 text-red-400 hover:text-red-600 transition cursor-pointer"
-                  title="Stop speaking"
-                >
-                  <VolumeX size={18} />
-                </button>
-              </div>
-            )}
-            <div ref={chatEndRef} />
+      {/* Slide-in Chat Panel */}
+      <div
+        className={`fixed top-4 right-4 bottom-4 z-50 w-[calc(100%-2rem)] sm:w-[440px] md:w-[480px]
+                     bg-gray-900 text-gray-100
+                     shadow-[-8px_0_30px_-12px_rgba(0,0,0,0.5)]
+                     rounded-2xl flex flex-col overflow-hidden
+                     transition-transform duration-300 ease-in-out
+                     ${isOpen ? "translate-x-0" : "translate-x-[calc(100%+2rem)]"}`}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 bg-gray-800 text-gray-100 border-b border-gray-700">
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-white">AI Career Copilot</h2>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 uppercase tracking-wide">AI</span>
           </div>
-
-          {/* Input Bar */}
-          <div className="p-4 border-t border-gray-200/80 flex items-center gap-3 bg-white/85 backdrop-blur">
-            <input
-              type="text"
-              className="flex-1 text-gray-900 placeholder:text-gray-500 px-4 py-3 rounded-xl border border-gray-200 
-                         bg-white/80 text-base outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60"
-              placeholder={isRecording ? "🎙️ Listening..." : isTranscribing ? "✍️ Transcribing..." : "Ask me anything..."}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              disabled={isLoading || isRedirecting || isRecording || isTranscribing}
-            />
-            <button
-              type="button"
-              onClick={isRecording ? stopRecording : startRecording}
-              className={`p-3 rounded-xl transition ${
-                isRecording
-                  ? "bg-red-500 text-white animate-pulse hover:bg-red-600"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200"
-              } ${isLoading || isRedirecting || isTranscribing ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
-              disabled={isLoading || isRedirecting || isTranscribing}
-              title={isRecording ? "Stop recording" : "Start voice input"}
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={clearChat} 
+              className="text-xs px-2 py-1 hover:bg-gray-700 rounded cursor-pointer text-gray-400 hover:text-gray-200"
+              title="Clear chat"
             >
-              {isRecording ? <MicOff size={20} /> : <Mic size={20} />}
+              Clear
             </button>
-            <button
-              type="button"
-              onClick={handleSend}
-              className={`p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition ${
-                isLoading || isRedirecting || isRecording || isTranscribing ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
-              }`}
-              disabled={isLoading || isRedirecting || isRecording || isTranscribing}
-            >
-              {isLoading ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}
+            <button onClick={() => setIsOpen(false)} className="p-1 hover:bg-gray-700 rounded-full cursor-pointer text-gray-400 hover:text-gray-200" aria-label="Close chat">
+              <X size={20} />
             </button>
           </div>
         </div>
-      )}
+
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-3 chatbot-scrollbar flex flex-col">
+          {messages.map((msg, i) => {
+            const isBot = msg.sender === "bot";
+            const isRedirect = msg.type === "redirect";
+            const paragraphs = msg.text.split(/\n\s*\n/).filter(Boolean);
+            return (
+              <div
+                key={i}
+                className={`max-w-[85%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed shadow-sm ${
+                  isBot
+                    ? isRedirect
+                      ? "bg-amber-900/40 text-amber-200 border border-amber-700/50 self-start"
+                      : "bg-gray-800 text-gray-200 border border-gray-700 self-start"
+                    : "bg-blue-600 text-white self-end"
+                }`}
+              >
+                {paragraphs.length > 0
+                  ? paragraphs.map((p, idx) => (
+                      <p
+                        key={idx}
+                        className={`whitespace-pre-wrap leading-relaxed ${
+                          isRedirect
+                            ? "text-amber-200"
+                            : isBot
+                            ? "text-gray-200"
+                            : "text-white"
+                        } ${idx > 0 ? "mt-2" : ""}`}
+                      >
+                        {p}
+                      </p>
+                    ))
+                  : msg.text}
+                {isBot && !isRedirect && i > 0 && (
+                  <button
+                    onClick={() => speakText(msg.text)}
+                    className="mt-1 p-1 rounded-full hover:bg-gray-700 text-gray-500 hover:text-blue-400 transition cursor-pointer"
+                    title="Listen to this message"
+                    disabled={isSpeaking}
+                  >
+                    <Volume2 size={18} />
+                  </button>
+                )}
+              </div>
+            );
+          })}
+          {isLoading && (
+            <div className="flex items-center gap-2 text-gray-400 text-sm self-start">
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.2s]" />
+                <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.1s]" />
+                <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" />
+              </span>
+              <span>Thinking...</span>
+            </div>
+          )}
+          {isSpeaking && (
+            <div className="flex items-center gap-2 text-blue-400 text-sm self-start">
+              <Volume2 size={18} className="animate-pulse" />
+              <span>Speaking...</span>
+              <button
+                onClick={stopSpeaking}
+                className="p-1 rounded-full hover:bg-red-900/40 text-red-400 hover:text-red-300 transition cursor-pointer"
+                title="Stop speaking"
+              >
+                <VolumeX size={18} />
+              </button>
+            </div>
+          )}
+          <div ref={chatEndRef} />
+        </div>
+
+        {/* Input Bar */}
+        <div className="p-4 border-t border-gray-700 flex items-center gap-3 bg-gray-800">
+          <input
+            type="text"
+            className="flex-1 text-gray-100 placeholder:text-gray-500 px-4 py-3 rounded-xl border border-gray-600 
+                       bg-gray-700 text-base outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60"
+            placeholder={isRecording ? "🎙️ Listening..." : isTranscribing ? "✍️ Transcribing..." : "Ask me anything..."}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            disabled={isLoading || isRedirecting || isRecording || isTranscribing}
+          />
+          <button
+            type="button"
+            onClick={isRecording ? stopRecording : startRecording}
+            className={`p-3 rounded-xl transition ${
+              isRecording
+                ? "bg-red-500 text-white animate-pulse hover:bg-red-600"
+                : "bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600"
+            } ${isLoading || isRedirecting || isTranscribing ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+            disabled={isLoading || isRedirecting || isTranscribing}
+            title={isRecording ? "Stop recording" : "Start voice input"}
+          >
+            {isRecording ? <MicOff size={20} /> : <Mic size={20} />}
+          </button>
+          <button
+            type="button"
+            onClick={handleSend}
+            className={`p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition ${
+              isLoading || isRedirecting || isRecording || isTranscribing ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+            }`}
+            disabled={isLoading || isRedirecting || isRecording || isTranscribing}
+          >
+            {isLoading ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}
+          </button>
+        </div>
+      </div>
     </>
   );
 }

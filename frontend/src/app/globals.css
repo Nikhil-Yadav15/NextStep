@@ -208,3 +208,23 @@
     @apply backdrop-blur-xl bg-card/80 border border-border shadow-[var(--shadow-card)];
   }
 }
+
+/* Chatbot glassy scrollbar */
+.chatbot-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.chatbot-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.chatbot-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+  backdrop-filter: blur(8px);
+}
+.chatbot-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+.chatbot-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
