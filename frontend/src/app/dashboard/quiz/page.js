@@ -1,11 +1,12 @@
 "use client";
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
 export default function QuizPage() {
   const { t } = useLanguage();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [topic, setTopic] = useState("");
   const [quiz, setQuiz] = useState([]);
   const [answers, setAnswers] = useState({});
@@ -26,6 +27,23 @@ export default function QuizPage() {
       .find((row) => row.startsWith("uniquePresence="));
     return match ? match.split("=")[1] : null;
   })();
+
+  // Auto-start quiz if ?topic= param is present (e.g. from chatbot redirect)
+  useEffect(() => {
+    const topicParam = searchParams.get("topic");
+    if (topicParam) {
+      setTopic(topicParam);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (topic && quiz.length === 0 && !loading && !submitted) {
+      const topicParam = searchParams.get("topic");
+      if (topicParam && topic === topicParam) {
+        generateQuiz();
+      }
+    }
+  }, [topic]);
 
   const fetchScores = async () => {
     setLoadingScores(true);

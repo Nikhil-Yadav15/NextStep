@@ -1,8 +1,10 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import { MessageCircle, X, Send, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function ChatbotUI() {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     { sender: "bot", text: "👋 Hi! I'm your AI Career Copilot. How can I help you today?" },
@@ -90,7 +92,27 @@ export default function ChatbotUI() {
 
       const data = await res.json();
 
-      if (data.reply) {
+      if (data.intent && data.intent !== "NONE") {
+        // Show the redirect message in chat
+        setMessages((prev) => [...prev, { sender: "bot", text: data.reply }]);
+
+        // Build redirect URL
+        const routes = {
+          QUIZ: `/dashboard/quiz${data.params?.topic ? `?topic=${encodeURIComponent(data.params.topic)}` : ""}`,
+          JOB_SEARCH: `/dashboard/jobs${data.params?.search ? `?search=${encodeURIComponent(data.params.search)}` : ""}`,
+          RESUME: "/dashboard/resume",
+          MOCK_INTERVIEW: "/dashboard/interview",
+          ROADMAP: "/dashboard/roadmap",
+        };
+
+        const url = routes[data.intent];
+        if (url) {
+          setTimeout(() => {
+            setIsOpen(false);
+            router.push(url);
+          }, 1200);
+        }
+      } else if (data.reply) {
         setMessages((prev) => [...prev, { sender: "bot", text: data.reply }]);
       } else {
         setMessages((prev) => [

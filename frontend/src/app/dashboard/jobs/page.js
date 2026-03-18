@@ -1,10 +1,12 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Bookmark, BookmarkCheck } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
 export default function JobsPage() {
   const { t } = useLanguage();
+  const searchParams = useSearchParams();
   const [role, setRole] = useState("");
   const [location, setLocation] = useState("");
   const [source, setSource] = useState("both");
@@ -28,6 +30,21 @@ export default function JobsPage() {
     const saved = JSON.parse(window.savedJobsData || "[]");
     setSavedJobs(saved);
   }, []);
+
+  // Auto-fill and search if ?search= param is present (e.g. from chatbot redirect)
+  useEffect(() => {
+    const searchQuery = searchParams.get("search");
+    if (searchQuery) {
+      setRole(searchQuery);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    const searchQuery = searchParams.get("search");
+    if (searchQuery && role === searchQuery) {
+      onSearch();
+    }
+  }, [role]);
 
   const saveToPersistence = (jobs) => {
     window.savedJobsData = JSON.stringify(jobs);
