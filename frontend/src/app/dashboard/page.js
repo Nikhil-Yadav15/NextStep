@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { LogOut, Upload, Target, FileText, CheckCircle } from "lucide-react";
+import { LogOut, Upload, Target, FileText, CheckCircle, Sparkles } from "lucide-react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Sphere, Float } from "@react-three/drei";
 import DashboardNav from "@/components/layout/Dashboardnav";
@@ -81,6 +81,7 @@ export default function DashboardPage() {
   const [goals, setGoals] = useState('');
   const [jobDescription, setJobDescription] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processingStep, setProcessingStep] = useState(0);
   const [showUploadSection, setShowUploadSection] = useState(false);
   const [skills, setSkills] = useState([]);
   const [interviews, setInterviews] = useState([]);
@@ -134,7 +135,22 @@ export default function DashboardPage() {
     fetchDashboardData();
   }, []);
 
-  const completedInterviews = interviews.filter(i => i.reports && i.reports.length > 0).length;
+  useEffect(() => {
+    if (!isProcessing) { setProcessingStep(0); return; }
+    const interval = setInterval(() => {
+      setProcessingStep(prev => (prev < 3 ? prev + 1 : prev));
+    }, 3500);
+    return () => clearInterval(interval);
+  }, [isProcessing]);
+
+  const processingSteps = [
+    { label: t("dashboardHome.processingStepExtract") || "Extracting document data", icon: "📄" },
+    { label: t("dashboardHome.processingStepAnalyze") || "Analyzing content with AI", icon: "🧠" },
+    { label: t("dashboardHome.processingStepMatch") || "Matching skills & goals", icon: "🎯" },
+    { label: t("dashboardHome.processingStepFinalize") || "Finalizing results", icon: "✨" },
+  ];
+
+  const completedInterviews= interviews.filter(i => i.reports && i.reports.length > 0).length;
   const avgQuizScore = quizScores.length > 0
     ? Math.round(quizScores.reduce((sum, s) => sum + (s.percentage || 0), 0) / quizScores.length)
     : 0;
@@ -425,10 +441,78 @@ export default function DashboardPage() {
         <Analytics />
 
         <div 
-  className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-8 shadow-2xl"
+  className="relative bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-8 shadow-2xl overflow-hidden"
   onMouseEnter={() => setShowUploadSection(true)}
-  onMouseLeave={() => setShowUploadSection(false)}
+  onMouseLeave={() => { if (!isProcessing) setShowUploadSection(false); }}
 >
+  {/* Processing overlay */}
+  {isProcessing && (
+    <div className="absolute inset-0 z-20 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center gap-8 animate-fade-in-up rounded-2xl">
+      {/* Orbiting dots around a central icon */}
+      <div className="relative w-24 h-24 flex items-center justify-center">
+        <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-pulse-ring" />
+        <div className="absolute inset-[-8px] rounded-full border border-dashed border-primary/30 animate-spin" style={{ animationDuration: '6s' }} />
+        <div className="absolute w-3 h-3 rounded-full bg-blue-400 shadow-lg shadow-blue-400/50 animate-orbit" />
+        <div className="absolute w-2 h-2 rounded-full bg-cyan-400 shadow-lg shadow-cyan-400/50 animate-orbit-reverse" />
+        <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-cyan-500 flex items-center justify-center shadow-xl shadow-primary/30">
+          <Sparkles className="w-7 h-7 text-white animate-pulse" />
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div className="w-64 space-y-3">
+        <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-primary via-cyan-400 to-primary transition-all duration-700 ease-out relative"
+            style={{ width: `${((processingStep + 1) / processingSteps.length) * 100}%` }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
+          </div>
+        </div>
+        <p className="text-xs text-slate-500 text-center">
+          {processingStep + 1} / {processingSteps.length}
+        </p>
+      </div>
+
+      {/* Steps */}
+      <div className="flex flex-col gap-3 w-72">
+        {processingSteps.map((step, i) => (
+          <div
+            key={i}
+            className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-500 ${
+              i < processingStep
+                ? 'bg-green-500/10 border border-green-500/20'
+                : i === processingStep
+                  ? 'bg-primary/10 border border-primary/30 shadow-lg shadow-primary/10'
+                  : 'bg-slate-800/30 border border-slate-800/50 opacity-40'
+            }`}
+            style={i <= processingStep ? { animationDelay: `${i * 150}ms` } : {}}
+          >
+            <span className="text-lg w-6 text-center">
+              {i < processingStep ? '✓' : step.icon}
+            </span>
+            <span className={`text-sm font-medium ${
+              i < processingStep
+                ? 'text-green-400'
+                : i === processingStep
+                  ? 'text-white'
+                  : 'text-slate-500'
+            }`}>
+              {step.label}
+            </span>
+            {i === processingStep && (
+              <div className="ml-auto flex gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }} />
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+
   <div className="flex items-center justify-between mb-6">
     <div className="flex items-center gap-3">
       <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-primary to-primary/80 flex items-center justify-center">
@@ -521,17 +605,7 @@ export default function DashboardPage() {
         transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed
         transform hover:scale-[1.02] active:scale-[0.98]"
     >
-      {isProcessing ? (
-        <span className="flex items-center justify-center gap-2">
-          <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-          </svg>
-          {t("dashboardHome.processing")}
-        </span>
-      ) : (
-        t("dashboardHome.processDocument")
-      )}
+      {t("dashboardHome.processDocument")}
     </button>
   </div>
 </div>
