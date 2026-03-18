@@ -86,6 +86,12 @@ export default function DashboardPage() {
   const [skills, setSkills] = useState([]);
   const [interviews, setInterviews] = useState([]);
   const [quizScores, setQuizScores] = useState([]);
+  const [toast, setToast] = useState(null); // { message, type: 'success'|'error'|'info' }
+
+  const showToast = (message, type = 'info') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 5000);
+  };
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -229,7 +235,7 @@ export default function DashboardPage() {
       if (validTypes.includes(selectedFile.type)) {
         setFile(selectedFile);
       } else {
-        alert(t("dashboardHome.alertUploadType"));
+        showToast(t("dashboardHome.alertUploadType"), 'error');
         e.target.value = '';
       }
     }
@@ -237,7 +243,7 @@ export default function DashboardPage() {
 
   const handleProcess = async () => {
     if (!file && !goals.trim()) {
-      alert(t("dashboardHome.alertDocOrGoals"));
+      showToast(t("dashboardHome.alertDocOrGoals"), 'error');
       return;
     }
 
@@ -270,7 +276,7 @@ export default function DashboardPage() {
           
         } catch (error) {
           console.error('Error extracting text:', error);
-          alert(t("dashboardHome.alertProcessingDocument"));
+          showToast(t("dashboardHome.alertProcessingDocument"), 'error');
           setIsProcessing(false);
           return;
         }
@@ -325,18 +331,18 @@ export default function DashboardPage() {
         const data = await processingResult.value.json();
         if (!processingResult.value.ok) {
           if (processingResult.value.status === 401) {
-            alert(`${t("dashboardHome.alertAuthFailed")}: ` + (data.error || t("dashboardHome.unauthorized")));
+            showToast(`${t("dashboardHome.alertAuthFailed")}: ` + (data.error || t("dashboardHome.unauthorized")), 'error');
           } else if (processingResult.value.status === 429) {
-            alert(`${t("dashboardHome.alertRateLimit")} ${data.retryAfter || t("dashboardHome.aWhile")} ${t("dashboardHome.seconds")}.`);
+            showToast(`${t("dashboardHome.alertRateLimit")} ${data.retryAfter || t("dashboardHome.aWhile")} ${t("dashboardHome.seconds")}.`, 'error');
           } else {
-            alert(`${t("dashboardHome.alertProcessingError")}: ${data.error || t("dashboardHome.somethingWrong")}`);
+            showToast(`${t("dashboardHome.alertProcessingError")}: ${data.error || t("dashboardHome.somethingWrong")}`, 'error');
           }
         } else {
           console.log('Processing API Response:', data);
         }
       } else {
         console.error('Processing API failed:', processingResult.reason);
-        alert(t("dashboardHome.alertApiFailed"));
+        showToast(t("dashboardHome.alertApiFailed"), 'error');
       }
 
       if (results.length > 1) {
@@ -345,19 +351,19 @@ export default function DashboardPage() {
           const atsData = await atsResult.value.json();
           if (!atsResult.value.ok) {
             console.error('ATS Check Error:', atsData);
-            alert(`${t("dashboardHome.alertAtsError")}: ${atsData.error || t("dashboardHome.somethingWrong")}`);
+            showToast(`${t("dashboardHome.alertAtsError")}: ${atsData.error || t("dashboardHome.somethingWrong")}`, 'error');
           } else {
             console.log('ATS Check Response:', atsData);
-            alert(`${t("dashboardHome.alertSuccessAts")} ${atsData.data.atsAnalysis.matchScore}%`);
+            showToast(`${t("dashboardHome.alertSuccessAts")} ${atsData.data.atsAnalysis.matchScore}%`, 'success');
           }
         } else {
           console.error('ATS Check failed:', atsResult.reason);
-          alert(t("dashboardHome.alertAtsFailedSaved"));
+          showToast(t("dashboardHome.alertAtsFailedSaved"), 'error');
         }
       }
 
       if (results[0].status === 'fulfilled') {
-        alert(t("dashboardHome.alertProcessingCompleted"));
+        showToast(t("dashboardHome.alertProcessingCompleted"), 'success');
         setFile(null);
         setGoals('');
         setJobDescription('');
@@ -366,7 +372,7 @@ export default function DashboardPage() {
 
     } catch (error) {
       console.error('Error calling API:', error);
-      alert(t("dashboardHome.alertRequestError"));
+      showToast(t("dashboardHome.alertRequestError"), 'error');
     } finally {
       setIsProcessing(false);
     }
@@ -387,7 +393,28 @@ export default function DashboardPage() {
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
       <Background3D />
-      <ChatbotButton /> 
+      <ChatbotButton />
+
+      {/* Toast notification */}
+      {toast && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
+          <div className={`pointer-events-auto flex items-center gap-3 px-6 py-5 rounded-2xl shadow-2xl backdrop-blur-md border max-w-md animate-fade-in-up ${
+            toast.type === 'success'
+              ? 'bg-green-950/80 border-green-500/40 text-green-200'
+              : toast.type === 'error'
+                ? 'bg-red-950/80 border-red-500/40 text-red-200'
+                : 'bg-slate-900/80 border-primary/40 text-blue-200'
+          }`}>
+            <span className="text-lg">
+              {toast.type === 'success' ? '✅' : toast.type === 'error' ? '❌' : 'ℹ️'}
+            </span>
+            <p className="text-sm font-medium">{toast.message}</p>
+            <button onClick={() => setToast(null)} className="ml-auto text-slate-400 hover:text-white transition-colors">
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
       
       <div className="relative z-10 container mx-auto px-4 py-8 space-y-8">
         <DashboardNav />
