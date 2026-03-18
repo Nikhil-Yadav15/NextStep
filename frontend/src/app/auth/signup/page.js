@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from 'next/navigation';
+import LanguageSwitcher from "@/components/common/LanguageSwitcher";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 export default function SignupPage() {
+  const { t } = useLanguage();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -15,7 +18,7 @@ export default function SignupPage() {
     e.preventDefault();
 
     console.log("🚀 Form submitted. Creating account...");
-    setMsg("Creating account...");
+    setMsg(t("auth.creatingAccount"));
 
     try {
       // 1️⃣ Create user through server auth route
@@ -82,7 +85,7 @@ export default function SignupPage() {
 
       // 4️⃣ Success message and redirect
       console.log("✅ All steps completed successfully! Redirecting...");
-      setMsg("Account created successfully!");
+      setMsg(t("auth.accountCreated"));
       setTimeout(() => router.push('/dashboard'), 2000);
 
     } catch (err) {
@@ -110,13 +113,17 @@ export default function SignupPage() {
           <form onSubmit={onSubmit} className="space-y-6">
             <div className="text-center space-y-2 mb-8">
               <h3 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                Sign up
+                {t("auth.signupTitle")}
               </h3>
-              <p className="text-slate-400 text-sm">Create your account to get started.</p>
+              <p className="text-slate-400 text-sm">{t("auth.signupSubtitle")}</p>
+            </div>
+
+            <div className="flex justify-end">
+              <LanguageSwitcher compact />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-200">Full Name</label>
+              <label className="text-sm font-medium text-slate-200">{t("auth.fullName")}</label>
               <input
                 className="w-full bg-slate-950/50 border border-slate-800 rounded-lg px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
                 placeholder="John Doe"
@@ -127,7 +134,7 @@ export default function SignupPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-200">Email</label>
+              <label className="text-sm font-medium text-slate-200">{t("auth.email")}</label>
               <input
                 className="w-full bg-slate-950/50 border border-slate-800 rounded-lg px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
                 placeholder="you@example.com"
@@ -139,7 +146,7 @@ export default function SignupPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-200">Phone Number</label>
+              <label className="text-sm font-medium text-slate-200">{t("auth.phone")}</label>
               <input
                 className="w-full bg-slate-950/50 border border-slate-800 rounded-lg px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
                 placeholder="+91 9876543210"
@@ -151,7 +158,7 @@ export default function SignupPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-200">Password</label>
+              <label className="text-sm font-medium text-slate-200">{t("auth.password")}</label>
               <input
                 className="w-full bg-slate-950/50 border border-slate-800 rounded-lg px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
                 placeholder="••••••••"
@@ -166,7 +173,7 @@ export default function SignupPage() {
               type="submit"
               className="w-full px-4 py-3 rounded-lg bg-gradient-to-r from-primary to-primary/80 text-white font-semibold shadow-lg hover:shadow-primary/25 transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
             >
-              Create Account
+              {t("auth.createAccount")}
             </button>
 
             {msg && (
@@ -182,12 +189,12 @@ export default function SignupPage() {
             )}
 
             <p className="text-xs text-slate-500 text-center pt-2">
-              By signing up, you agree to our Terms of Service and Privacy Policy
+              {t("auth.terms")}
             </p>
             <p className="text-sm text-slate-400">
-                Already have an account?{" "}
+                {t("auth.yesAccount")} {" "}
                 <a href="/auth/login" className="text-primary hover:text-primary/80 transition-colors font-medium">
-                  Login
+                  {t("auth.login")}
                 </a>
               </p>
             

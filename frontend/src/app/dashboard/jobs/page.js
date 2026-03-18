@@ -1,8 +1,10 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Bookmark, BookmarkCheck } from "lucide-react";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 export default function JobsPage() {
+  const { t } = useLanguage();
   const [role, setRole] = useState("");
   const [location, setLocation] = useState("");
   const [source, setSource] = useState("both");
@@ -84,7 +86,7 @@ export default function JobsPage() {
 
   const toggleSaveJob = async (job, jobSource) => {
     const uniquePresence = getUniquePresence();
-    if (!uniquePresence) return alert("You must be logged in!");
+    if (!uniquePresence) return alert(t("jobsPage.mustBeLoggedIn"));
 
     const jobWithSource = { ...job, source: jobSource, savedAt: new Date().toISOString() };
     const jobKey = `${jobSource}-${job.title}-${job.company}`;
@@ -156,7 +158,7 @@ export default function JobsPage() {
                 rel="noreferrer"
                 className="mt-2 inline-block text-primary hover:text-primary/80 text-sm transition-colors"
               >
-                View job →
+                {t("jobsPage.viewJob")} →
               </a>
             )}
           </div>
@@ -167,7 +169,7 @@ export default function JobsPage() {
                 ? "bg-primary/20 text-primary hover:bg-primary/30"
                 : "bg-slate-700/50 text-slate-400 hover:bg-slate-700 hover:text-slate-200"
             }`}
-            title={isSaved ? "Remove from goals" : "Save to goals"}
+            title={isSaved ? t("jobsPage.removeFromGoals") : t("jobsPage.saveToGoals")}
           >
             {isSaved ? <BookmarkCheck size={20} /> : <Bookmark size={20} />}
           </button>
@@ -187,37 +189,37 @@ export default function JobsPage() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            Back to Dashboard
+            {t("jobsPage.backToDashboard")}
           </a>
         </div>
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            Find Jobs
+            {t("jobsPage.findJobs")}
           </h1>
           <button
             onClick={() => setShowSaved(!showSaved)}
             className="flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-primary to-primary/80 text-white hover:shadow-lg hover:shadow-primary/25 transition-all transform hover:scale-105"
           >
             <Bookmark size={18} />
-            My Goals ({savedJobs.length})
+            {t("jobsPage.myGoals")} ({savedJobs.length})
           </button>
         </div>
 
         {showSaved ? (
           <div className="mb-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-semibold text-slate-100">Saved Jobs</h2>
+              <h2 className="text-2xl font-semibold text-slate-100">{t("jobsPage.savedJobs")}</h2>
               <button
                 onClick={() => setShowSaved(false)}
                 className="text-sm text-slate-400 hover:text-slate-200 transition-colors"
               >
-                Back to Search
+                {t("jobsPage.backToSearch")}
               </button>
             </div>
             {savedJobs.length === 0 ? (
               <div className="text-center py-16 bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl">
                 <Bookmark size={48} className="mx-auto mb-3 opacity-30 text-slate-500" />
-                <p className="text-slate-400">No saved jobs yet. Start searching and save jobs to your goals!</p>
+                <p className="text-slate-400">{t("jobsPage.noSavedJobs")}</p>
               </div>
             ) : (
               <ul className="space-y-3">
@@ -246,14 +248,14 @@ export default function JobsPage() {
                             rel="noreferrer"
                             className="mt-2 inline-block text-primary hover:text-primary/80 text-sm transition-colors"
                           >
-                            View job →
+                            {t("jobsPage.viewJob")} →
                           </a>
                         )}
                       </div>
                       <button
                         onClick={() => removeSavedJob(i)}
                         className="p-2 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-all"
-                        title="Remove from goals"
+                        title={t("jobsPage.removeFromGoals")}
                       >
                         <BookmarkCheck size={20} />
                       </button>
@@ -270,14 +272,14 @@ export default function JobsPage() {
                 <input
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
-                  placeholder="Job role (e.g., Software Engineer)"
+                  placeholder={t("jobsPage.rolePlaceholder")}
                   className="bg-slate-950/50 border border-slate-800 rounded-lg px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
                   onKeyDown={(e) => e.key === "Enter" && onSearch()}
                 />
                 <input
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  placeholder="Location (e.g., India)"
+                  placeholder={t("jobsPage.locationPlaceholder")}
                   className="bg-slate-950/50 border border-slate-800 rounded-lg px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
                   onKeyDown={(e) => e.key === "Enter" && onSearch()}
                 />
@@ -286,12 +288,12 @@ export default function JobsPage() {
                   className="px-6 py-3 rounded-lg bg-gradient-to-r from-primary to-primary/80 text-white hover:shadow-lg hover:shadow-primary/25 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={loading}
                 >
-                  {loading ? "Searching..." : "Search"}
+                  {loading ? t("jobsPage.searching") : t("jobsPage.search")}
                 </button>
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm text-slate-400">Source:</span>
+                <span className="text-sm text-slate-400">{t("jobsPage.source")}:</span>
                 {["both", "linkedin", "naukri", "serpapi"].map((s) => (
                   <button
                     key={s}
@@ -303,7 +305,7 @@ export default function JobsPage() {
                         : "border-slate-700 text-slate-400 hover:border-slate-600 hover:text-slate-200"
                     }`}
                   >
-                    {s.charAt(0).toUpperCase() + s.slice(1)}
+                    {t(`jobsPage.source_${s}`)}
                   </button>
                 ))}
               </div>
@@ -313,14 +315,14 @@ export default function JobsPage() {
               <div className="mb-6">
                 <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-6">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-slate-300 font-medium">Searching for jobs...</span>
-                    <span className="text-slate-400 text-sm">This may take a moment</span>
+                    <span className="text-slate-300 font-medium">{t("jobsPage.searchingJobs")}</span>
+                    <span className="text-slate-400 text-sm">{t("jobsPage.takeMoment")}</span>
                   </div>
                   <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
                     <div className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full animate-pulse" style={{ width: "100%" }}></div>
                   </div>
                   <div className="mt-3 text-sm text-slate-400 text-center">
-                    Fetching results from LinkedIn, Naukri, and SerpApi...
+                    {t("jobsPage.fetchingResults")}
                   </div>
                 </div>
               </div>
@@ -340,7 +342,7 @@ export default function JobsPage() {
                     <JobCard key={`li-${i}`} job={j} jobSource="linkedin" index={i} />
                   ))}
                   {!loading && !error && liJobs.length === 0 && (
-                    <li className="text-slate-500 text-center py-8 bg-slate-900/30 rounded-lg border border-slate-800/30">No LinkedIn results.</li>
+                    <li className="text-slate-500 text-center py-8 bg-slate-900/30 rounded-lg border border-slate-800/30">{t("jobsPage.noLinkedIn")}</li>
                   )}
                 </ul>
               </div>
@@ -351,18 +353,18 @@ export default function JobsPage() {
                     <JobCard key={`nk-${i}`} job={j} jobSource="naukri" index={i} />
                   ))}
                   {!loading && !error && nkJobs.length === 0 && (
-                    <li className="text-slate-500 text-center py-8 bg-slate-900/30 rounded-lg border border-slate-800/30">No Naukri results.</li>
+                    <li className="text-slate-500 text-center py-8 bg-slate-900/30 rounded-lg border border-slate-800/30">{t("jobsPage.noNaukri")}</li>
                   )}
                 </ul>
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-slate-100 mb-4">SerpApi (Google Jobs)</h2>
+                <h2 className="text-xl font-semibold text-slate-100 mb-4">{t("jobsPage.serpApiGoogle")}</h2>
                 <ul className="space-y-3">
                   {serpJobs.map((j, i) => (
                     <JobCard key={`sp-${i}`} job={j} jobSource="serpapi" index={i} />
                   ))}
                   {!loading && !error && serpJobs.length === 0 && (
-                    <li className="text-slate-500 text-center py-8 bg-slate-900/30 rounded-lg border border-slate-800/30">No SerpApi results.</li>
+                    <li className="text-slate-500 text-center py-8 bg-slate-900/30 rounded-lg border border-slate-800/30">{t("jobsPage.noSerpApi")}</li>
                   )}
                 </ul>
               </div>

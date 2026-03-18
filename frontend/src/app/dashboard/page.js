@@ -7,6 +7,7 @@ import { Sphere, Float } from "@react-three/drei";
 import DashboardNav from "@/components/layout/Dashboardnav";
 import ChatbotButton from "@/components/dashboard/Chatbot";
 import Analytics from "@/components/dashboard/Analytics";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 function AnimatedSphere({ position, color, speed }) {
   const meshRef = useRef(null);
@@ -75,6 +76,7 @@ function Background3D() {
 }
 
 export default function DashboardPage() {
+  const { t } = useLanguage();
   const [file, setFile] = useState(null);
   const [goals, setGoals] = useState('');
   const [jobDescription, setJobDescription] = useState('');
@@ -139,8 +141,8 @@ export default function DashboardPage() {
 
   const features = [
     {
-      title: "Jobs",
-      description: "Browse AI-matched opportunities tailored to skills",
+      title: t("dashboardHome.featureJobsTitle"),
+      description: t("dashboardHome.featureJobsDesc"),
       link: "/dashboard/jobs",
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -149,8 +151,8 @@ export default function DashboardPage() {
       ),
     },
     {
-      title: "Roadmap",
-      description: "Personalized career paths and skill plans",
+      title: t("dashboardHome.featureRoadmapTitle"),
+      description: t("dashboardHome.featureRoadmapDesc"),
       link: "/dashboard/roadmap",
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -159,8 +161,8 @@ export default function DashboardPage() {
       ),
     },
     {
-      title: "Mock Interview",
-      description: "Practice with an AI interviewer and get feedback",
+      title: t("dashboardHome.featureInterviewTitle"),
+      description: t("dashboardHome.featureInterviewDesc"),
       link: "/dashboard/interview",
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -169,8 +171,8 @@ export default function DashboardPage() {
       ),
     },
     {
-      title: "Quiz",
-      description: "Test knowledge with AI-generated quizzes",
+      title: t("dashboardHome.featureQuizTitle"),
+      description: t("dashboardHome.featureQuizDesc"),
       link: "/dashboard/quiz",
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -179,8 +181,8 @@ export default function DashboardPage() {
       ),
     },
     {
-      title: "Generate Resume",
-      description: "Create tailored resumes with AI assistance",
+      title: t("dashboardHome.featureResumeTitle"),
+      description: t("dashboardHome.featureResumeDesc"),
       link: "/dashboard/resume",
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -189,8 +191,8 @@ export default function DashboardPage() {
       ),
     },
      {
-      title: "Chat",
-      description: "AI Career Copilot chat",
+      title: t("dashboardHome.featureChatTitle"),
+      description: t("dashboardHome.featureChatDesc"),
       link: "/dashboard/chat",
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -211,7 +213,7 @@ export default function DashboardPage() {
       if (validTypes.includes(selectedFile.type)) {
         setFile(selectedFile);
       } else {
-        alert('Please upload a PDF or Word document');
+        alert(t("dashboardHome.alertUploadType"));
         e.target.value = '';
       }
     }
@@ -219,7 +221,7 @@ export default function DashboardPage() {
 
   const handleProcess = async () => {
     if (!file && !goals.trim()) {
-      alert('Please provide either a document or goals');
+      alert(t("dashboardHome.alertDocOrGoals"));
       return;
     }
 
@@ -244,7 +246,7 @@ export default function DashboardPage() {
           });
 
           if (!extractResponse.ok) {
-            throw new Error('Failed to extract text from document');
+            throw new Error(t("dashboardHome.alertExtractFailed"));
           }
 
           const extractData = await extractResponse.json();
@@ -252,7 +254,7 @@ export default function DashboardPage() {
           
         } catch (error) {
           console.error('Error extracting text:', error);
-          alert('Error processing the document. Please try again.');
+          alert(t("dashboardHome.alertProcessingDocument"));
           setIsProcessing(false);
           return;
         }
@@ -307,18 +309,18 @@ export default function DashboardPage() {
         const data = await processingResult.value.json();
         if (!processingResult.value.ok) {
           if (processingResult.value.status === 401) {
-            alert('Authentication failed: ' + (data.error || 'Unauthorized'));
+            alert(`${t("dashboardHome.alertAuthFailed")}: ` + (data.error || t("dashboardHome.unauthorized")));
           } else if (processingResult.value.status === 429) {
-            alert(`Rate limit exceeded. Try again after ${data.retryAfter || 'a while'} seconds.`);
+            alert(`${t("dashboardHome.alertRateLimit")} ${data.retryAfter || t("dashboardHome.aWhile")} ${t("dashboardHome.seconds")}.`);
           } else {
-            alert(`Processing Error: ${data.error || 'Something went wrong'}`);
+            alert(`${t("dashboardHome.alertProcessingError")}: ${data.error || t("dashboardHome.somethingWrong")}`);
           }
         } else {
           console.log('Processing API Response:', data);
         }
       } else {
         console.error('Processing API failed:', processingResult.reason);
-        alert('Processing API failed. Please try again.');
+        alert(t("dashboardHome.alertApiFailed"));
       }
 
       if (results.length > 1) {
@@ -327,19 +329,19 @@ export default function DashboardPage() {
           const atsData = await atsResult.value.json();
           if (!atsResult.value.ok) {
             console.error('ATS Check Error:', atsData);
-            alert(`ATS Check Error: ${atsData.error || 'Something went wrong'}`);
+            alert(`${t("dashboardHome.alertAtsError")}: ${atsData.error || t("dashboardHome.somethingWrong")}`);
           } else {
             console.log('ATS Check Response:', atsData);
-            alert(`Success! ATS Score: ${atsData.data.atsAnalysis.matchScore}%`);
+            alert(`${t("dashboardHome.alertSuccessAts")} ${atsData.data.atsAnalysis.matchScore}%`);
           }
         } else {
           console.error('ATS Check failed:', atsResult.reason);
-          alert('ATS Check failed. Results saved without ATS score.');
+          alert(t("dashboardHome.alertAtsFailedSaved"));
         }
       }
 
       if (results[0].status === 'fulfilled') {
-        alert('Processing completed successfully!');
+        alert(t("dashboardHome.alertProcessingCompleted"));
         setFile(null);
         setGoals('');
         setJobDescription('');
@@ -348,7 +350,7 @@ export default function DashboardPage() {
 
     } catch (error) {
       console.error('Error calling API:', error);
-      alert('Error processing your request. Please try again.');
+      alert(t("dashboardHome.alertRequestError"));
     } finally {
       setIsProcessing(false);
     }
@@ -376,28 +378,28 @@ export default function DashboardPage() {
         
         <div className="text-center space-y-3 py-6">
           <h1 className="text-4xl md:text-5xl font-bold font-serif text-white">
-            Welcome Back
+            {t("dashboardHome.welcome")}
           </h1>
           <p className="text-lg text-slate-400 max-w-2xl mx-auto">
-            Choose a tool to continue your AI career journey
+            {t("dashboardHome.subtitle")}
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-6 shadow-lg hover:shadow-primary/10 transition-all duration-300 hover:scale-105">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-semibold text-slate-400">Quizzes</p>
+              <p className="text-sm font-semibold text-slate-400">{t("dashboardHome.cardQuizzes")}</p>
               <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
                 <FileText className="w-5 h-5 text-primary" />
               </div>
             </div>
             <p className="text-3xl font-bold text-white">{quizScores.length}</p>
-            <p className="text-sm text-slate-500 mt-1">{quizScores.length > 0 ? `${avgQuizScore}% avg score` : 'No quizzes yet'}</p>
+            <p className="text-sm text-slate-500 mt-1">{quizScores.length > 0 ? `${avgQuizScore}% ${t("dashboardHome.avgScore")}` : t("dashboardHome.noQuizzes")}</p>
           </div>
 
           <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-6 shadow-lg hover:shadow-primary/10 transition-all duration-300 hover:scale-105">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-semibold text-slate-400">Interviews</p>
+              <p className="text-sm font-semibold text-slate-400">{t("dashboardHome.cardInterviews")}</p>
               <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
                 <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -405,18 +407,18 @@ export default function DashboardPage() {
               </div>
             </div>
             <p className="text-3xl font-bold text-white">{interviews.length}</p>
-            <p className="text-sm text-slate-500 mt-1">{completedInterviews} completed</p>
+            <p className="text-sm text-slate-500 mt-1">{completedInterviews} {t("dashboardHome.completed")}</p>
           </div>
 
           <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-6 shadow-lg hover:shadow-primary/10 transition-all duration-300 hover:scale-105">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-semibold text-slate-400">Skills</p>
+              <p className="text-sm font-semibold text-slate-400">{t("dashboardHome.cardSkills")}</p>
               <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
                 <CheckCircle className="w-5 h-5 text-primary" />
               </div>
             </div>
             <p className="text-3xl font-bold text-white">{skills.length}</p>
-            <p className="text-sm text-slate-500 mt-1">{skills.length > 0 ? `${skills.slice(0, 3).join(', ')}` : 'No skills added'}</p>
+            <p className="text-sm text-slate-500 mt-1">{skills.length > 0 ? `${skills.slice(0, 3).join(', ')}` : t("dashboardHome.noSkills")}</p>
           </div>
         </div>
 
@@ -433,8 +435,8 @@ export default function DashboardPage() {
         <Upload className="w-6 h-6 text-white" />
       </div>
       <div>
-        <h2 className="text-2xl font-bold text-white">Document Processing</h2>
-        <p className="text-slate-400">Upload resume, set goals, and check ATS compatibility</p>
+        <h2 className="text-2xl font-bold text-white">{t("dashboardHome.docTitle")}</h2>
+        <p className="text-slate-400">{t("dashboardHome.docSubtitle")}</p>
       </div>
     </div>
   </div>
@@ -447,7 +449,7 @@ export default function DashboardPage() {
     <div>
       <label className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
         <Upload className="w-4 h-4" />
-        Upload Resume
+        {t("dashboardHome.uploadResume")}
       </label>
       <input
         type="file"
@@ -466,7 +468,7 @@ export default function DashboardPage() {
       {file && (
         <div className="mt-3 p-3 bg-primary/10 border border-primary/30 rounded-lg">
           <p className="text-sm text-slate-300">
-            <span className="font-semibold text-primary">Selected:</span> {file.name}
+            <span className="font-semibold text-primary">{t("dashboardHome.selected")}</span> {file.name}
             <span className="text-slate-500 ml-2">({(file.size / 1024).toFixed(2)} KB)</span>
           </p>
         </div>
@@ -476,12 +478,12 @@ export default function DashboardPage() {
     <div>
       <label className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
         <Target className="w-4 h-4" />
-        Your Goals
+        {t("dashboardHome.yourGoals")}
       </label>
       <textarea
         value={goals}
         onChange={(e) => setGoals(e.target.value)}
-        placeholder="Enter your career goals and objectives..."
+        placeholder={t("dashboardHome.yourGoalsPlaceholder")}
         rows={4}
         className="w-full px-4 py-3 border border-slate-800 rounded-lg
           bg-slate-950/50 text-white placeholder-slate-500
@@ -492,12 +494,12 @@ export default function DashboardPage() {
     <div>
       <label className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
         <FileText className="w-4 h-4" />
-        Job Description (Optional - for ATS Check)
+        {t("dashboardHome.jobDescription")}
       </label>
       <textarea
         value={jobDescription}
         onChange={(e) => setJobDescription(e.target.value)}
-        placeholder="Paste the job description to check ATS compatibility..."
+        placeholder={t("dashboardHome.jobDescriptionPlaceholder")}
         rows={5}
         className="w-full px-4 py-3 border border-slate-800 rounded-lg
           bg-slate-950/50 text-white placeholder-slate-500
@@ -506,7 +508,7 @@ export default function DashboardPage() {
       {file && jobDescription.trim() && (
         <p className="mt-3 text-sm text-green-400 flex items-center gap-2">
           <CheckCircle className="w-4 h-4" />
-          ATS analysis will be performed in parallel
+          {t("dashboardHome.atsParallel")}
         </p>
       )}
     </div>
@@ -525,10 +527,10 @@ export default function DashboardPage() {
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
           </svg>
-          Processing...
+          {t("dashboardHome.processing")}
         </span>
       ) : (
-        'Process Document'
+        t("dashboardHome.processDocument")
       )}
     </button>
   </div>
@@ -557,7 +559,7 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="flex items-center text-primary font-semibold group-hover:gap-3 gap-2 transition-all">
-                  <span>Get started</span>
+                  <span>{t("dashboardHome.getStarted")}</span>
                   <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
@@ -570,11 +572,11 @@ export default function DashboardPage() {
         <div className="bg-gradient-to-r from-primary to-primary/80 rounded-2xl p-8 text-white shadow-2xl shadow-primary/30">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="space-y-2">
-              <h3 className="text-3xl font-bold">Ready to level up?</h3>
-              <p className="text-white/90 text-lg">Complete your profile to unlock personalized recommendations</p>
+              <h3 className="text-3xl font-bold">{t("dashboardHome.readyTitle")}</h3>
+              <p className="text-white/90 text-lg">{t("dashboardHome.readySubtitle")}</p>
             </div>
             <button className="px-8 py-4 bg-white text-primary font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 whitespace-nowrap cursor-pointer">
-              Complete Profile
+              {t("dashboardHome.completeProfile")}
             </button>
           </div>
         </div>
