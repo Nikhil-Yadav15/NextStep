@@ -360,6 +360,54 @@ export default function ChatbotUI() {
     localStorage.setItem("chatHistory", JSON.stringify([initialMessage]));
   };
 
+  // ✅ Render formatted bot message with bullets, bold, and paragraphs
+  const renderBotMessage = (text) => {
+    const lines = text.split("\n").filter((l) => l.trim());
+    const elements = [];
+    let bulletGroup = [];
+
+    const flushBullets = () => {
+      if (bulletGroup.length > 0) {
+        elements.push(
+          <ul key={`ul-${elements.length}`} className="list-disc list-inside space-y-1 my-1.5 text-gray-300">
+            {bulletGroup.map((item, idx) => (
+              <li key={idx} className="leading-relaxed">{formatInline(item)}</li>
+            ))}
+          </ul>
+        );
+        bulletGroup = [];
+      }
+    };
+
+    const formatInline = (str) => {
+      const parts = str.split(/(\*\*[^*]+\*\*)/g);
+      return parts.map((part, i) => {
+        if (part.startsWith("**") && part.endsWith("**")) {
+          return <strong key={i} className="text-white font-medium">{part.slice(2, -2)}</strong>;
+        }
+        return part;
+      });
+    };
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      const bulletMatch = trimmed.match(/^(?:[-*•]|\d+[.)]) (.+)/);
+      if (bulletMatch) {
+        bulletGroup.push(bulletMatch[1]);
+      } else {
+        flushBullets();
+        elements.push(
+          <p key={`p-${elements.length}`} className="text-gray-200 leading-relaxed my-1 whitespace-pre-wrap">
+            {formatInline(trimmed)}
+          </p>
+        );
+      }
+    }
+    flushBullets();
+
+    return elements;
+  };
+
   return (
     <>
       {/* Floating Chat Icon */}
@@ -414,7 +462,6 @@ export default function ChatbotUI() {
           {messages.map((msg, i) => {
             const isBot = msg.sender === "bot";
             const isRedirect = msg.type === "redirect";
-            const paragraphs = msg.text.split(/\n\s*\n/).filter(Boolean);
             return (
               <div
                 key={i}
@@ -422,30 +469,18 @@ export default function ChatbotUI() {
                   isBot
                     ? isRedirect
                       ? "bg-amber-900/40 text-amber-200 border border-amber-700/50 self-start"
-                      : "bg-gray-800 text-gray-200 border border-gray-700 self-start"
+                      : "bg-gray-800/90 text-gray-100 border border-gray-700/60 self-start"
                     : "bg-blue-600 text-white self-end"
                 }`}
               >
-                {paragraphs.length > 0
-                  ? paragraphs.map((p, idx) => (
-                      <p
-                        key={idx}
-                        className={`whitespace-pre-wrap leading-relaxed ${
-                          isRedirect
-                            ? "text-amber-200"
-                            : isBot
-                            ? "text-gray-200"
-                            : "text-white"
-                        } ${idx > 0 ? "mt-2" : ""}`}
-                      >
-                        {p}
-                      </p>
-                    ))
-                  : msg.text}
+                {isBot && !isRedirect
+                  ? renderBotMessage(msg.text)
+                  : <span className="whitespace-pre-wrap">{msg.text}</span>
+                }
                 {isBot && !isRedirect && i > 0 && (
                   <button
                     onClick={() => speakText(msg.text)}
-                    className="mt-1 p-1 rounded-full hover:bg-gray-700 text-gray-500 hover:text-blue-400 transition cursor-pointer"
+                    className="mt-1 p-1 rounded-full hover:bg-gray-600/50 text-blue-400 hover:text-blue-300 transition cursor-pointer"
                     title="Listen to this message"
                     disabled={isSpeaking}
                   >
@@ -466,12 +501,12 @@ export default function ChatbotUI() {
             </div>
           )}
           {isSpeaking && (
-            <div className="flex items-center gap-2 text-blue-400 text-sm self-start">
-              <Volume2 size={18} className="animate-pulse" />
+            <div className="flex items-center gap-2 text-blue-300 text-sm self-start">
+              <Volume2 size={18} className="animate-pulse text-blue-300" />
               <span>Speaking...</span>
               <button
                 onClick={stopSpeaking}
-                className="p-1 rounded-full hover:bg-red-900/40 text-red-400 hover:text-red-300 transition cursor-pointer"
+                className="p-1 rounded-full hover:bg-red-500/20 text-red-400 hover:text-red-300 transition cursor-pointer"
                 title="Stop speaking"
               >
                 <VolumeX size={18} />
