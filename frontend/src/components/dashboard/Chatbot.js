@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import { MessageCircle, X, Send, Loader2 } from "lucide-react";
+import { MessageCircle, X, Send, Loader2, Mic, MicOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function ChatbotUI() {
@@ -12,8 +12,12 @@ export default function ChatbotUI() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const [uniquePresence, setUniquePresence] = useState(null);
   const chatEndRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
 
   // ✅ Read uniquePresence from cookies
   const getUniquePresence = () => {
@@ -100,6 +104,149 @@ export default function ChatbotUI() {
         setIsRedirecting(true);
 
         // Build redirect URL
+        const routes = {
+          QUIZ: `/dashboard/quiz${data.params?.topic ? `?topic=${encodeURIComponent(data.params.topic)}` : ""}`,
+          JOB_SEARCH: `/dashboard/jobs${data.params?.search ? `?search=${encodeURIComponent(data.params.search)}` : ""}`,
+          RESUME: "/dashboard/resume",
+          MOCK_INTERVIEW: "/dashboard/interview",
+          ROADMAP: "/dashboard/roadmap",
+        };
+
+        const url = routes[data.intent];
+        if (url) {
+          setTimeout(() => {
+            setIsOpen(false);
+            router.push(url);
+          }, 1200);
+        }
+      } else if (data.reply) {
+        setMessages((prev) => [...prev, { sender: "bot", text: data.reply }]);
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          { sender: "bot", text: `⚠️ ${data.error || "No response received."}` },
+        ]);
+      }
+    } catch (error) {
+      console.error("Chatbot error:", error);
+      setMessages((prev) => [
+        ...prev,
+        { sender: "bot", text: "⚠️ Something went wrong, please try again." },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ✅ Start voice recording
+  const startRecording = async () => {
+    if (!navigator.mediaDevices) {
+      setMessages((prev) => [
+        ...prev,
+        { sender: "bot", text: "⚠️ Your browser doesn't support microphone access." },
+      ]);
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        audioChunksRef.current.push(event.data);
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (error) {
+      setMessages((prev) => [
+        ...prev,
+        { sender: "bot", text: "⚠️ Microphone access denied. Please allow mic permissions." },
+      ]);
+    }
+  };
+
+  // ✅ Stop recording and transcribe via Deepgram
+  const stopRecording = async () => {
+    if (!mediaRecorderRef.current) return;
+
+    mediaRecorderRef.current.onstop = async () => {
+      setIsTranscribing(true);
+      const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" });
+
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64Audio = reader.result.split(",")[1];
+        try {
+          const res = await fetch("/api/chatbot/transcribe", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ audioBase64: base64Audio }),
+          });
+          const data = await res.json();
+
+          if (data.transcript && data.transcript.trim()) {
+            handleSendWithText(data.transcript);
+          } else {
+            setMessages((prev) => [
+              ...prev,
+              { sender: "bot", text: "🤔 I didn't catch that. Could you try speaking again?" },
+            ]);
+          }
+        } catch (error) {
+          console.error("Transcription error:", error);
+          setMessages((prev) => [
+            ...prev,
+            { sender: "bot", text: "⚠️ Failed to transcribe audio. Please try again." },
+          ]);
+        } finally {
+          setIsTranscribing(false);
+        }
+      };
+      reader.readAsDataURL(audioBlob);
+    };
+
+    mediaRecorderRef.current.stop();
+    mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop());
+    setIsRecording(false);
+  };
+
+  // ✅ Send a specific text (used by voice input)
+  const handleSendWithText = async (text) => {
+    if (!text.trim()) return;
+    if (!uniquePresence) {
+      setMessages((prev) => [
+        ...prev,
+        { sender: "bot", text: "⚠️ Please log in first — I can't find your session token." },
+      ]);
+      return;
+    }
+
+    const userMessage = text;
+    setMessages((prev) => [...prev, { sender: "user", text: userMessage }]);
+    setIsLoading(true);
+    setIsRedirecting(false);
+
+    try {
+      const res = await fetch("/api/chatbot", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${uniquePresence}`,
+        },
+        body: JSON.stringify({
+          message: userMessage,
+          chatHistory: messages,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.intent && data.intent !== "NONE") {
+        setMessages((prev) => [...prev, { sender: "bot", text: data.reply, type: "redirect" }]);
+        setIsRedirecting(true);
+
         const routes = {
           QUIZ: `/dashboard/quiz${data.params?.topic ? `?topic=${encodeURIComponent(data.params.topic)}` : ""}`,
           JOB_SEARCH: `/dashboard/jobs${data.params?.search ? `?search=${encodeURIComponent(data.params.search)}` : ""}`,
@@ -236,26 +383,39 @@ export default function ChatbotUI() {
           </div>
 
           {/* Input Bar */}
-          <div className="p-3 border-t border-gray-200/80 flex items-center gap-2 bg-white/85 backdrop-blur">
+          <div className="p-4 border-t border-gray-200/80 flex items-center gap-3 bg-white/85 backdrop-blur">
             <input
               type="text"
-              className="flex-1 text-gray-900 placeholder:text-gray-500 p-2 rounded-xl border border-gray-200 
-                         bg-white/80 text-sm outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60"
-              placeholder="Ask me anything..."
+              className="flex-1 text-gray-900 placeholder:text-gray-500 px-4 py-3 rounded-xl border border-gray-200 
+                         bg-white/80 text-base outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60"
+              placeholder={isRecording ? "🎙️ Listening..." : isTranscribing ? "✍️ Transcribing..." : "Ask me anything..."}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              disabled={isLoading || isRedirecting}
+              disabled={isLoading || isRedirecting || isRecording || isTranscribing}
             />
             <button
               type="button"
-              onClick={handleSend}
-              className={`p-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition ${
-                isLoading || isRedirecting ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
-              }`}
-              disabled={isLoading || isRedirecting}
+              onClick={isRecording ? stopRecording : startRecording}
+              className={`p-3 rounded-xl transition ${
+                isRecording
+                  ? "bg-red-500 text-white animate-pulse hover:bg-red-600"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200"
+              } ${isLoading || isRedirecting || isTranscribing ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+              disabled={isLoading || isRedirecting || isTranscribing}
+              title={isRecording ? "Stop recording" : "Start voice input"}
             >
-              {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+              {isRecording ? <MicOff size={20} /> : <Mic size={20} />}
+            </button>
+            <button
+              type="button"
+              onClick={handleSend}
+              className={`p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition ${
+                isLoading || isRedirecting || isRecording || isTranscribing ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+              }`}
+              disabled={isLoading || isRedirecting || isRecording || isTranscribing}
+            >
+              {isLoading ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} />}
             </button>
           </div>
         </div>
