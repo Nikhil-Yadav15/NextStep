@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import { MessageCircle, X, Send, Loader2, Mic, MicOff } from "lucide-react";
+import { MessageCircle, X, Send, Loader2, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function ChatbotUI() {
@@ -14,10 +14,13 @@ export default function ChatbotUI() {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const [uniquePresence, setUniquePresence] = useState(null);
   const chatEndRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+  const wasVoiceInputRef = useRef(false);
+  const currentAudioRef = useRef(null);
 
   // ✅ Read uniquePresence from cookies
   const getUniquePresence = () => {
@@ -138,6 +141,51 @@ export default function ChatbotUI() {
     }
   };
 
+  // ✅ Stop currently playing audio
+  const stopSpeaking = () => {
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      currentAudioRef.current = null;
+    }
+    setIsSpeaking(false);
+  };
+
+  // ✅ Play bot reply as speech via Deepgram TTS
+  const speakText = async (text) => {
+    try {
+      // Stop any currently playing audio
+      if (currentAudioRef.current) {
+        currentAudioRef.current.pause();
+        currentAudioRef.current = null;
+      }
+      setIsSpeaking(true);
+      const res = await fetch("/api/chatbot/speak", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      const data = await res.json();
+      if (data.audioBase64) {
+        const audio = new Audio(`data:audio/wav;base64,${data.audioBase64}`);
+        currentAudioRef.current = audio;
+        audio.onended = () => {
+          setIsSpeaking(false);
+          currentAudioRef.current = null;
+        };
+        audio.onerror = () => {
+          setIsSpeaking(false);
+          currentAudioRef.current = null;
+        };
+        await audio.play();
+      } else {
+        setIsSpeaking(false);
+      }
+    } catch (error) {
+      console.error("TTS error:", error);
+      setIsSpeaking(false);
+    }
+  };
+
   // ✅ Start voice recording
   const startRecording = async () => {
     if (!navigator.mediaDevices) {
@@ -187,6 +235,7 @@ export default function ChatbotUI() {
           const data = await res.json();
 
           if (data.transcript && data.transcript.trim()) {
+            wasVoiceInputRef.current = true;
             handleSendWithText(data.transcript);
           } else {
             setMessages((prev) => [
@@ -264,6 +313,7 @@ export default function ChatbotUI() {
         }
       } else if (data.reply) {
         setMessages((prev) => [...prev, { sender: "bot", text: data.reply }]);
+        if (wasVoiceInputRef.current) speakText(data.reply);
       } else {
         setMessages((prev) => [
           ...prev,
@@ -278,6 +328,7 @@ export default function ChatbotUI() {
       ]);
     } finally {
       setIsLoading(false);
+      wasVoiceInputRef.current = false;
     }
   };
 
@@ -366,6 +417,16 @@ export default function ChatbotUI() {
                         </p>
                       ))
                     : msg.text}
+                  {isBot && !isRedirect && i > 0 && (
+                    <button
+                      onClick={() => speakText(msg.text)}
+                      className="mt-1 p-1 rounded-full hover:bg-gray-200/60 text-gray-400 hover:text-blue-500 transition cursor-pointer"
+                      title="Listen to this message"
+                      disabled={isSpeaking}
+                    >
+                      <Volume2 size={18} />
+                    </button>
+                  )}
                 </div>
               );
             })}
@@ -377,6 +438,19 @@ export default function ChatbotUI() {
                   <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
                 </span>
                 <span>Thinking...</span>
+              </div>
+            )}
+            {isSpeaking && (
+              <div className="flex items-center gap-2 text-blue-500 text-sm self-start">
+                <Volume2 size={18} className="animate-pulse" />
+                <span>Speaking...</span>
+                <button
+                  onClick={stopSpeaking}
+                  className="p-1 rounded-full hover:bg-red-100 text-red-400 hover:text-red-600 transition cursor-pointer"
+                  title="Stop speaking"
+                >
+                  <VolumeX size={18} />
+                </button>
               </div>
             )}
             <div ref={chatEndRef} />
