@@ -5,6 +5,9 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  schemas  = ["nextstep"]
+
+  
 }
 
 model Interview {
@@ -26,6 +29,8 @@ model Interview {
   questions    Question[]
   transcripts  Transcript[]
   reports      Report[]
+
+  @@schema("nextstep")
 }
 
 model Question {
@@ -42,6 +47,7 @@ model Question {
   transcripts Transcript[]
 
   @@index([interviewId])
+  @@schema("nextstep")
 }
 
 model Transcript {
@@ -67,6 +73,7 @@ model Transcript {
 
   @@index([interviewId])
   @@index([questionId])
+  @@schema("nextstep")
 }
 
 model Report {
@@ -86,6 +93,7 @@ model Report {
   interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
 
   @@index([interviewId])
+  @@schema("nextstep")
 }
 
 model UserMemory {
@@ -98,6 +106,7 @@ model UserMemory {
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+  @@schema("nextstep")
 }
 
 model SkillSnapshot {
@@ -109,6 +118,7 @@ model SkillSnapshot {
   createdAt DateTime @default(now())
 
   @@index([userId])
+  @@schema("nextstep")
 }
 
 model UserAggregate {
@@ -119,4 +129,6 @@ model UserAggregate {
   strengths     Json?    // ["system design", "testing"]
   weaknesses    Json?    // ["behavioral", "communication"]
   updatedAt     DateTime @updatedAt
+
+  @@schema("nextstep")
 }
