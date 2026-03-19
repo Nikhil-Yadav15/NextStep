@@ -1,11 +1,10 @@
 "use client";
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Bookmark, BookmarkCheck } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
-// ─── Inner component that uses useSearchParams ────────────────────────────────
-function JobsContent() {
+export default function JobsPage() {
   const { t } = useLanguage();
   const searchParams = useSearchParams();
   const [role, setRole] = useState("");
@@ -14,7 +13,7 @@ function JobsContent() {
   const [loading, setLoading] = useState(false);
   const [liJobs, setLiJobs] = useState([]);
   const [nkJobs, setNkJobs] = useState([]);
-  const [serpJobs, setSerpJobs] = useState([]);
+  const [serpJobs, setSerpJobs] = useState([]); 
   const [error, setError] = useState("");
   const [savedJobs, setSavedJobs] = useState([]);
   const [showSaved, setShowSaved] = useState(false);
@@ -391,18 +390,5 @@ function JobsContent() {
         )}
       </div>
     </section>
-  );
-}
-
-// ─── Page export — wraps JobsContent in the required Suspense boundary ────────
-export default function JobsPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
-        <div className="text-slate-400">Loading...</div>
-      </div>
-    }>
-      <JobsContent />
-    </Suspense>
   );
 }
