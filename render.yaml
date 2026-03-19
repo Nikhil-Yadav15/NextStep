@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: nextstep-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: FRONTEND_URL
+        value: https://next-step-ai-sankalp.vercel.app
+      - key: CORS_ORIGINS
+        value: https://next-step-ai-sankalp.vercel.app
+      - key: OPENROUTER_REFERER
+        value: https://next-step-ai-sankalp.vercel.app
+      - key: FLASK_ANALYSIS_URL
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: DEEPGRAM_API_KEY
+        sync: false
+      - key: QDRANT_URL
+        sync: false
+      - key: QDRANT_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false

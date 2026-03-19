@@ -77,6 +77,7 @@ function Background3D() {
 
 export default function DashboardPage() {
   const { t } = useLanguage();
+  const backendApiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
   const [file, setFile] = useState(null);
   const [goals, setGoals] = useState('');
   const [jobDescription, setJobDescription] = useState('');
@@ -102,7 +103,7 @@ export default function DashboardPage() {
 
       // Fetch interviews from backend
       try {
-        const res = await fetch('http://localhost:3001/interviews');
+        const res = await fetch(`${backendApiBase}/interviews`);
         const data = await res.json();
         setInterviews(Array.isArray(data) ? data : (data.interviews || []));
       } catch (err) {
