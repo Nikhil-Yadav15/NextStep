@@ -3,6 +3,7 @@ import { JsonOutputParser } from '@langchain/core/output_parsers';
 import { TavilySearch } from "@langchain/tavily";
 import OpenAI from "openai";
 import { parse as parseJsonC } from 'jsonc-parser';
+import { jsonrepair } from 'jsonrepair';
 
 
 const llmClient = new OpenAI({
@@ -10,14 +11,13 @@ const llmClient = new OpenAI({
   apiKey: process.env.OPENROUTER_API_KEY,
 });
 
-async function callLLM(messages, model = "tngtech/deepseek-r1t2-chimera:free") {
+async function callLLM(messages, model = "openrouter/healer-alpha") {
   try {
     const completion = await llmClient.chat.completions.create({
       model,
       messages,
       temperature: 0.1,
       max_tokens: 1000,
-      reasoning: 'disabled',
     });
 
     const firstMessage = completion.choices[0].message;
@@ -28,8 +28,10 @@ async function callLLM(messages, model = "tngtech/deepseek-r1t2-chimera:free") {
           .filter(c => c.type === "text")
           .map(c => c.text)
           .join("\n");
-      } else if (firstMessage.content.text) {
-        textContent = firstMessage.content.text;
+      } else {
+        textContent = typeof firstMessage.content === 'string'
+          ? firstMessage.content
+          : firstMessage.content.text || "";
       }
     }
     if (!textContent || textContent.trim() === "") {
@@ -165,7 +167,8 @@ Goals: ${cleanedGoals || "None"}
       { role: "system", content: "Generate search queries." },
       { role: "user", content: prompt }
     ]);
-    let queries = JSON.parse(response.content.trim());
+    let raw = response.content.trim();
+    let queries = JSON.parse(jsonrepair(raw));
     if (!Array.isArray(queries)) queries = [];
     return { ...state, searchQueries: queries.slice(0, 3) };
   } catch (err) {
@@ -182,7 +185,12 @@ async function performWebSearch(state) {
   for (const query of searchQueries.slice(0, 2)) {
     try {
       const res = await webSearchTool.invoke({ query });
-      results.push(...res);
+      const items = Array.isArray(res)
+        ? res
+        : typeof res === "string"
+          ? JSON.parse(res)
+          : [res];
+      results.push(...items);
     } catch (err) {
       console.warn("Search error", err);
     }

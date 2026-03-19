@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { LogOut, Upload, Target, FileText, CheckCircle } from "lucide-react";
+import { LogOut, Upload, Target, FileText, CheckCircle, Sparkles } from "lucide-react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Sphere, Float } from "@react-three/drei";
 import DashboardNav from "@/components/layout/Dashboardnav";
 import ChatbotButton from "@/components/dashboard/Chatbot";
 import Analytics from "@/components/dashboard/Analytics";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 function AnimatedSphere({ position, color, speed }) {
   const meshRef = useRef(null);
@@ -75,17 +76,95 @@ function Background3D() {
 }
 
 export default function DashboardPage() {
+  const { t } = useLanguage();
   const [file, setFile] = useState(null);
   const [goals, setGoals] = useState('');
   const [jobDescription, setJobDescription] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processingStep, setProcessingStep] = useState(0);
   const [showUploadSection, setShowUploadSection] = useState(false);
   const [skills, setSkills] = useState([]);
+  const [interviews, setInterviews] = useState([]);
+  const [quizScores, setQuizScores] = useState([]);
+  const [toast, setToast] = useState(null); // { message, type: 'success'|'error'|'info' }
+
+  const showToast = (message, type = 'info') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 5000);
+  };
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      const uniquePresence = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('uniquePresence='))
+        ?.split('=')[1];
+
+      // Fetch interviews from backend
+      try {
+        const res = await fetch('http://localhost:3001/interviews');
+        const data = await res.json();
+        setInterviews(Array.isArray(data) ? data : (data.interviews || []));
+      } catch (err) {
+        console.error('Error fetching interviews:', err);
+      }
+
+      if (uniquePresence) {
+        // Fetch profile for skills
+        try {
+          const res = await fetch('/api/getProfile', {
+            headers: { 'Authorization': `Bearer ${uniquePresence}` }
+          });
+          const data = await res.json();
+          if (data.status === 'success') {
+            setSkills(data.data.skills || []);
+          }
+        } catch (err) {
+          console.error('Error fetching profile:', err);
+        }
+
+        // Fetch quiz scores
+        try {
+          const res = await fetch('/api/getScores', {
+            headers: { 'Authorization': `Bearer ${uniquePresence}` }
+          });
+          const data = await res.json();
+          if (data.status === 'success') {
+            setQuizScores(data.data || []);
+          }
+        } catch (err) {
+          console.error('Error fetching scores:', err);
+        }
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  useEffect(() => {
+    if (!isProcessing) { setProcessingStep(0); return; }
+    const interval = setInterval(() => {
+      setProcessingStep(prev => (prev < 3 ? prev + 1 : prev));
+    }, 3500);
+    return () => clearInterval(interval);
+  }, [isProcessing]);
+
+  const processingSteps = [
+    { label: t("dashboardHome.processingStepExtract") || "Extracting document data", icon: "📄" },
+    { label: t("dashboardHome.processingStepAnalyze") || "Analyzing content with AI", icon: "🧠" },
+    { label: t("dashboardHome.processingStepMatch") || "Matching skills & goals", icon: "🎯" },
+    { label: t("dashboardHome.processingStepFinalize") || "Finalizing results", icon: "✨" },
+  ];
+
+  const completedInterviews= interviews.filter(i => i.reports && i.reports.length > 0).length;
+  const avgQuizScore = quizScores.length > 0
+    ? Math.round(quizScores.reduce((sum, s) => sum + (s.percentage || 0), 0) / quizScores.length)
+    : 0;
 
   const features = [
     {
-      title: "Jobs",
-      description: "Browse AI-matched opportunities tailored to skills",
+      title: t("dashboardHome.featureJobsTitle"),
+      description: t("dashboardHome.featureJobsDesc"),
       link: "/dashboard/jobs",
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -94,8 +173,8 @@ export default function DashboardPage() {
       ),
     },
     {
-      title: "Roadmap",
-      description: "Personalized career paths and skill plans",
+      title: t("dashboardHome.featureRoadmapTitle"),
+      description: t("dashboardHome.featureRoadmapDesc"),
       link: "/dashboard/roadmap",
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -104,8 +183,8 @@ export default function DashboardPage() {
       ),
     },
     {
-      title: "Mock Interview",
-      description: "Practice with an AI interviewer and get feedback",
+      title: t("dashboardHome.featureInterviewTitle"),
+      description: t("dashboardHome.featureInterviewDesc"),
       link: "/dashboard/interview",
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -114,8 +193,8 @@ export default function DashboardPage() {
       ),
     },
     {
-      title: "Quiz",
-      description: "Test knowledge with AI-generated quizzes",
+      title: t("dashboardHome.featureQuizTitle"),
+      description: t("dashboardHome.featureQuizDesc"),
       link: "/dashboard/quiz",
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -124,8 +203,8 @@ export default function DashboardPage() {
       ),
     },
     {
-      title: "Generate Resume",
-      description: "Create tailored resumes with AI assistance",
+      title: t("dashboardHome.featureResumeTitle"),
+      description: t("dashboardHome.featureResumeDesc"),
       link: "/dashboard/resume",
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -134,8 +213,8 @@ export default function DashboardPage() {
       ),
     },
      {
-      title: "Chat",
-      description: "AI Career Copilot chat",
+      title: t("dashboardHome.featureChatTitle"),
+      description: t("dashboardHome.featureChatDesc"),
       link: "/dashboard/chat",
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -156,7 +235,7 @@ export default function DashboardPage() {
       if (validTypes.includes(selectedFile.type)) {
         setFile(selectedFile);
       } else {
-        alert('Please upload a PDF or Word document');
+        showToast(t("dashboardHome.alertUploadType"), 'error');
         e.target.value = '';
       }
     }
@@ -164,7 +243,7 @@ export default function DashboardPage() {
 
   const handleProcess = async () => {
     if (!file && !goals.trim()) {
-      alert('Please provide either a document or goals');
+      showToast(t("dashboardHome.alertDocOrGoals"), 'error');
       return;
     }
 
@@ -189,7 +268,7 @@ export default function DashboardPage() {
           });
 
           if (!extractResponse.ok) {
-            throw new Error('Failed to extract text from document');
+            throw new Error(t("dashboardHome.alertExtractFailed"));
           }
 
           const extractData = await extractResponse.json();
@@ -197,7 +276,7 @@ export default function DashboardPage() {
           
         } catch (error) {
           console.error('Error extracting text:', error);
-          alert('Error processing the document. Please try again.');
+          showToast(t("dashboardHome.alertProcessingDocument"), 'error');
           setIsProcessing(false);
           return;
         }
@@ -252,18 +331,18 @@ export default function DashboardPage() {
         const data = await processingResult.value.json();
         if (!processingResult.value.ok) {
           if (processingResult.value.status === 401) {
-            alert('Authentication failed: ' + (data.error || 'Unauthorized'));
+            showToast(`${t("dashboardHome.alertAuthFailed")}: ` + (data.error || t("dashboardHome.unauthorized")), 'error');
           } else if (processingResult.value.status === 429) {
-            alert(`Rate limit exceeded. Try again after ${data.retryAfter || 'a while'} seconds.`);
+            showToast(`${t("dashboardHome.alertRateLimit")} ${data.retryAfter || t("dashboardHome.aWhile")} ${t("dashboardHome.seconds")}.`, 'error');
           } else {
-            alert(`Processing Error: ${data.error || 'Something went wrong'}`);
+            showToast(`${t("dashboardHome.alertProcessingError")}: ${data.error || t("dashboardHome.somethingWrong")}`, 'error');
           }
         } else {
           console.log('Processing API Response:', data);
         }
       } else {
         console.error('Processing API failed:', processingResult.reason);
-        alert('Processing API failed. Please try again.');
+        showToast(t("dashboardHome.alertApiFailed"), 'error');
       }
 
       if (results.length > 1) {
@@ -272,19 +351,19 @@ export default function DashboardPage() {
           const atsData = await atsResult.value.json();
           if (!atsResult.value.ok) {
             console.error('ATS Check Error:', atsData);
-            alert(`ATS Check Error: ${atsData.error || 'Something went wrong'}`);
+            showToast(`${t("dashboardHome.alertAtsError")}: ${atsData.error || t("dashboardHome.somethingWrong")}`, 'error');
           } else {
             console.log('ATS Check Response:', atsData);
-            alert(`Success! ATS Score: ${atsData.data.atsAnalysis.matchScore}%`);
+            showToast(`${t("dashboardHome.alertSuccessAts")} ${atsData.data.atsAnalysis.matchScore}%`, 'success');
           }
         } else {
           console.error('ATS Check failed:', atsResult.reason);
-          alert('ATS Check failed. Results saved without ATS score.');
+          showToast(t("dashboardHome.alertAtsFailedSaved"), 'error');
         }
       }
 
       if (results[0].status === 'fulfilled') {
-        alert('Processing completed successfully!');
+        showToast(t("dashboardHome.alertProcessingCompleted"), 'success');
         setFile(null);
         setGoals('');
         setJobDescription('');
@@ -293,7 +372,7 @@ export default function DashboardPage() {
 
     } catch (error) {
       console.error('Error calling API:', error);
-      alert('Error processing your request. Please try again.');
+      showToast(t("dashboardHome.alertRequestError"), 'error');
     } finally {
       setIsProcessing(false);
     }
@@ -314,72 +393,161 @@ export default function DashboardPage() {
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
       <Background3D />
-      <ChatbotButton /> 
+      <ChatbotButton />
+
+      {/* Toast notification */}
+      {toast && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
+          <div className={`pointer-events-auto flex items-center gap-3 px-6 py-5 rounded-2xl shadow-2xl backdrop-blur-md border max-w-md animate-fade-in-up ${
+            toast.type === 'success'
+              ? 'bg-green-950/80 border-green-500/40 text-green-200'
+              : toast.type === 'error'
+                ? 'bg-red-950/80 border-red-500/40 text-red-200'
+                : 'bg-slate-900/80 border-primary/40 text-blue-200'
+          }`}>
+            <span className="text-lg">
+              {toast.type === 'success' ? '✅' : toast.type === 'error' ? '❌' : 'ℹ️'}
+            </span>
+            <p className="text-sm font-medium">{toast.message}</p>
+            <button onClick={() => setToast(null)} className="ml-auto text-slate-400 hover:text-white transition-colors">
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
       
       <div className="relative z-10 container mx-auto px-4 py-8 space-y-8">
         <DashboardNav />
         
         <div className="text-center space-y-3 py-6">
           <h1 className="text-4xl md:text-5xl font-bold font-serif text-white">
-            Welcome Back
+            {t("dashboardHome.welcome")}
           </h1>
           <p className="text-lg text-slate-400 max-w-2xl mx-auto">
-            Choose a tool to continue your AI career journey
+            {t("dashboardHome.subtitle")}
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-6 shadow-lg hover:shadow-primary/10 transition-all duration-300 hover:scale-105">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-semibold text-slate-400">Applications</p>
+              <p className="text-sm font-semibold text-slate-400">{t("dashboardHome.cardQuizzes")}</p>
               <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
                 <FileText className="w-5 h-5 text-primary" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-white">24</p>
-            <p className="text-sm text-slate-500 mt-1">+3 this week</p>
+            <p className="text-3xl font-bold text-white">{quizScores.length}</p>
+            <p className="text-sm text-slate-500 mt-1">{quizScores.length > 0 ? `${avgQuizScore}% ${t("dashboardHome.avgScore")}` : t("dashboardHome.noQuizzes")}</p>
           </div>
 
           <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-6 shadow-lg hover:shadow-primary/10 transition-all duration-300 hover:scale-105">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-semibold text-slate-400">Interviews</p>
+              <p className="text-sm font-semibold text-slate-400">{t("dashboardHome.cardInterviews")}</p>
               <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
                 <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
             </div>
-            <p className="text-3xl font-bold text-white">8</p>
-            <p className="text-sm text-slate-500 mt-1">2 scheduled</p>
+            <p className="text-3xl font-bold text-white">{interviews.length}</p>
+            <p className="text-sm text-slate-500 mt-1">{completedInterviews} {t("dashboardHome.completed")}</p>
           </div>
 
           <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-6 shadow-lg hover:shadow-primary/10 transition-all duration-300 hover:scale-105">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-semibold text-slate-400">Skills</p>
+              <p className="text-sm font-semibold text-slate-400">{t("dashboardHome.cardSkills")}</p>
               <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
                 <CheckCircle className="w-5 h-5 text-primary" />
               </div>
             </div>
             <p className="text-3xl font-bold text-white">{skills.length}</p>
-            <p className="text-sm text-slate-500 mt-1">3 in progress</p>
+            <p className="text-sm text-slate-500 mt-1">{skills.length > 0 ? `${skills.slice(0, 3).join(', ')}` : t("dashboardHome.noSkills")}</p>
           </div>
         </div>
 
         <Analytics />
 
         <div 
-  className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-8 shadow-2xl"
+  className="relative bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-8 shadow-2xl overflow-hidden"
   onMouseEnter={() => setShowUploadSection(true)}
-  onMouseLeave={() => setShowUploadSection(false)}
+  onMouseLeave={() => { if (!isProcessing) setShowUploadSection(false); }}
 >
+  {/* Processing overlay */}
+  {isProcessing && (
+    <div className="absolute inset-0 z-20 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center gap-8 animate-fade-in-up rounded-2xl">
+      {/* Orbiting dots around a central icon */}
+      <div className="relative w-24 h-24 flex items-center justify-center">
+        <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-pulse-ring" />
+        <div className="absolute inset-[-8px] rounded-full border border-dashed border-primary/30 animate-spin" style={{ animationDuration: '6s' }} />
+        <div className="absolute w-3 h-3 rounded-full bg-blue-400 shadow-lg shadow-blue-400/50 animate-orbit" />
+        <div className="absolute w-2 h-2 rounded-full bg-cyan-400 shadow-lg shadow-cyan-400/50 animate-orbit-reverse" />
+        <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-cyan-500 flex items-center justify-center shadow-xl shadow-primary/30">
+          <Sparkles className="w-7 h-7 text-white animate-pulse" />
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div className="w-64 space-y-3">
+        <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-primary via-cyan-400 to-primary transition-all duration-700 ease-out relative"
+            style={{ width: `${((processingStep + 1) / processingSteps.length) * 100}%` }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
+          </div>
+        </div>
+        <p className="text-xs text-slate-500 text-center">
+          {processingStep + 1} / {processingSteps.length}
+        </p>
+      </div>
+
+      {/* Steps */}
+      <div className="flex flex-col gap-3 w-72">
+        {processingSteps.map((step, i) => (
+          <div
+            key={i}
+            className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-500 ${
+              i < processingStep
+                ? 'bg-green-500/10 border border-green-500/20'
+                : i === processingStep
+                  ? 'bg-primary/10 border border-primary/30 shadow-lg shadow-primary/10'
+                  : 'bg-slate-800/30 border border-slate-800/50 opacity-40'
+            }`}
+            style={i <= processingStep ? { animationDelay: `${i * 150}ms` } : {}}
+          >
+            <span className="text-lg w-6 text-center">
+              {i < processingStep ? '✓' : step.icon}
+            </span>
+            <span className={`text-sm font-medium ${
+              i < processingStep
+                ? 'text-green-400'
+                : i === processingStep
+                  ? 'text-white'
+                  : 'text-slate-500'
+            }`}>
+              {step.label}
+            </span>
+            {i === processingStep && (
+              <div className="ml-auto flex gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }} />
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+
   <div className="flex items-center justify-between mb-6">
     <div className="flex items-center gap-3">
       <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-primary to-primary/80 flex items-center justify-center">
         <Upload className="w-6 h-6 text-white" />
       </div>
       <div>
-        <h2 className="text-2xl font-bold text-white">Document Processing</h2>
-        <p className="text-slate-400">Upload resume, set goals, and check ATS compatibility</p>
+        <h2 className="text-2xl font-bold text-white">{t("dashboardHome.docTitle")}</h2>
+        <p className="text-slate-400">{t("dashboardHome.docSubtitle")}</p>
       </div>
     </div>
   </div>
@@ -390,9 +558,9 @@ export default function DashboardPage() {
       : 'max-h-0 opacity-0 -translate-y-4'
   }`}>
     <div>
-      <label className="block text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
+      <label className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
         <Upload className="w-4 h-4" />
-        Upload Resume
+        {t("dashboardHome.uploadResume")}
       </label>
       <input
         type="file"
@@ -411,7 +579,7 @@ export default function DashboardPage() {
       {file && (
         <div className="mt-3 p-3 bg-primary/10 border border-primary/30 rounded-lg">
           <p className="text-sm text-slate-300">
-            <span className="font-semibold text-primary">Selected:</span> {file.name}
+            <span className="font-semibold text-primary">{t("dashboardHome.selected")}</span> {file.name}
             <span className="text-slate-500 ml-2">({(file.size / 1024).toFixed(2)} KB)</span>
           </p>
         </div>
@@ -419,14 +587,14 @@ export default function DashboardPage() {
     </div>
 
     <div>
-      <label className="block text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
+      <label className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
         <Target className="w-4 h-4" />
-        Your Goals
+        {t("dashboardHome.yourGoals")}
       </label>
       <textarea
         value={goals}
         onChange={(e) => setGoals(e.target.value)}
-        placeholder="Enter your career goals and objectives..."
+        placeholder={t("dashboardHome.yourGoalsPlaceholder")}
         rows={4}
         className="w-full px-4 py-3 border border-slate-800 rounded-lg
           bg-slate-950/50 text-white placeholder-slate-500
@@ -435,14 +603,14 @@ export default function DashboardPage() {
     </div>
 
     <div>
-      <label className="block text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
+      <label className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
         <FileText className="w-4 h-4" />
-        Job Description (Optional - for ATS Check)
+        {t("dashboardHome.jobDescription")}
       </label>
       <textarea
         value={jobDescription}
         onChange={(e) => setJobDescription(e.target.value)}
-        placeholder="Paste the job description to check ATS compatibility..."
+        placeholder={t("dashboardHome.jobDescriptionPlaceholder")}
         rows={5}
         className="w-full px-4 py-3 border border-slate-800 rounded-lg
           bg-slate-950/50 text-white placeholder-slate-500
@@ -451,7 +619,7 @@ export default function DashboardPage() {
       {file && jobDescription.trim() && (
         <p className="mt-3 text-sm text-green-400 flex items-center gap-2">
           <CheckCircle className="w-4 h-4" />
-          ATS analysis will be performed in parallel
+          {t("dashboardHome.atsParallel")}
         </p>
       )}
     </div>
@@ -461,20 +629,10 @@ export default function DashboardPage() {
       disabled={isProcessing}
       className="w-full py-4 px-6 bg-gradient-to-r from-primary to-primary/80 text-white font-bold rounded-lg
         hover:shadow-lg hover:shadow-primary/25 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-slate-900
-        transition-all disabled:opacity-50 disabled:cursor-not-allowed
+        transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed
         transform hover:scale-[1.02] active:scale-[0.98]"
     >
-      {isProcessing ? (
-        <span className="flex items-center justify-center gap-2">
-          <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-          </svg>
-          Processing...
-        </span>
-      ) : (
-        'Process Document'
-      )}
+      {t("dashboardHome.processDocument")}
     </button>
   </div>
 </div>
@@ -484,7 +642,7 @@ export default function DashboardPage() {
             <a
               key={index}
               href={feature.link}
-              className="group relative overflow-hidden rounded-2xl border border-slate-800/50 bg-slate-900/50 backdrop-blur-xl p-8 shadow-lg hover:shadow-primary/20 hover:border-primary/50 transform hover:scale-105 transition-all duration-300"
+              className="group relative overflow-hidden rounded-2xl border border-slate-800/50 bg-slate-900/50 backdrop-blur-xl p-8 shadow-lg hover:shadow-primary/20 hover:border-primary/50 transform hover:scale-105 transition-all duration-300 cursor-pointer"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="relative z-10 space-y-4">
@@ -502,7 +660,7 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="flex items-center text-primary font-semibold group-hover:gap-3 gap-2 transition-all">
-                  <span>Get started</span>
+                  <span>{t("dashboardHome.getStarted")}</span>
                   <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
@@ -512,17 +670,6 @@ export default function DashboardPage() {
           ))}
         </div>
 
-        <div className="bg-gradient-to-r from-primary to-primary/80 rounded-2xl p-8 text-white shadow-2xl shadow-primary/30">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="space-y-2">
-              <h3 className="text-3xl font-bold">Ready to level up?</h3>
-              <p className="text-white/90 text-lg">Complete your profile to unlock personalized recommendations</p>
-            </div>
-            <button className="px-8 py-4 bg-white text-primary font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 whitespace-nowrap">
-              Complete Profile
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );

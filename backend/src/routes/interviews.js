@@ -583,7 +583,6 @@ router.get("/:id/analysis-status", async (req, res) => {
     const data = await response.json();
     res.json(data);
   } catch (error) {
-    console.error("Error fetching analysis status:", error);
     res.json({ active: false });
   }
 });

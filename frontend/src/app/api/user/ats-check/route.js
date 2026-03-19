@@ -160,7 +160,7 @@ export async function POST(request) {
         body.jobDescription
       );
       
-      if (!atsResults || typeof atsResults.matchScore !== 'number') {
+      if (!atsResults || typeof atsResults.matchScore !== 'number' || atsResults.matchScore === 0) {
         throw new Error('Invalid ATS results from LLM');
       }
       

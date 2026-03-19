@@ -7,7 +7,6 @@ Works with Next.js frontend and Express backend
 from flask import Flask, render_template, Response, jsonify, request
 import cv2
 import numpy as np
-import speech_recognition as sr
 from nltk.sentiment import SentimentIntensityAnalyzer
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from scipy.special import softmax
@@ -17,10 +16,7 @@ import json
 from datetime import datetime
 import threading
 import queue
-import base64
 from flask_cors import CORS
-import librosa
-import io
 
 # Download required NLTK data
 try:

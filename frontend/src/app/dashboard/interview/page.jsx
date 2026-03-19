@@ -729,7 +729,7 @@
 
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Camera, Mic, Square, Play, AlertCircle, CheckCircle, Loader, Volume2, VolumeX, Loader2, TrendingUp, Brain } from 'lucide-react';
+import { Camera, Mic, Square, Play, AlertCircle, CheckCircle, Loader, Volume2, VolumeX, Loader2, TrendingUp, Brain, ArrowLeft } from 'lucide-react';
 
 const API_URL = 'http://localhost:3001';
 const FLASK_URL = 'http://127.0.0.1:5001';
@@ -822,7 +822,8 @@ const InterviewPlatform = () => {
   const fetchUserHistory = async () => {
     try {
       const response = await fetch(`${API_URL}/interviews`);
-      const allInterviews = await response.json();
+      const data = await response.json();
+      const allInterviews = Array.isArray(data) ? data : (data.interviews || []);
       const userInterviews = allInterviews.filter(i => 
         i.userName === userName || i.userId === userId
       );
@@ -934,6 +935,14 @@ const InterviewPlatform = () => {
       });
       
       const data = await response.json();
+      if (!response.ok || data.error) {
+        alert('Failed to create interview: ' + (data.error || data.details || 'Unknown error'));
+        return;
+      }
+      if (!data.questions || data.questions.length === 0) {
+        alert('Interview created but no questions were generated. Please try again.');
+        return;
+      }
       setInterview(data);
       setContextUsed(data.contextUsed || false);
       console.log('🎯 Context used:', data.contextUsed);
@@ -950,15 +959,29 @@ const InterviewPlatform = () => {
       clearInterval(analysisPollingRef.current);
     }
 
+    let failCount = 0;
     analysisPollingRef.current = setInterval(async () => {
       try {
         const response = await fetch(`${API_URL}/interviews/${interviewId}/analysis-status`);
         const data = await response.json();
-        setAnalysisStatus(data);
+        if (data.active) {
+          failCount = 0;
+          setAnalysisStatus(data);
+        } else {
+          failCount++;
+          if (failCount >= 5) {
+            clearInterval(analysisPollingRef.current);
+            analysisPollingRef.current = null;
+          }
+        }
       } catch (error) {
-        console.error('Analysis polling error:', error);
+        failCount++;
+        if (failCount >= 5) {
+          clearInterval(analysisPollingRef.current);
+          analysisPollingRef.current = null;
+        }
       }
-    }, 2000);
+    }, 3000);
   };
 
   useEffect(() => {
@@ -1000,7 +1023,7 @@ const InterviewPlatform = () => {
           const base64Audio = reader.result.split(',')[1];
           
           try {
-            const currentQuestion = interview.questions[currentQuestionIndex];
+            const currentQuestion = interview?.questions?.[currentQuestionIndex];
             const response = await fetch(`${API_URL}/interviews/${interview.id}/answer`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -1014,7 +1037,7 @@ const InterviewPlatform = () => {
             await pollEvaluation(data.transcriptId);
             setIsProcessing(false);
             
-            if (currentQuestionIndex < interview.questions.length - 1) {
+            if (currentQuestionIndex < (interview?.questions?.length ?? 0) - 1) {
               setCurrentQuestionIndex(currentQuestionIndex + 1);
             } else {
               if (analysisPollingRef.current) {
@@ -1075,6 +1098,13 @@ const InterviewPlatform = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
         <div className="max-w-2xl mx-auto">
+          <button
+            onClick={() => window.history.back()}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition cursor-pointer"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span className="font-medium">Back</span>
+          </button>
           <div className="bg-white rounded-2xl shadow-xl p-8">
             <div className="text-center mb-8">
               <div className="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
@@ -1136,7 +1166,7 @@ const InterviewPlatform = () => {
               <button
                 onClick={createInterview}
                 disabled={!role || !skills}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition"
               >
                 Start Interview
               </button>
@@ -1159,7 +1189,7 @@ const InterviewPlatform = () => {
   }
 
   if (step === 'interview') {
-    const currentQuestion = interview?.questions[currentQuestionIndex];
+    const currentQuestion = interview?.questions?.[currentQuestionIndex];
     
     return (
       <div className="min-h-screen bg-gray-900 p-4">
@@ -1211,13 +1241,13 @@ const InterviewPlatform = () => {
             <div className="lg:col-span-2 flex flex-col gap-4">
               <div className="bg-white rounded-xl shadow-lg p-4">
                 <div className="flex justify-between text-sm text-gray-600 mb-2">
-                  <span>Question {currentQuestionIndex + 1} of {interview.questions.length}</span>
-                  <span>{Math.round(((currentQuestionIndex + 1) / interview.questions.length) * 100)}%</span>
+                  <span>Question {currentQuestionIndex + 1} of {interview?.questions?.length ?? '...'}</span>
+                  <span>{interview?.questions?.length ? Math.round(((currentQuestionIndex + 1) / interview.questions.length) * 100) : 0}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
                     className="bg-gradient-to-r from-blue-600 to-purple-600 h-2 rounded-full transition-all"
-                    style={{ width: `${((currentQuestionIndex + 1) / interview.questions.length) * 100}%` }}
+                    style={{ width: `${interview?.questions?.length ? ((currentQuestionIndex + 1) / interview.questions.length) * 100 : 0}%` }}
                   />
                 </div>
               </div>
@@ -1236,7 +1266,7 @@ const InterviewPlatform = () => {
                     ) : isPlaying ? (
                       <button
                         onClick={handleStopAudio}
-                        className="p-3 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition"
+                        className="p-3 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition cursor-pointer"
                         title="Stop audio"
                       >
                         <VolumeX className="w-5 h-5" />
@@ -1244,7 +1274,7 @@ const InterviewPlatform = () => {
                     ) : (
                       <button
                         onClick={handleReplayAudio}
-                        className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                        className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition cursor-pointer"
                         title="Play/Replay question"
                       >
                         <Volume2 className="w-5 h-5" />
@@ -1291,7 +1321,7 @@ const InterviewPlatform = () => {
                       <button
                         onClick={startRecording}
                         disabled={isPlaying}
-                        className="flex items-center space-x-2 bg-red-600 text-white px-8 py-4 rounded-full font-semibold hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                        className="flex items-center space-x-2 bg-red-600 text-white px-8 py-4 rounded-full font-semibold hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-lg"
                       >
                         <Mic size={24} />
                         <span>Start Recording Answer</span>
@@ -1307,7 +1337,7 @@ const InterviewPlatform = () => {
                   {isRecording && (
                     <button
                       onClick={stopRecording}
-                      className="flex items-center space-x-2 bg-gray-800 text-white px-8 py-4 rounded-full font-semibold hover:bg-gray-900 transition animate-pulse shadow-lg"
+                      className="flex items-center space-x-2 bg-gray-800 text-white px-8 py-4 rounded-full font-semibold hover:bg-gray-900 transition animate-pulse cursor-pointer shadow-lg"
                     >
                       <Square size={24} />
                       <span>Stop Recording</span>
@@ -1422,6 +1452,13 @@ const InterviewPlatform = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
       <div className="max-w-4xl mx-auto">
+        <button
+          onClick={() => setStep('setup')}
+          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition cursor-pointer"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span className="font-medium">Back</span>
+        </button>
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <div className="text-center mb-8">
             <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -1503,7 +1540,7 @@ const InterviewPlatform = () => {
 
               <button
                 onClick={() => window.location.reload()}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition cursor-pointer"
               >
                 Start New Interview
               </button>

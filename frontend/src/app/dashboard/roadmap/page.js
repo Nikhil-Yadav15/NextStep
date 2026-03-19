@@ -2,8 +2,12 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 export default function RoadmapPage() {
+  const { t } = useLanguage();
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [roadmaps, setRoadmaps] = useState(null);
   const [error, setError] = useState(null);
@@ -36,7 +40,7 @@ export default function RoadmapPage() {
           setSelectedJob(firstJobId);
           
           if (data.source === "cache") {
-            toast.success("Loaded your saved roadmap");
+            toast.success(t("roadmapPage.toastLoadedSaved"));
           }
         }
       } catch (err) {
@@ -60,7 +64,7 @@ export default function RoadmapPage() {
         ?.split('=')[1];
 
       if (!uniquePresence) {
-        throw new Error('Please login to generate roadmap');
+        throw new Error(t("roadmapPage.loginRequired"));
       }
 
       const response = await fetch('/api/roadmap', {
@@ -75,7 +79,7 @@ export default function RoadmapPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to generate roadmap');
+        throw new Error(data.message || t("roadmapPage.failedGenerate"));
       }
 
       if (data.status === 'success' && data.data.roadmaps) {
@@ -84,12 +88,12 @@ export default function RoadmapPage() {
         setSelectedJob(firstJobId);
 
         if (data.source === "cache") {
-          toast.success("Loaded roadmap from saved profile");
+          toast.success(t("roadmapPage.toastLoadedProfile"));
         } else {
-          toast.success("Generated and saved new roadmap");
+          toast.success(t("roadmapPage.toastGenerated"));
         }
       } else {
-        toast.error(data.message || "Failed to Load Roadmap");
+        toast.error(data.message || t("roadmapPage.failedLoad"));
       }
     } catch (err) {
       console.error('Error generating roadmap:', err);
@@ -124,11 +128,20 @@ export default function RoadmapPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 mb-4 transition-colors cursor-pointer"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            {t("roadmapPage.back")}
+          </button>
           <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
-            Learning Roadmap
+            {t("roadmapPage.title")}
           </h1>
           <p className="text-gray-600 text-lg">
-            AI-powered career roadmaps with curated resources
+            {t("roadmapPage.subtitle")}
           </p>
         </motion.div>
 
@@ -163,13 +176,13 @@ export default function RoadmapPage() {
                     </svg>
                   </div>
                   <h2 className="text-2xl font-bold text-gray-800 mb-3">
-                    Ready to Build Your Path?
+                    {t("roadmapPage.readyTitle")}
                   </h2>
                   <p className="text-gray-600 mb-2">
-                    Generate personalized learning roadmaps with curated resources
+                    {t("roadmapPage.readySubtitle")}
                   </p>
                   <p className="text-sm text-gray-500">
-                    Our AI analyzes skill gaps and finds the best learning materials
+                    {t("roadmapPage.readyCaption")}
                   </p>
                 </div>
 
@@ -201,7 +214,7 @@ export default function RoadmapPage() {
                             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                           />
                         </svg>
-                        Generating Roadmaps...
+                        {t("roadmapPage.generating")}
                       </>
                     ) : (
                       <>
@@ -218,7 +231,7 @@ export default function RoadmapPage() {
                             d="M13 10V3L4 14h7v7l9-11h-7z"
                           />
                         </svg>
-                        Generate Roadmap
+                        {t("roadmapPage.generateRoadmap")}
                       </>
                     )}
                   </span>
@@ -261,7 +274,7 @@ export default function RoadmapPage() {
                         d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                       />
                     </svg>
-                    Bookmarked Jobs
+                    {t("roadmapPage.bookmarkedJobs")}
                   </h3>
                   <div className="space-y-3">
                     {Object.keys(roadmaps).map((jobId) => {
@@ -297,7 +310,7 @@ export default function RoadmapPage() {
                     disabled={loading}
                     className="mt-6 w-full px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
                   >
-                    {loading ? 'Regenerating...' : 'Generate New Roadmap'}
+                    {loading ? t("roadmapPage.regenerating") : t("roadmapPage.generateNew")}
                   </button>
                 </div>
               </motion.div>
@@ -333,7 +346,7 @@ export default function RoadmapPage() {
                             {formatJobTitle(selectedJob).title}
                           </h2>
                           <p className="text-gray-600">
-                            {formatJobTitle(selectedJob).company} • {currentRoadmap.length} learning steps
+                            {formatJobTitle(selectedJob).company} • {currentRoadmap.length} {t("roadmapPage.learningSteps")}
                           </p>
                         </div>
                       </div>
