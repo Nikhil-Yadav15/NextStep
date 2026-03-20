@@ -40,13 +40,14 @@ export function initChatSocket(server) {
   }
 
   const mongoClient = new MongoClient(mongoUri);
-  let db, chatsCollection;
+  let db, chatsCollection, groupsCollection;
 
   mongoClient
     .connect()
     .then(() => {
       db = mongoClient.db("AI_Interview");
       chatsCollection = db.collection("Chats");
+      groupsCollection = db.collection("Groups");
       console.log("✅ Chat socket connected to MongoDB");
     })
     .catch((err) => {
@@ -99,6 +100,22 @@ export function initChatSocket(server) {
 
     // Join personal room for targeted messaging
     socket.join(`user:${uniquePresence}`);
+
+    // Auto-join all group rooms user is a member of
+    if (groupsCollection) {
+      groupsCollection
+        .find({ members: uniquePresence })
+        .toArray()
+        .then((groups) => {
+          groups.forEach((g) => {
+            socket.join(`group:${g._id.toString()}`);
+          });
+          if (groups.length > 0) {
+            console.log(`📂 ${socket.data.user.name} joined ${groups.length} group rooms`);
+          }
+        })
+        .catch((err) => console.error("❌ Failed to join group rooms:", err.message));
+    }
 
     // Broadcast online status
     socket.broadcast.emit("user_online", { uniquePresence });
@@ -167,6 +184,65 @@ export function initChatSocket(server) {
         });
       } catch (err) {
         console.error("❌ mark_read error:", err.message);
+      }
+    });
+
+    // --- Join group (socket room) ---
+    socket.on("join_group", ({ groupId }) => {
+      if (groupId) {
+        socket.join(`group:${groupId}`);
+      }
+    });
+
+    // --- Leave group (socket room) ---
+    socket.on("leave_group", ({ groupId }) => {
+      if (groupId) {
+        socket.leave(`group:${groupId}`);
+      }
+    });
+
+    // --- Send group message ---
+    socket.on("send_group_message", async (data, ack) => {
+      try {
+        const { groupId, senderName, message } = data;
+
+        if (!groupId || !message?.trim()) {
+          return ack?.({ status: "error", message: "Invalid payload" });
+        }
+
+        if (!chatsCollection || !groupsCollection) {
+          return ack?.({ status: "error", message: "Database not ready" });
+        }
+
+        // Verify membership
+        const group = await groupsCollection.findOne({
+          _id: new ObjectId(groupId),
+          members: uniquePresence,
+        });
+
+        if (!group) {
+          return ack?.({ status: "error", message: "Not a group member" });
+        }
+
+        const chatMessage = {
+          _id: new ObjectId(),
+          senderId: uniquePresence,
+          senderName: senderName || socket.data.user.name || "Unknown",
+          groupId,
+          message: message.trim(),
+          timestamp: new Date(),
+          readBy: [{ userId: uniquePresence, readAt: new Date() }],
+        };
+
+        await chatsCollection.insertOne(chatMessage);
+
+        // Emit to all group members (including sender for confirmation)
+        io.to(`group:${groupId}`).emit("receive_group_message", chatMessage);
+
+        ack?.({ status: "success", data: chatMessage });
+      } catch (err) {
+        console.error("❌ send_group_message error:", err.message);
+        ack?.({ status: "error", message: "Failed to send group message" });
       }
     });
 
