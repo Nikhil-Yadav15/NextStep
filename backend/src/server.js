@@ -58,6 +58,7 @@ import fs from 'fs/promises';
 import { fileURLToPath } from 'url';
 
 import { initQdrant } from "./services/qdrant.js";
+import { initChatSocket } from "./services/chatSocket.js";
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // --- Router Imports ---
@@ -287,6 +288,13 @@ async function startServer() {
             console.log(`✅ Server running on http://localhost:${PORT}`);
             console.log(`📊 Qdrant URL: ${process.env.QDRANT_URL || 'http://localhost:6333'}`);
         });
+
+        // Initialize Socket.io for real-time chat
+        try {
+            initChatSocket(server);
+        } catch (err) {
+            console.warn("⚠️ Chat socket initialization failed:", err.message);
+        }
 
         // Handle server errors
         server.on('error', (err) => {
