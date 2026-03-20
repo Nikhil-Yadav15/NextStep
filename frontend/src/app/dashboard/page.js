@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { LogOut, Upload, Target, FileText, CheckCircle, Sparkles } from "lucide-react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Sphere, Float } from "@react-three/drei";
@@ -94,51 +95,57 @@ export default function DashboardPage() {
     setTimeout(() => setToast(null), 5000);
   };
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      const uniquePresence = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('uniquePresence='))
-        ?.split('=')[1];
+  const fetchDashboardData = async () => {
+    const uniquePresence = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('uniquePresence='))
+      ?.split('=')[1];
 
-      // Fetch interviews from backend
+    let profileName = null;
+
+    if (uniquePresence) {
+      // Fetch profile for skills (and get userName for interview filtering)
       try {
-        const res = await fetch(`${backendApiBase}/interviews`);
+        const res = await fetch('/api/getProfile', {
+          headers: { 'Authorization': `Bearer ${uniquePresence}` }
+        });
         const data = await res.json();
-        setInterviews(Array.isArray(data) ? data : (data.interviews || []));
+        if (data.status === 'success') {
+          setSkills(data.data.skills || []);
+          profileName = data.data.name || null;
+        }
       } catch (err) {
-        console.error('Error fetching interviews:', err);
+        console.error('Error fetching profile:', err);
       }
 
-      if (uniquePresence) {
-        // Fetch profile for skills
-        try {
-          const res = await fetch('/api/getProfile', {
-            headers: { 'Authorization': `Bearer ${uniquePresence}` }
-          });
-          const data = await res.json();
-          if (data.status === 'success') {
-            setSkills(data.data.skills || []);
-          }
-        } catch (err) {
-          console.error('Error fetching profile:', err);
+      // Fetch quiz scores
+      try {
+        const res = await fetch('/api/getScores', {
+          headers: { 'Authorization': `Bearer ${uniquePresence}` }
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          setQuizScores(data.data || []);
         }
-
-        // Fetch quiz scores
-        try {
-          const res = await fetch('/api/getScores', {
-            headers: { 'Authorization': `Bearer ${uniquePresence}` }
-          });
-          const data = await res.json();
-          if (data.status === 'success') {
-            setQuizScores(data.data || []);
-          }
-        } catch (err) {
-          console.error('Error fetching scores:', err);
-        }
+      } catch (err) {
+        console.error('Error fetching scores:', err);
       }
-    };
+    }
 
+    // Fetch interviews from backend (filtered by userName if available)
+    try {
+      const url = profileName
+        ? `${backendApiBase}/interviews?userName=${encodeURIComponent(profileName)}`
+        : `${backendApiBase}/interviews`;
+      const res = await fetch(url);
+      const data = await res.json();
+      setInterviews(Array.isArray(data) ? data : (data.interviews || []));
+    } catch (err) {
+      console.error('Error fetching interviews:', err);
+    }
+  };
+
+  useEffect(() => {
     fetchDashboardData();
   }, []);
 
@@ -369,6 +376,8 @@ export default function DashboardPage() {
         setGoals('');
         setJobDescription('');
         setShowUploadSection(false);
+        // Re-fetch profile data to reflect newly parsed skills/goals
+        fetchDashboardData();
       }
 
     } catch (error) {
@@ -640,7 +649,7 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, index) => (
-            <a
+            <Link
               key={index}
               href={feature.link}
               className="group relative overflow-hidden rounded-2xl border border-slate-800/50 bg-slate-900/50 backdrop-blur-xl p-8 shadow-lg hover:shadow-primary/20 hover:border-primary/50 transform hover:scale-105 transition-all duration-300 cursor-pointer"
@@ -667,10 +676,9 @@ export default function DashboardPage() {
                   </svg>
                 </div>
               </div>
-            </a>
+            </Link>
           ))}
         </div>
-
       </div>
     </div>
   );

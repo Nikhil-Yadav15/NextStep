@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, Suspense } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Bookmark, BookmarkCheck } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -200,7 +201,7 @@ function JobsContent() {
     <section className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-6">
-          <a
+          <Link
             href="/dashboard"
             className="inline-flex items-center gap-2 px-4 py-2 text-slate-400 hover:text-slate-200 transition-colors"
           >
@@ -208,7 +209,7 @@ function JobsContent() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
             {t("jobsPage.backToDashboard")}
-          </a>
+          </Link>
         </div>
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
