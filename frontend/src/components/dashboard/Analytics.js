@@ -17,6 +17,11 @@ import {
   Area,
   AreaChart,
   Legend,
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
 } from "recharts";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { format, parseISO, startOfWeek } from "date-fns";
@@ -45,7 +50,7 @@ function CustomTooltip({ active, payload, label, labelFormatter, valueFormatter 
 
 const axisStyle = { fill: "#94a3b8", fontSize: 12 };
 
-export default function Analytics() {
+export default function Analytics({ interviews = [] }) {
   const uniquePresence = (() => {
     if (typeof window === "undefined") return null;
     const match = document.cookie
@@ -122,7 +127,47 @@ export default function Analytics() {
     return { avg, total: data.length, bestTopic, trending, latest };
   }, [data, topicData]);
 
-  const hasData = data.length > 0 || weeklyData.length > 0 || topicData.length > 0;
+  // Score Distribution — bucket scores into ranges
+  const distributionData = useMemo(() => {
+    if (data.length === 0) return [];
+    const buckets = { "0–20": 0, "21–40": 0, "41–60": 0, "61–80": 0, "81–100": 0 };
+    data.forEach((d) => {
+      const p = d.percentage;
+      if (p <= 20) buckets["0–20"]++;
+      else if (p <= 40) buckets["21–40"]++;
+      else if (p <= 60) buckets["41–60"]++;
+      else if (p <= 80) buckets["61–80"]++;
+      else buckets["81–100"]++;
+    });
+    return Object.entries(buckets).map(([range, count]) => ({ range, count }));
+  }, [data]);
+
+  // Topic-wise average score for radar chart
+  const radarData = useMemo(() => {
+    if (data.length === 0) return [];
+    const topicScores = {};
+    data.forEach((d) => {
+      const topic = d.topic || "General";
+      if (!topicScores[topic]) topicScores[topic] = { sum: 0, count: 0 };
+      topicScores[topic].sum += d.percentage;
+      topicScores[topic].count++;
+    });
+    return Object.entries(topicScores).map(([topic, { sum, count }]) => ({
+      topic: topic.length > 14 ? topic.slice(0, 12) + "…" : topic,
+      avgScore: Math.round(sum / count),
+    }));
+  }, [data]);
+
+  // Interview completion stats
+  const interviewStats = useMemo(() => {
+    if (!interviews || interviews.length === 0) return null;
+    const completed = interviews.filter((i) => i.reports && i.reports.length > 0).length;
+    const total = interviews.length;
+    const pct = Math.round((completed / total) * 100);
+    return { completed, total, pct };
+  }, [interviews]);
+
+  const hasData = data.length > 0 || weeklyData.length > 0 || topicData.length > 0 || interviews.length > 0;
 
   if (!hasData) {
     return (
@@ -337,6 +382,141 @@ export default function Analytics() {
                   <Bar dataKey="count" fill="url(#barGradient)" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Score Distribution — Histogram */}
+        {distributionData.length > 0 && (
+          <Card className={`lg:col-span-1 ${cardClass}`}>
+            <CardHeader>
+              <CardTitle className="text-white">Score Distribution</CardTitle>
+              <CardDescription className="text-slate-400">How your scores are spread</CardDescription>
+            </CardHeader>
+            <CardContent className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={distributionData} barCategoryGap="20%">
+                  <defs>
+                    <linearGradient id="histGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#a855f7" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#a855f7" stopOpacity={0.4} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.06} stroke="#94a3b8" />
+                  <XAxis
+                    dataKey="range"
+                    tick={{ ...axisStyle, fontSize: 11 }}
+                    axisLine={{ stroke: "#334155" }}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    allowDecimals={false}
+                    tick={axisStyle}
+                    axisLine={{ stroke: "#334155" }}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    content={
+                      <CustomTooltip
+                        valueFormatter={(val) => `${val} test${val !== 1 ? "s" : ""}`}
+                      />
+                    }
+                  />
+                  <Bar dataKey="count" fill="url(#histGradient)" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Topic-wise Avg Score — Radar Chart */}
+        {radarData.length >= 3 && (
+          <Card className={`lg:col-span-2 ${cardClass}`}>
+            <CardHeader>
+              <CardTitle className="text-white">Strengths & Weaknesses</CardTitle>
+              <CardDescription className="text-slate-400">Average score by topic</CardDescription>
+            </CardHeader>
+            <CardContent className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="70%">
+                  <PolarGrid stroke="#334155" strokeOpacity={0.5} />
+                  <PolarAngleAxis dataKey="topic" tick={{ fill: "#94a3b8", fontSize: 11 }} />
+                  <PolarRadiusAxis
+                    domain={[0, 100]}
+                    tick={{ fill: "#64748b", fontSize: 10 }}
+                    axisLine={false}
+                    tickCount={5}
+                  />
+                  <Tooltip
+                    content={
+                      <CustomTooltip
+                        valueFormatter={(val, name) => `${val}%`}
+                      />
+                    }
+                  />
+                  <Radar
+                    dataKey="avgScore"
+                    stroke="#06b6d4"
+                    strokeWidth={2}
+                    fill="#06b6d4"
+                    fillOpacity={0.2}
+                    dot={{ r: 4, fill: "#06b6d4", stroke: "#0f172a", strokeWidth: 2 }}
+                  />
+                </RadarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Interview Completion — Progress Ring */}
+        {interviewStats && (
+          <Card className={`lg:col-span-1 ${cardClass}`}>
+            <CardHeader>
+              <CardTitle className="text-white">Interview Completion</CardTitle>
+              <CardDescription className="text-slate-400">Completed vs total interviews</CardDescription>
+            </CardHeader>
+            <CardContent className="h-72 flex flex-col items-center justify-center">
+              <div className="relative w-40 h-40">
+                <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
+                  {/* Background ring */}
+                  <circle
+                    cx="60" cy="60" r="50"
+                    fill="none"
+                    stroke="#334155"
+                    strokeWidth="10"
+                  />
+                  {/* Progress ring */}
+                  <circle
+                    cx="60" cy="60" r="50"
+                    fill="none"
+                    stroke="url(#ringGradient)"
+                    strokeWidth="10"
+                    strokeLinecap="round"
+                    strokeDasharray={`${interviewStats.pct * 3.14} ${314 - interviewStats.pct * 3.14}`}
+                  />
+                  <defs>
+                    <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#22c55e" />
+                      <stop offset="100%" stopColor="#06b6d4" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-3xl font-bold text-white">{interviewStats.pct}%</span>
+                  <span className="text-xs text-slate-400">completed</span>
+                </div>
+              </div>
+              <div className="flex gap-6 mt-4 text-center">
+                <div>
+                  <p className="text-lg font-bold text-white">{interviewStats.completed}</p>
+                  <p className="text-xs text-slate-400">Completed</p>
+                </div>
+                <div className="w-px bg-slate-700" />
+                <div>
+                  <p className="text-lg font-bold text-white">{interviewStats.total}</p>
+                  <p className="text-xs text-slate-400">Total</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         )}
