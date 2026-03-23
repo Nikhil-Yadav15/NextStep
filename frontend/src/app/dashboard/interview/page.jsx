@@ -1497,7 +1497,7 @@ const InterviewPlatform = () => {
             </div>
           )}
 
-          <div className="mt-6 text-xs text-slate-500">Powered by Executive Career Oracle • Pro Access</div>
+          <div className="mt-6 text-xs text-slate-500">Powered by NextStep •  Career Copilot</div>
         </div>
       </div>
     );
