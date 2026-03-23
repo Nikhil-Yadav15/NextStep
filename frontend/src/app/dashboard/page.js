@@ -683,7 +683,7 @@ export default function DashboardPage() {
   </div>
 </div>
 
-        <Analytics interviews={interviews} />
+        <Analytics interviews={interviews} skills={skills} />
 
       </div>
     </div>
