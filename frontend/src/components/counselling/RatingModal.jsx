@@ -23,13 +23,13 @@ export default function RatingModal({ booking, onClose, onSubmit }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md bg-slate-900 border border-slate-800/50 rounded-2xl shadow-2xl p-6">
-        <button onClick={onClose} className="absolute top-4 right-4 p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+      <div className="relative w-full max-w-md bg-zinc-950 border border-zinc-900/80 rounded-2xl shadow-2xl p-6">
+        <button onClick={onClose} className="absolute top-4 right-4 p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">
           <X className="w-5 h-5" />
         </button>
 
         <h2 className="text-xl font-bold text-white mb-1">Rate Your Session</h2>
-        <p className="text-sm text-slate-400 mb-6">How was your session with {booking.mentorName}?</p>
+        <p className="text-sm text-zinc-400 mb-6">How was your session with {booking.mentorName}?</p>
 
         {/* Stars */}
         <div className="flex justify-center gap-2 mb-6">
@@ -45,7 +45,7 @@ export default function RatingModal({ booking, onClose, onSubmit }) {
                 className={`w-10 h-10 ${
                   star <= (hoverRating || rating)
                     ? "text-amber-400 fill-amber-400"
-                    : "text-slate-600"
+                    : "text-zinc-600"
                 } transition-colors`}
               />
             </button>
@@ -58,13 +58,13 @@ export default function RatingModal({ booking, onClose, onSubmit }) {
           onChange={(e) => setFeedback(e.target.value)}
           placeholder="Share your experience (optional)..."
           rows={3}
-          className="w-full bg-slate-800/50 border border-slate-700/50 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 resize-none mb-4"
+          className="w-full bg-zinc-900/50 border border-zinc-800/70 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500/50 resize-none mb-4"
         />
 
         <button
           onClick={handleSubmit}
           disabled={rating === 0 || isSubmitting}
-          className="w-full py-2.5 rounded-xl font-medium text-sm bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-500 hover:to-cyan-500 disabled:opacity-50 transition-all shadow-lg shadow-blue-500/20"
+          className="w-full py-2.5 rounded-xl font-medium text-sm bg-zinc-900 text-white border border-zinc-800 hover:bg-zinc-800 disabled:opacity-50 transition-all"
         >
           {isSubmitting ? "Submitting..." : "Submit Rating"}
         </button>

@@ -26,11 +26,11 @@ export default function BookingCard({ booking, onJoin, onRate }) {
   const canJoin = isWithinSessionWindow(booking);
 
   return (
-    <div className="bg-slate-900/60 backdrop-blur-sm border border-slate-800/50 rounded-xl p-5 hover:border-slate-700/50 transition-all">
+    <div className="bg-zinc-950/80 border border-zinc-900/80 rounded-xl p-5 hover:border-zinc-700/80 transition-all shadow-xl backdrop-blur-xl">
       <div className="flex items-start justify-between mb-3">
         <div>
           <h4 className="text-white font-semibold">{booking.mentorName}</h4>
-          <p className="text-sm text-slate-400">Mentor</p>
+          <p className="text-sm text-zinc-400">Mentor</p>
         </div>
         <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${config.bg} ${config.color}`}>
           <StatusIcon className={`w-3.5 h-3.5 ${booking.status === "pending" ? "animate-spin" : ""}`} />
@@ -38,7 +38,7 @@ export default function BookingCard({ booking, onJoin, onRate }) {
         </span>
       </div>
 
-      <div className="flex items-center gap-4 text-sm text-slate-400 mb-3">
+      <div className="flex items-center gap-4 text-sm text-zinc-400 mb-3">
         <div className="flex items-center gap-1.5">
           <Calendar className="w-4 h-4" />
           <span>{booking.requestedSlot.date}</span>
@@ -50,21 +50,21 @@ export default function BookingCard({ booking, onJoin, onRate }) {
       </div>
 
       {booking.adminNote && (
-        <p className="text-xs text-slate-500 mb-3 italic">Note: {booking.adminNote}</p>
+        <p className="text-xs text-zinc-500 mb-3 italic">Note: {booking.adminNote}</p>
       )}
 
       <div className="flex gap-2">
         {canJoin && (
           <button
             onClick={() => onJoin(booking)}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-500 hover:to-teal-500 transition-all shadow-lg shadow-emerald-500/20"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-zinc-900 text-white border border-zinc-800 hover:bg-zinc-800 transition-all"
           >
             <Video className="w-4 h-4" />
             Join Session
           </button>
         )}
         {booking.status === "approved" && !canJoin && (
-          <span className="text-xs text-slate-500 py-2">
+          <span className="text-xs text-zinc-500 py-2">
             Join button will appear 10 min before session
           </span>
         )}
