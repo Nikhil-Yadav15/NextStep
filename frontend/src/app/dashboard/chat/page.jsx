@@ -876,7 +876,7 @@ export default function ChatPage() {
               {selectedUser ? (
                 <>
                   <div className="relative">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center font-semibold text-white text-sm shadow-[0_0_20px_rgba(59,130,246,0.25)]">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center font-semibold text-white text-sm shadow-[0_0_20px_rgba(34,211,238,0.25)]">
                       {selectedUser.name?.charAt(0).toUpperCase() || 'U'}
                     </div>
                     <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-[hsl(222,47%,4%)]"></div>
@@ -917,7 +917,7 @@ export default function ChatPage() {
                   >
                     {/* Sender avatar for group messages (non-mine) */}
                     {selectedGroup && !msg.isMine && (
-                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-gray-600 to-gray-700 flex items-center justify-center text-white text-[10px] font-semibold flex-shrink-0 mt-5 mr-2">
+                      <div className="w-7 h-7 rounded-lg bg-cyan-500/15 border border-cyan-500/25 flex items-center justify-center text-cyan-200 text-[10px] font-semibold flex-shrink-0 mt-5 mr-2">
                         {msg.senderName?.charAt(0).toUpperCase() || '?'}
                       </div>
                     )}

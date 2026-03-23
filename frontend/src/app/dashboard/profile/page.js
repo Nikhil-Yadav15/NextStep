@@ -238,9 +238,9 @@ console.log('Saving profile with uniquePresence:', uniquePresence);
   };
 
   const toneStyles = {
-    indigo: { card: "border-indigo-500/20 bg-indigo-500/5", icon: "text-indigo-200 bg-indigo-500/20" },
-    fuchsia: { card: "border-fuchsia-500/20 bg-fuchsia-500/5", icon: "text-fuchsia-200 bg-fuchsia-500/20" },
-    emerald: { card: "border-emerald-500/20 bg-emerald-500/5", icon: "text-emerald-200 bg-emerald-500/20" },
+    indigo: { card: "border-cyan-500/25 bg-cyan-500/8", icon: "text-cyan-200 bg-cyan-500/20 border border-cyan-500/25" },
+    fuchsia: { card: "border-blue-500/25 bg-blue-500/8", icon: "text-cyan-200 bg-cyan-500/20 border border-cyan-500/25" },
+    emerald: { card: "border-sky-500/25 bg-sky-500/8", icon: "text-cyan-200 bg-cyan-500/20 border border-cyan-500/25" },
   };
 
   const statCards = [
@@ -264,15 +264,15 @@ console.log('Saving profile with uniquePresence:', uniquePresence);
   return (
     <div className="relative min-h-screen bg-slate-950 text-slate-50 overflow-hidden">
       {(fetching || loading) && (
-        <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-slate-800">
-          <div className="h-full w-full bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-emerald-400 animate-pulse" />
+          <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-slate-800">
+          <div className="h-full w-full bg-gradient-to-r from-cyan-500 via-blue-500 to-sky-400 animate-pulse" />
         </div>
       )}
 
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-20 top-10 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl" />
-        <div className="absolute right-0 top-40 h-72 w-72 rounded-full bg-fuchsia-500/10 blur-3xl" />
-        <div className="absolute left-10 bottom-0 h-72 w-72 rounded-full bg-emerald-500/10 blur-3xl" />
+        <div className="absolute -left-20 top-10 h-64 w-64 rounded-full bg-cyan-500/10 blur-3xl" />
+        <div className="absolute right-0 top-40 h-72 w-72 rounded-full bg-blue-500/10 blur-3xl" />
+        <div className="absolute left-10 bottom-0 h-72 w-72 rounded-full bg-sky-500/10 blur-3xl" />
       </div>
 
       <div className="relative mx-auto max-w-7xl px-4 py-10 space-y-8">
@@ -291,7 +291,7 @@ console.log('Saving profile with uniquePresence:', uniquePresence);
                 <button
                   onClick={handleSave}
                   disabled={loading}
-                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition hover:shadow-emerald-500/30 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-cyan-500/20 transition hover:shadow-cyan-500/30 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
               >
                   <Save className="w-4 h-4" />
                   Save profile
@@ -307,7 +307,7 @@ console.log('Saving profile with uniquePresence:', uniquePresence);
             ) : (
               <button
                 onClick={handleEdit}
-              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition hover:shadow-indigo-500/30 cursor-pointer"
+              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-cyan-500/20 transition hover:shadow-cyan-500/30 cursor-pointer"
             >
                 <Edit2 className="w-4 h-4" />
                 Edit profile
@@ -373,14 +373,14 @@ console.log('Saving profile with uniquePresence:', uniquePresence);
                       type="text"
                       value={tempData.name}
                       onChange={(e) => handleInputChange("name", e.target.value)}
-                      className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-lg font-semibold text-white outline-none focus:border-indigo-400 focus:bg-white/10"
+                      className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-lg font-semibold text-white outline-none focus:border-cyan-400 focus:bg-white/10"
                       placeholder="Full name"
                     />
                     <input
                       type="text"
                       value={tempData.title || ""}
                       onChange={(e) => handleInputChange("title", e.target.value)}
-                      className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-slate-200 outline-none focus:border-indigo-400 focus:bg-white/10"
+                      className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-slate-200 outline-none focus:border-cyan-400 focus:bg-white/10"
                       placeholder="Role headline"
                     />
                   </>
@@ -400,15 +400,15 @@ console.log('Saving profile with uniquePresence:', uniquePresence);
 
                 <div className="flex flex-wrap gap-2 text-sm text-slate-200">
                   <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1">
-                    <MapPin className="w-4 h-4 text-fuchsia-300" />
+                    <MapPin className="w-4 h-4 text-cyan-300" />
                     {profileData.location || "Location not set"}
                   </span>
                   <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1">
-                    <Calendar className="w-4 h-4 text-emerald-300" />
+                    <Calendar className="w-4 h-4 text-blue-300" />
                     Joined {profileData.joinDate || "recently"}
                   </span>
                   <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1">
-                    <Mail className="w-4 h-4 text-indigo-300" />
+                    <Mail className="w-4 h-4 text-cyan-300" />
                     {profileData.email || "Add email"}
                   </span>
                 </div>
@@ -437,7 +437,9 @@ console.log('Saving profile with uniquePresence:', uniquePresence);
             <div className="rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur">
               <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Book className="w-5 h-5 text-indigo-300" />
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-cyan-500/15 border border-cyan-500/25">
+                      <Book className="w-5 h-5 text-cyan-300" />
+                    </div>
                   <h2 className="text-xl font-semibold text-white">About</h2>
                 </div>
                 {isBusy && <span className="text-xs text-slate-300">Syncing...</span>}
@@ -460,7 +462,9 @@ console.log('Saving profile with uniquePresence:', uniquePresence);
             <div className="rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur">
               <div className="mb-4 flex flex-wrap items-center gap-3">
                 <div className="flex items-center gap-3">
-                  <Award className="w-5 h-5 text-emerald-300" />
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-cyan-500/15 border border-cyan-500/25">
+                    <Award className="w-5 h-5 text-cyan-300" />
+                  </div>
                   <h2 className="text-xl font-semibold text-white">Skills & Goals</h2>
                 </div>
               </div>
@@ -507,7 +511,9 @@ console.log('Saving profile with uniquePresence:', uniquePresence);
             <div className="rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur">
               <div className="mb-6 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Bookmark className="w-5 h-5 text-indigo-300" />
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-cyan-500/15 border border-cyan-500/25">
+                    <Bookmark className="w-5 h-5 text-cyan-300" />
+                  </div>
                   <h2 className="text-xl font-semibold text-white">Bookmarked jobs</h2>
                 </div>
                 <span className="text-sm text-slate-300">
@@ -582,8 +588,8 @@ console.log('Saving profile with uniquePresence:', uniquePresence);
                       <div key={field.key} className="space-y-2">
                         <label className="text-sm text-slate-300">{field.label}</label>
                         <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5">
-                            <Icon className="w-5 h-5 text-indigo-300" />
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-500/25 bg-cyan-500/15">
+                            <Icon className="w-5 h-5 text-cyan-300" />
                           </div>
                           <input
                             type="text"
@@ -603,8 +609,8 @@ console.log('Saving profile with uniquePresence:', uniquePresence);
                       const value = profileData[field.key];
                       return (
                         <div key={field.key} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
-                            <Icon className="w-5 h-5 text-indigo-300" />
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/15 border border-cyan-500/25">
+                            <Icon className="w-5 h-5 text-cyan-300" />
                           </div>
                           <div>
                             <p className="text-xs text-slate-400">{field.label}</p>
@@ -614,8 +620,8 @@ console.log('Saving profile with uniquePresence:', uniquePresence);
                       );
                     })}
                     <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
-                        <Calendar className="w-5 h-5 text-emerald-300" />
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/15 border border-cyan-500/25">
+                        <Calendar className="w-5 h-5 text-cyan-300" />
                       </div>
                       <div>
                         <p className="text-xs text-slate-400">Joined</p>
@@ -636,7 +642,9 @@ console.log('Saving profile with uniquePresence:', uniquePresence);
                     const Icon = iconMap[key];
                     return (
                       <div key={key} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                        <Icon className="w-5 h-5 text-indigo-300" />
+                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-cyan-500/15 border border-cyan-500/25">
+                          <Icon className="w-5 h-5 text-cyan-300" />
+                        </div>
                         <input
                           type="text"
                           value={tempData[key] || ""}

@@ -175,7 +175,7 @@ function JobsContent() {
                 href={job.url}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-2 inline-block text-primary hover:text-primary/80 text-sm transition-colors"
+                className="mt-2 inline-block text-cyan-300 hover:text-cyan-300/80 text-sm transition-colors"
               >
                 {t("jobsPage.viewJob")} →
               </a>
@@ -185,7 +185,7 @@ function JobsContent() {
             onClick={() => toggleSaveJob(job, jobSource)}
             className={`p-2 rounded-lg transition-all ${
               isSaved
-                ? "bg-primary/20 text-primary hover:bg-primary/30"
+                ? "bg-cyan-500/15 text-cyan-300 hover:bg-cyan-500/25"
                 : "bg-slate-700/50 text-slate-400 hover:bg-slate-700 hover:text-slate-200"
             }`}
             title={isSaved ? t("jobsPage.removeFromGoals") : t("jobsPage.saveToGoals")}
@@ -212,14 +212,16 @@ function JobsContent() {
           </Link>
         </div>
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-cyan-500 to-cyan-400 bg-clip-text text-transparent">
             {t("jobsPage.findJobs")}
           </h1>
           <button
             onClick={() => setShowSaved(!showSaved)}
-            className="flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-primary to-primary/80 text-white hover:shadow-lg hover:shadow-primary/25 transition-all transform hover:scale-105"
+            className="flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 hover:shadow-lg hover:shadow-cyan-500/25 transition-all transform hover:scale-105"
           >
-            <Bookmark size={18} />
+            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-slate-950/15">
+              <Bookmark size={16} />
+            </span>
             {t("jobsPage.myGoals")} ({savedJobs.length})
           </button>
         </div>
@@ -237,7 +239,9 @@ function JobsContent() {
             </div>
             {savedJobs.length === 0 ? (
               <div className="text-center py-16 bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl">
-                <Bookmark size={48} className="mx-auto mb-3 opacity-30 text-slate-500" />
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-500/10 border border-cyan-500/20">
+                  <Bookmark size={24} className="text-cyan-300" />
+                </div>
                 <p className="text-slate-400">{t("jobsPage.noSavedJobs")}</p>
               </div>
             ) : (
@@ -247,7 +251,7 @@ function JobsContent() {
                     <div className="flex justify-between items-start gap-2">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <span className="text-xs px-3 py-1 rounded-full bg-primary/20 text-primary font-medium border border-primary/30">
+                          <span className="text-xs px-3 py-1 rounded-full bg-cyan-500/15 text-cyan-300 font-medium border border-cyan-500/30">
                             {job.source}
                           </span>
                         </div>
@@ -265,7 +269,7 @@ function JobsContent() {
                             href={job.url}
                             target="_blank"
                             rel="noreferrer"
-                            className="mt-2 inline-block text-primary hover:text-primary/80 text-sm transition-colors"
+                            className="mt-2 inline-block text-cyan-300 hover:text-cyan-300/80 text-sm transition-colors"
                           >
                             {t("jobsPage.viewJob")} →
                           </a>
@@ -292,19 +296,19 @@ function JobsContent() {
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
                   placeholder={t("jobsPage.rolePlaceholder")}
-                  className="bg-slate-950/50 border border-slate-800 rounded-lg px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
+                  className="bg-slate-950/50 border border-slate-800 rounded-lg px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 focus:outline-none transition-all"
                   onKeyDown={(e) => e.key === "Enter" && onSearch()}
                 />
                 <input
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   placeholder={t("jobsPage.locationPlaceholder")}
-                  className="bg-slate-950/50 border border-slate-800 rounded-lg px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
+                  className="bg-slate-950/50 border border-slate-800 rounded-lg px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 focus:outline-none transition-all"
                   onKeyDown={(e) => e.key === "Enter" && onSearch()}
                 />
                 <button
                   onClick={onSearch}
-                  className="px-6 py-3 rounded-lg bg-gradient-to-r from-primary to-primary/80 text-white hover:shadow-lg hover:shadow-primary/25 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-3 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:shadow-lg hover:shadow-cyan-500/25 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={loading}
                 >
                   {loading ? t("jobsPage.searching") : t("jobsPage.search")}
@@ -320,7 +324,7 @@ function JobsContent() {
                     onClick={() => setSource(s)}
                     className={`text-sm px-4 py-2 rounded-lg border transition-all ${
                       source === s
-                        ? "bg-primary text-white border-primary shadow-lg shadow-primary/25"
+                        ? "bg-cyan-500 text-white border-cyan-500 shadow-lg shadow-cyan-500/25"
                         : "border-slate-700 text-slate-400 hover:border-slate-600 hover:text-slate-200"
                     }`}
                   >
@@ -338,7 +342,7 @@ function JobsContent() {
                     <span className="text-slate-400 text-sm">{t("jobsPage.takeMoment")}</span>
                   </div>
                   <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-primary to-primary/60 rounded-full animate-pulse" style={{ width: "100%" }}></div>
+                    <div className="h-full bg-gradient-to-r from-cyan-500 to-cyan-400 rounded-full animate-pulse" style={{ width: "100%" }}></div>
                   </div>
                   <div className="mt-3 text-sm text-slate-400 text-center">
                     {t("jobsPage.fetchingResults")}
