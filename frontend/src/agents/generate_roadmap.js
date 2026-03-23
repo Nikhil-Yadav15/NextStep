@@ -616,11 +616,13 @@ const workflow = new StateGraph(RoadmapState)
 const graph = workflow.compile();
 
 
-export async function generateRoadmaps(bookmarkedJobs = [], userSkills = []) {
+export async function generateRoadmaps(bookmarkedJobs = [], userSkills = [], onProgress = null) {
   if (!bookmarkedJobs || bookmarkedJobs.length === 0) {
     return { error: "No bookmarked jobs provided" };
   }
 
+  const totalJobs = bookmarkedJobs.length;
+  const stageWeights = { analyzeJob: 0.2, generateRoadmap: 0.7, incrementIndex: 0.05, finalize: 0.05 };
 
   const initialState = {
     bookmarkedJobs,
@@ -631,12 +633,42 @@ export async function generateRoadmaps(bookmarkedJobs = [], userSkills = []) {
     finalOutput: {}
   };
 
-
   try {
-    const resultState = await graph.invoke(initialState);
-    return resultState.finalOutput || {};
+    let lastState = initialState;
+    const stream = await graph.stream(initialState);
+
+    for await (const event of stream) {
+      const nodeName = Object.keys(event)[0];
+      const nodeState = event[nodeName];
+      lastState = { ...lastState, ...nodeState };
+
+      if (onProgress && nodeName) {
+        const jobIndex = lastState.currentJobIndex ?? 0;
+        const currentJob = bookmarkedJobs[Math.min(jobIndex, totalJobs - 1)];
+        const stageWeight = stageWeights[nodeName] || 0;
+
+        const baseProgress = (nodeName === 'finalize')
+          ? 0.95
+          : (jobIndex / totalJobs) + (stageWeight / totalJobs);
+
+        const progress = Math.min(Math.round(baseProgress * 100), 100);
+
+        onProgress({
+          stage: nodeName,
+          jobIndex: jobIndex,
+          totalJobs,
+          jobTitle: currentJob?.title || 'Unknown',
+          company: currentJob?.company || '',
+          progress,
+        });
+      }
+    }
+
+    if (onProgress) onProgress({ stage: 'done', progress: 100, totalJobs });
+    return lastState.finalOutput || lastState.roadmaps || {};
   } catch (error) {
     console.error("Error in generateRoadmaps:", error);
+    if (onProgress) onProgress({ stage: 'error', error: error.message });
     return { error: error.message };
   }
 }
