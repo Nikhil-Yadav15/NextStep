@@ -10,7 +10,7 @@ const Footer = () => {
           <div className="space-y-4">
             <Link to="/" className="flex items-center gap-2">
               <Sparkles className="h-6 w-6 text-primary" />
-              <span className="text-lg font-bold text-primary">Career AI</span>
+              <span className="text-lg font-bold text-primary">NextStep</span>
             </Link>
             <p className="text-sm text-muted-foreground">
               Your AI partner for every career move. Transform your professional journey with intelligent guidance.
@@ -86,7 +86,7 @@ const Footer = () => {
 
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-border text-center text-sm text-muted-foreground">
-          <p>© 2025 Career AI. All rights reserved.</p>
+          <p>© 2025 NextStep. All rights reserved.</p>
         </div>
       </div>
     </footer>

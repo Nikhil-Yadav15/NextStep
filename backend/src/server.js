@@ -58,6 +58,7 @@ import fs from 'fs/promises';
 import { fileURLToPath } from 'url';
 
 import { initQdrant } from "./services/qdrant.js";
+import { initChatSocket } from "./services/chatSocket.js";
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // --- Router Imports ---
@@ -72,9 +73,29 @@ dotenv.config({ path: path.resolve(__dirname, "../.env") });
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+const localOrigins = [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://localhost:3001'
+];
+
+const configuredOrigins = [
+    ...(process.env.CORS_ORIGINS || '').split(','),
+    process.env.FRONTEND_URL || ''
+]
+    .map(origin => origin.trim())
+    .filter(Boolean);
+
+const allowedOrigins = new Set([...localOrigins, ...configuredOrigins]);
+
 // --- Middleware ---
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:3001'],
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.has(origin)) {
+            return callback(null, true);
+        }
+        return callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
@@ -267,6 +288,13 @@ async function startServer() {
             console.log(`✅ Server running on http://localhost:${PORT}`);
             console.log(`📊 Qdrant URL: ${process.env.QDRANT_URL || 'http://localhost:6333'}`);
         });
+
+        // Initialize Socket.io for real-time chat
+        try {
+            initChatSocket(server);
+        } catch (err) {
+            console.warn("⚠️ Chat socket initialization failed:", err.message);
+        }
 
         // Handle server errors
         server.on('error', (err) => {
