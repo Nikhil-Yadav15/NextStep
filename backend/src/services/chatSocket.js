@@ -268,14 +268,34 @@ export function initChatSocket(server) {
 
     socket.on("join-room", ({ roomId }) => {
       if (!roomId) return;
-      socket.join(`session:${roomId}`);
-      // Notify other participants in the room
-      socket.to(`session:${roomId}`).emit("peer-joined", {
+      const roomKey = `session:${roomId}`;
+
+      // Check who's already in the room BEFORE joining
+      const room = io.sockets.adapter.rooms.get(roomKey);
+      const existingMembers = room ? [...room].filter((id) => id !== socket.id) : [];
+
+      socket.join(roomKey);
+
+      // Tell existing members about the new joiner
+      socket.to(roomKey).emit("peer-joined", {
         uniquePresence,
         name: socket.data.user.name,
         socketId: socket.id,
       });
-      console.log(`🎥 ${socket.data.user.name} joined session room: ${roomId}`);
+
+      // Tell the joiner about existing members (so they know someone is already there)
+      for (const memberId of existingMembers) {
+        const memberSocket = io.sockets.sockets.get(memberId);
+        if (memberSocket) {
+          socket.emit("peer-joined", {
+            uniquePresence: memberSocket.data.uniquePresence,
+            name: memberSocket.data.user.name,
+            socketId: memberId,
+          });
+        }
+      }
+
+      console.log(`🎥 ${socket.data.user.name} joined session room: ${roomId} (${existingMembers.length} already in room)`);
     });
 
     socket.on("leave-room", ({ roomId }) => {

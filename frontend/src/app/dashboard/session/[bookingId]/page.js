@@ -97,24 +97,34 @@ export default function SessionPage() {
     const socket = getSocket(token);
     setSocketInstance(socket);
 
-    // Join the session room
-    socket.emit("join-room", { roomId: booking.roomId });
+    // Track if this peer should be the caller
+    let shouldMakeOffer = false;
+    let peerCount = 0;
 
     // Start local media
     webrtc.startLocalStream().then((stream) => {
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = stream;
       }
+      // Join room AFTER media is ready
+      socket.emit("join-room", { roomId: booking.roomId });
     }).catch(() => {
       toast.error("Camera/microphone access denied");
+      // Still join room even without media
+      socket.emit("join-room", { roomId: booking.roomId });
     });
 
     // Socket event listeners
     socket.on("peer-joined", (data) => {
+      peerCount++;
       setRemotePeer(data);
       toast.success(`${data.name} joined the session`);
-      // Initiator makes the offer
-      setTimeout(() => webrtc.makeOffer(), 500);
+
+      // Only the FIRST peer to detect the other initiates the offer
+      if (peerCount === 1) {
+        shouldMakeOffer = true;
+        setTimeout(() => webrtc.makeOffer(), 500);
+      }
     });
 
     socket.on("webrtc-offer", ({ offer }) => {

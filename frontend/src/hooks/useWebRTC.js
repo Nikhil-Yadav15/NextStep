@@ -16,27 +16,41 @@ export default function useWebRTC({ socket, roomId, onRemoteStream, onConnection
   const [isCaller, setIsCaller] = useState(false);
   const pendingCandidates = useRef([]);
 
+  // Use refs to always have current values in callbacks
+  const socketRef = useRef(socket);
+  const roomIdRef = useRef(roomId);
+  const onRemoteStreamRef = useRef(onRemoteStream);
+  const onConnectionChangeRef = useRef(onConnectionChange);
+
+  useEffect(() => { socketRef.current = socket; }, [socket]);
+  useEffect(() => { roomIdRef.current = roomId; }, [roomId]);
+  useEffect(() => { onRemoteStreamRef.current = onRemoteStream; }, [onRemoteStream]);
+  useEffect(() => { onConnectionChangeRef.current = onConnectionChange; }, [onConnectionChange]);
+
   const createPeerConnection = useCallback(() => {
     if (peerConnection.current) return peerConnection.current;
 
     const pc = new RTCPeerConnection(ICE_SERVERS);
 
     pc.onicecandidate = (event) => {
-      if (event.candidate && socket) {
-        socket.emit("webrtc-ice-candidate", { roomId, candidate: event.candidate });
+      if (event.candidate && socketRef.current) {
+        socketRef.current.emit("webrtc-ice-candidate", {
+          roomId: roomIdRef.current,
+          candidate: event.candidate,
+        });
       }
     };
 
     pc.ontrack = (event) => {
       if (event.streams?.[0]) {
-        onRemoteStream?.(event.streams[0]);
+        onRemoteStreamRef.current?.(event.streams[0]);
       }
     };
 
     pc.onconnectionstatechange = () => {
       const state = pc.connectionState;
       setIsConnected(state === "connected");
-      onConnectionChange?.(state);
+      onConnectionChangeRef.current?.(state);
     };
 
     // Add local tracks
@@ -48,7 +62,7 @@ export default function useWebRTC({ socket, roomId, onRemoteStream, onConnection
 
     peerConnection.current = pc;
     return pc;
-  }, [socket, roomId, onRemoteStream, onConnectionChange]);
+  }, []);
 
   const startLocalStream = useCallback(async (video = true, audio = true) => {
     try {
@@ -66,22 +80,21 @@ export default function useWebRTC({ socket, roomId, onRemoteStream, onConnection
     setIsCaller(true);
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
-    socket.emit("webrtc-offer", { roomId, offer });
-  }, [createPeerConnection, socket, roomId]);
+    socketRef.current?.emit("webrtc-offer", { roomId: roomIdRef.current, offer });
+  }, [createPeerConnection]);
 
   const handleOffer = useCallback(async (offer) => {
     const pc = createPeerConnection();
     await pc.setRemoteDescription(new RTCSessionDescription(offer));
     const answer = await pc.createAnswer();
     await pc.setLocalDescription(answer);
-    socket.emit("webrtc-answer", { roomId, answer });
+    socketRef.current?.emit("webrtc-answer", { roomId: roomIdRef.current, answer });
 
-    // Flush pending ICE candidates
     for (const candidate of pendingCandidates.current) {
       await pc.addIceCandidate(new RTCIceCandidate(candidate));
     }
     pendingCandidates.current = [];
-  }, [createPeerConnection, socket, roomId]);
+  }, [createPeerConnection]);
 
   const handleAnswer = useCallback(async (answer) => {
     const pc = peerConnection.current;
