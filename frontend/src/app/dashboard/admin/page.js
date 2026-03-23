@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Shield, Users, Calendar, Plus, Check, X, RefreshCw, Trash2, Edit, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
+import ChatbotButton from "@/components/dashboard/Chatbot";
 
 function getToken() {
   return document.cookie
@@ -68,47 +69,47 @@ function MentorForm({ initial, onSave, onCancel }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-6 space-y-4">
+    <form onSubmit={handleSubmit} className="rounded-2xl border border-slate-800/80 bg-slate-950/55 p-6 space-y-4 shadow-lg backdrop-blur-xl">
       <h3 className="text-lg font-semibold text-white">{initial ? "Edit Mentor" : "Add New Mentor"}</h3>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm text-slate-400 mb-1">Name *</label>
+          <label className="block text-sm text-slate-300 mb-1">Name *</label>
           <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="w-full bg-slate-900/60 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500/50" />
+            className="w-full bg-slate-950/50 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-colors" />
         </div>
         <div>
-          <label className="block text-sm text-slate-400 mb-1">Email *</label>
+          <label className="block text-sm text-slate-300 mb-1">Email *</label>
           <input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} type="email"
-            className="w-full bg-slate-900/60 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500/50" />
+            className="w-full bg-slate-950/50 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-colors" />
         </div>
         <div>
-          <label className="block text-sm text-slate-400 mb-1">Title</label>
+          <label className="block text-sm text-slate-300 mb-1">Title</label>
           <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Senior IAS Officer"
-            className="w-full bg-slate-900/60 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500/50" />
+            className="w-full bg-slate-950/50 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-colors" />
         </div>
         <div>
-          <label className="block text-sm text-slate-400 mb-1">Experience (years)</label>
+          <label className="block text-sm text-slate-300 mb-1">Experience (years)</label>
           <input value={form.experience} onChange={(e) => setForm({ ...form, experience: Number(e.target.value) })} type="number" min="0"
-            className="w-full bg-slate-900/60 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500/50" />
+            className="w-full bg-slate-950/50 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-colors" />
         </div>
       </div>
 
       <div>
-        <label className="block text-sm text-slate-400 mb-1">Bio</label>
+        <label className="block text-sm text-slate-300 mb-1">Bio</label>
         <textarea value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} rows={3}
           placeholder="Short description about the mentor..."
-          className="w-full bg-slate-900/60 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500/50 resize-none" />
+          className="w-full bg-slate-950/50 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-colors resize-none" />
       </div>
 
       <div>
-        <label className="block text-sm text-slate-400 mb-2">Expertise</label>
+        <label className="block text-sm text-slate-300 mb-2">Expertise</label>
         <div className="flex flex-wrap gap-2">
           {EXPERTISE_OPTIONS.map((tag) => (
             <button key={tag} type="button" onClick={() => toggleExpertise(tag)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
                 form.expertise.includes(tag)
-                  ? "bg-blue-600/20 text-blue-400 border-blue-500/40"
+                  ? "bg-cyan-500/15 text-cyan-300 border-cyan-400/40"
                   : "bg-slate-900/40 text-slate-500 border-slate-800/50 hover:text-white"
               }`}>
               {tag}
@@ -118,7 +119,7 @@ function MentorForm({ initial, onSave, onCancel }) {
       </div>
 
       <div className="flex items-center gap-4">
-        <label className="flex items-center gap-2 text-sm text-slate-400 cursor-pointer">
+        <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
           <input type="checkbox" checked={form.isFree} onChange={(e) => setForm({ ...form, isFree: e.target.checked })}
             className="rounded border-slate-600" />
           Free sessions
@@ -127,7 +128,7 @@ function MentorForm({ initial, onSave, onCancel }) {
 
       <div className="flex gap-2 pt-2">
         <button type="submit" disabled={saving}
-          className="px-5 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-blue-600 to-cyan-600 text-white disabled:opacity-50 transition-all">
+          className="px-5 py-2 rounded-lg text-sm font-medium bg-cyan-600 text-white disabled:opacity-50 transition-all hover:bg-cyan-500">
           {saving ? "Saving..." : initial ? "Update Mentor" : "Add Mentor"}
         </button>
         {onCancel && (
@@ -229,10 +230,8 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-500 shadow-xl shadow-cyan-500/30">
-          <RefreshCw className="w-7 h-7 text-white animate-spin" />
-        </div>
+      <div className="min-h-screen bg-[#070a12] flex items-center justify-center">
+        <RefreshCw className="w-8 h-8 text-cyan-400 animate-spin" />
       </div>
     );
   }
@@ -241,32 +240,38 @@ export default function AdminPage() {
   // if (role !== "admin") { ... }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="relative min-h-screen overflow-hidden bg-[#070a12] text-slate-100">
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-slate-950/80" />
+      <div className="pointer-events-none absolute inset-0 -z-10 opacity-25" />
+      <ChatbotButton />
+
+      <div className="relative z-10 container mx-auto px-4 py-8 space-y-8 max-w-7xl">
         {/* Header */}
-        <div className="flex items-center gap-3 mb-8">
-          <div className="p-2.5 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-500 shadow-xl shadow-cyan-500/30">
-            <Shield className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">
-              Admin Panel
-            </h1>
-            <p className="text-slate-400 text-sm">Manage mentors and booking requests</p>
+        <div className="rounded-3xl border border-slate-800/70 bg-slate-950/70 p-7 shadow-[0_18px_60px_-25px_rgba(2,132,199,0.45)] backdrop-blur-xl">
+          <div className="flex items-center gap-4">
+            <div>
+              <p className="inline-flex items-center rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1 text-xs font-semibold tracking-[0.14em] text-cyan-300 mb-2">
+                ADMIN CONTROL
+              </p>
+              <h1 className="text-3xl font-semibold leading-tight text-white">
+                Admin Panel
+              </h1>
+              <p className="text-sm text-slate-400 mt-1">Manage mentors and booking requests</p>
+            </div>
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2">
           <button onClick={() => setActiveTab("bookings")}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all border ${
-              activeTab === "bookings" ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40" : "bg-slate-900/40 text-slate-400 border-slate-800/50 hover:text-white"
+              activeTab === "bookings" ? "bg-cyan-500/15 text-cyan-300 border-cyan-400/40" : "bg-slate-900/40 text-slate-400 border-slate-800/50 hover:text-white"
             }`}>
             <Calendar className="w-4 h-4" /> Bookings
           </button>
           <button onClick={() => setActiveTab("mentors")}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all border ${
-              activeTab === "mentors" ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40" : "bg-slate-900/40 text-slate-400 border-slate-800/50 hover:text-white"
+              activeTab === "mentors" ? "bg-cyan-500/15 text-cyan-300 border-cyan-400/40" : "bg-slate-900/40 text-slate-400 border-slate-800/50 hover:text-white"
             }`}>
             <Users className="w-4 h-4" /> Mentors
           </button>
@@ -274,13 +279,13 @@ export default function AdminPage() {
 
         {/* Bookings Tab */}
         {activeTab === "bookings" && (
-          <div className="space-y-4">
+          <div className="rounded-3xl border border-slate-800/80 bg-slate-900/70 p-6 backdrop-blur-xl space-y-4">
             {/* Status Filter */}
             <div className="flex gap-2 flex-wrap">
               {["pending", "approved", "rejected", "completed", ""].map((s) => (
                 <button key={s} onClick={() => setStatusFilter(s)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
-                    statusFilter === s ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40" : "bg-slate-900/40 text-slate-500 border-slate-800/50 hover:text-white"
+                    statusFilter === s ? "bg-cyan-500/15 text-cyan-300 border-cyan-400/40" : "bg-slate-900/40 text-slate-500 border-slate-800/50 hover:text-white"
                   }`}>
                   {s || "All"}
                 </button>
@@ -288,7 +293,7 @@ export default function AdminPage() {
             </div>
 
             {bookings.length > 0 ? bookings.map((b) => (
-              <div key={b._id} className="bg-slate-900/60 border border-slate-800/50 rounded-xl p-5 flex items-center justify-between flex-wrap gap-4">
+              <div key={b._id} className="rounded-2xl border border-slate-800/80 bg-slate-950/55 p-5 shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan-400/40 flex items-center justify-between flex-wrap gap-4">
                 <div>
                   <p className="text-white font-medium">{b.userName} <span className="text-slate-500">→</span> {b.mentorName}</p>
                   <p className="text-sm text-slate-400">{b.requestedSlot?.date} | {b.requestedSlot?.startTime} - {b.requestedSlot?.endTime}</p>
@@ -318,9 +323,9 @@ export default function AdminPage() {
 
         {/* Mentors Tab */}
         {activeTab === "mentors" && (
-          <div className="space-y-4">
+          <div className="rounded-3xl border border-slate-800/80 bg-slate-900/70 p-6 backdrop-blur-xl space-y-4">
             <button onClick={() => { setShowMentorForm(true); setEditingMentor(null); }}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 hover:from-cyan-400 hover:to-blue-400 transition-all shadow-lg shadow-cyan-500/30">
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium bg-cyan-600 text-white hover:bg-cyan-500 transition-all shadow-lg">
               <Plus className="w-4 h-4" /> Add Mentor
             </button>
 
@@ -334,13 +339,13 @@ export default function AdminPage() {
 
             <div className="space-y-3">
               {mentors.map((m) => (
-                <div key={m._id} className="bg-slate-900/60 border border-slate-800/50 rounded-xl p-5 flex items-center justify-between flex-wrap gap-4">
+                <div key={m._id} className="rounded-2xl border border-slate-800/80 bg-slate-950/55 p-5 shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan-400/40 flex items-center justify-between flex-wrap gap-4">
                   <div>
                     <p className="text-white font-medium">{m.name}</p>
                     <p className="text-sm text-slate-400">{m.email} | {m.title}</p>
                     <div className="flex flex-wrap gap-1 mt-1.5">
                       {m.expertise?.map((t) => (
-                        <span key={t} className="px-2 py-0.5 text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded">{t}</span>
+                        <span key={t} className="px-2 py-0.5 text-xs bg-cyan-500/10 text-cyan-300 border border-cyan-400/20 rounded">{t}</span>
                       ))}
                     </div>
                     <p className="text-xs mt-1 text-slate-500">
