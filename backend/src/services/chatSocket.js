@@ -71,6 +71,24 @@ export function initChatSocket(server) {
       const token = socket.handshake.auth?.token;
       if (!token) return next(new Error("Authentication required"));
 
+      // Handle mentor: tokens via MongoDB
+      if (token.startsWith("mentor:") && db) {
+        const mentorId = token.slice(7).trim();
+        if (!mentorId) return next(new Error("Invalid mentor token"));
+        try {
+          const mentor = await db.collection("Mentors").findOne({
+            _id: new ObjectId(mentorId),
+            status: "active",
+          });
+          if (!mentor) return next(new Error("Mentor not found"));
+          socket.data.user = { id: mentorId, name: mentor.name, email: mentor.email };
+          socket.data.uniquePresence = token;
+          return next();
+        } catch {
+          return next(new Error("Invalid mentor token"));
+        }
+      }
+
       const { data: user, error } = await supabase
         .from("users")
         .select("id, name, email, uniquePresence")
