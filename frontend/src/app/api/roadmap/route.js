@@ -144,7 +144,7 @@ export async function POST(request) {
       );
     }
 
-    const { force } = await request.json().catch(() => ({}));
+    const { force, stream: useStream } = await request.json().catch(() => ({}));
 
     const rateLimitResult = await checkRateLimit(request);
     if (!rateLimitResult.success) {
@@ -170,7 +170,6 @@ export async function POST(request) {
     }
 
     console.log('Fetching data for uniquePresence:', uniquePresence);
-    console.log("Trying to find Roadmap if already in mongodb");
     const client = await clientPromise;
     const db = client.db("AI_Interview");
     const profiles = db.collection('Profiles');
@@ -189,7 +188,10 @@ export async function POST(request) {
       return NextResponse.json({
         message: 'Loaded roadmap from cache',
         status: 'success',
-        data: { roadmaps: profile.roadmap },
+        data: {
+          roadmaps: profile.roadmap,
+          cachedAt: profile.updatedAt || null,
+        },
         source: 'cache',
       });
     } else if (force) {
@@ -214,6 +216,55 @@ export async function POST(request) {
       );
     }
 
+    // SSE streaming mode
+    if (useStream) {
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream({
+        async start(controller) {
+          const sendEvent = (data) => {
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+          };
+
+          try {
+            sendEvent({ stage: 'starting', progress: 0, totalJobs: bookmarkedJobs.length });
+
+            const roadmapResults = await generateRoadmaps(bookmarkedJobs, userSkills, (progress) => {
+              sendEvent(progress);
+            });
+
+            await profiles.updateOne(
+              { _id: profile._id },
+              { $set: { roadmap: roadmapResults, updatedAt: new Date() } }
+            );
+
+            sendEvent({
+              stage: 'complete',
+              progress: 100,
+              data: {
+                timestamp: new Date().toISOString(),
+                jobsProcessed: bookmarkedJobs.length,
+                roadmaps: roadmapResults,
+              },
+            });
+          } catch (err) {
+            console.error('SSE generation error:', err);
+            sendEvent({ stage: 'error', error: err.message });
+          } finally {
+            controller.close();
+          }
+        },
+      });
+
+      return new Response(stream, {
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          Connection: 'keep-alive',
+        },
+      });
+    }
+
+    // Non-streaming fallback
     const roadmapResults = await generateRoadmaps(bookmarkedJobs, userSkills);
 
     await profiles.updateOne(

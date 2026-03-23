@@ -1,10 +1,8 @@
-import { NextResponse } from "next/server";
-import clientPromise from "@/lib/mongodb.js";
 import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 function getProjectRefFromUrl(url) {
   try {
@@ -27,11 +25,6 @@ function getProjectRefFromJwt(token) {
   }
 }
 
-function isMissingUniquePresenceColumn(error) {
-  const msg = (error?.message || "").toLowerCase();
-  return msg.includes("uniquepresence") && msg.includes("does not exist");
-}
-
 const urlRef = getProjectRefFromUrl(supabaseUrl);
 const serviceRef = getProjectRefFromJwt(serviceRoleKey);
 const selectedKey =
@@ -41,21 +34,26 @@ const selectedKey =
 
 const supabase = createClient(supabaseUrl, selectedKey);
 
+function isMissingUniquePresenceColumn(error) {
+  const msg = (error?.message || "").toLowerCase();
+  return msg.includes("uniquepresence") && msg.includes("does not exist");
+}
 
-async function authenticateRequest(request) {
+export async function authenticateRequest(request) {
   const authHeader = request.headers.get("authorization");
   if (!authHeader) throw new Error("Authorization header missing");
 
   const token = authHeader.split("Bearer ")[1];
   if (!token) throw new Error("Unauthorized - No token provided");
 
-  // Mentor tokens: validate directly via MongoDB
+  // Mentor tokens: bypass Supabase, validate via MongoDB
   if (token.startsWith("mentor:")) {
     const { ObjectId } = await import("mongodb");
     const mentorId = token.slice(7).trim();
     if (!mentorId) throw new Error("Unauthorized - Invalid mentor token");
 
-    const client = await clientPromise;
+    const clientPromiseModule = (await import("@/lib/mongodb.js")).default;
+    const client = await clientPromiseModule;
     const db = client.db("AI_Interview");
     const mentor = await db.collection("Mentors").findOne({
       _id: new ObjectId(mentorId),
@@ -101,82 +99,23 @@ async function authenticateRequest(request) {
   }
 
   if (error || !user) throw new Error("Unauthorized - User not found");
-
   return { user, uniquePresence: token };
 }
 
-export async function GET(request) {
-  try {
-    const { user, uniquePresence } = await authenticateRequest(request);
+export async function authenticateAndGetRole(request) {
+  const { user, uniquePresence } = await authenticateRequest(request);
+  
+  const clientPromise = (await import("@/lib/mongodb.js")).default;
+  const client = await clientPromise;
+  const db = client.db("AI_Interview");
+  const profile = await db.collection("Profiles").findOne({ uniquePresence });
+  
+  const role = profile?.role || "user";
+  return { user, uniquePresence, role, profile };
+}
 
-    const client = await clientPromise;
-    const db = client.db("AI_Interview");
-    const collection = db.collection("Profiles");
-
-   
-    let profile = await collection.findOne(
-      { uniquePresence },
-      { projection: { _id: 0 } } 
-    );
-
-    if (!profile) {
-      const now = new Date();
-      const freshProfile = {
-        userId: user.id,
-        uniquePresence,
-        name: user.name || "New User",
-        email: user.email || "",
-        phone: "",
-        location: "",
-        title: "",
-        bio: "Add a short summary about yourself.",
-        linkedin: "",
-        github: "",
-        website: "",
-        role: "user",
-        joinDate: now.toLocaleString("default", { month: "long", year: "numeric" }),
-        createdAt: now,
-        updatedAt: now,
-      };
-
-      const insertResult = await collection.insertOne(freshProfile);
-      if (!insertResult.acknowledged) {
-        return NextResponse.json(
-          { status: "error", message: "Failed to create profile" },
-          { status: 500 }
-        );
-      }
-
-      profile = freshProfile;
-    }
-     // Fetch bookmarked jobs
-    const bookmarkedJobs = await db.collection("BookmarkedJobs")
-      .find({ uniquePresence })
-      .project({ _id: 0 }) 
-      .toArray();
-
-    // Fetch goals and skills
-    const goalsData = await db.collection("Goals")
-      .findOne({ uniquePresence }, { projection: { _id: 0 } });
-
-    // Combine all data
-    const fullProfile = {
-      ...profile,
-      bookmarkedJobs: bookmarkedJobs || [],
-      goals: goalsData?.goals || [],
-      skills: goalsData?.skills || [],
-    };
-    
-
-    return NextResponse.json({
-      status: "success",
-      data: fullProfile,
-    });
-  } catch (error) {
-    console.error("GetProfile API error:", error);
-    return NextResponse.json(
-      { status: "error", message: error.message },
-      { status: 500 }
-    );
+export function requireRole(role, allowedRoles) {
+  if (!allowedRoles.includes(role)) {
+    throw new Error(`Forbidden - requires ${allowedRoles.join(" or ")} role`);
   }
 }

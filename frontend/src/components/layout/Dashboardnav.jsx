@@ -15,7 +15,10 @@ import {
   ChevronDown,
   User,
   LogOut,
-  Settings
+  Settings,
+  Users,
+  Shield,
+  GraduationCap
 } from "lucide-react";
 
 export default function DashboardNav() {
@@ -25,7 +28,8 @@ export default function DashboardNav() {
   const [userData, setUserData] = useState({
     name: "Loading...",
     email: "loading@example.com",
-    profileImage: null
+    profileImage: null,
+    role: "user"
   });
   const [isLoading, setIsLoading] = useState(true);
   const pathname = usePathname();
@@ -61,6 +65,7 @@ export default function DashboardNav() {
           name: data.data.name || data.username || "User",
           email: data.data.email || "user@example.com",
           profileImage: data.data.profileImage || data.avatar || null,
+          role: data.data.role || "user",
         });
       }
     } catch (error) {
@@ -70,7 +75,7 @@ export default function DashboardNav() {
     }
   };
 
-  const navLinks = [
+  const baseNavLinks = [
     {
       name: t("navbar.jobs"),
       path: "/dashboard/jobs",
@@ -94,8 +99,16 @@ export default function DashboardNav() {
       path: "/dashboard/quiz",
       icon: <FileQuestion className="w-5 h-5" />,
       description: t("navbar.quizDesc")
+    },
+    {
+      name: "Counselling",
+      path: "/dashboard/counselling",
+      icon: <Users className="w-5 h-5" />,
+      description: "1:1 personalized mentorship"
     }
   ];
+
+  const navLinks = [...baseNavLinks];
 
   const handleLogout = async () => {
     try {

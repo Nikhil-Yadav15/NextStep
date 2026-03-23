@@ -119,7 +119,7 @@ export default function Auth() {
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/20 mb-2">
             <Sparkles className="h-6 w-6 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold text-primary">Career AI</h1>
+          <h1 className="text-3xl font-bold text-primary">NextStep</h1>
           <p className="text-muted-foreground">Your AI partner for career success</p>
         </div>
         {/* <Card className="glass-card p-6">

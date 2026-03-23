@@ -1,9 +1,10 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import RoadmapProgressBar from "@/components/dashboard/RoadmapProgressBar";
 
 export default function RoadmapPage() {
   const { t } = useLanguage();
@@ -13,6 +14,10 @@ export default function RoadmapPage() {
   const [error, setError] = useState(null);
   const [selectedJob, setSelectedJob] = useState(null);
   const [expandedSteps, setExpandedSteps] = useState({});
+  const [progressData, setProgressData] = useState(null);
+  const [cachedAt, setCachedAt] = useState(null);
+  const [showRegenConfirm, setShowRegenConfirm] = useState(false);
+  const abortRef = useRef(null);
 
   useEffect(() => {
     const fetchExistingRoadmap = async () => {
@@ -38,7 +43,8 @@ export default function RoadmapPage() {
           setRoadmaps(data.data.roadmaps);
           const firstJobId = Object.keys(data.data.roadmaps)[0];
           setSelectedJob(firstJobId);
-          
+          if (data.data?.cachedAt) setCachedAt(data.data.cachedAt);
+
           if (data.source === "cache") {
             toast.success(t("roadmapPage.toastLoadedSaved"));
           }
@@ -56,52 +62,126 @@ export default function RoadmapPage() {
   const handleGenerateRoadmap = async (force = false) => {
     setLoading(true);
     setError(null);
-    
+    setProgressData(null);
+
     try {
       const uniquePresence = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('uniquePresence='))
-        ?.split('=')[1];
+        .split("; ")
+        .find((row) => row.startsWith("uniquePresence="))
+        ?.split("=")[1];
 
       if (!uniquePresence) {
         throw new Error(t("roadmapPage.loginRequired"));
       }
 
-      const response = await fetch('/api/roadmap', {
-        method: 'POST',
+      // First, try non-stream request to check cache (only when not forcing)
+      if (!force) {
+        const cacheRes = await fetch("/api/roadmap", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${uniquePresence}`,
+          },
+          body: JSON.stringify({ force: false }),
+        });
+        const cacheData = await cacheRes.json();
+        if (cacheData.status === "success" && cacheData.source === "cache" && cacheData.data?.roadmaps) {
+          setRoadmaps(cacheData.data.roadmaps);
+          setSelectedJob(Object.keys(cacheData.data.roadmaps)[0]);
+          if (cacheData.data?.cachedAt) setCachedAt(cacheData.data.cachedAt);
+          toast.success(t("roadmapPage.toastLoadedProfile"));
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Use SSE streaming for generation
+      const abortController = new AbortController();
+      abortRef.current = abortController;
+
+      const response = await fetch("/api/roadmap", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${uniquePresence}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${uniquePresence}`,
         },
-        body: JSON.stringify({ force }),
+        body: JSON.stringify({ force, stream: true }),
+        signal: abortController.signal,
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.message || t("roadmapPage.failedGenerate"));
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.message || t("roadmapPage.failedGenerate"));
       }
 
-      if (data.status === 'success' && data.data.roadmaps) {
-        setRoadmaps(data.data.roadmaps);
-        const firstJobId = Object.keys(data.data.roadmaps)[0];
-        setSelectedJob(firstJobId);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
 
-        if (data.source === "cache") {
-          toast.success(t("roadmapPage.toastLoadedProfile"));
-        } else {
-          toast.success(t("roadmapPage.toastGenerated"));
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          const dataLine = line.replace(/^data: /, "").trim();
+          if (!dataLine) continue;
+
+          try {
+            const event = JSON.parse(dataLine);
+
+            if (event.stage === "complete" && event.data?.roadmaps) {
+              setRoadmaps(event.data.roadmaps);
+              setSelectedJob(Object.keys(event.data.roadmaps)[0]);
+              setCachedAt(new Date().toISOString());
+              setProgressData({ stage: "done", progress: 100 });
+              toast.success(t("roadmapPage.toastGenerated"));
+            } else if (event.stage === "error") {
+              throw new Error(event.error || t("roadmapPage.failedGenerate"));
+            } else {
+              setProgressData(event);
+            }
+          } catch (parseErr) {
+            if (parseErr.message !== t("roadmapPage.failedGenerate")) {
+              console.warn("SSE parse error:", parseErr);
+            } else {
+              throw parseErr;
+            }
+          }
         }
-      } else {
-        toast.error(data.message || t("roadmapPage.failedLoad"));
       }
     } catch (err) {
-      console.error('Error generating roadmap:', err);
+      if (err.name === "AbortError") return;
+      console.error("Error generating roadmap:", err);
       setError(err.message);
       toast.error(err.message);
     } finally {
       setLoading(false);
+      abortRef.current = null;
+      setTimeout(() => setProgressData(null), 1500);
     }
+  };
+
+  const handleRegenerate = () => {
+    setShowRegenConfirm(false);
+    setRoadmaps(null);
+    setSelectedJob(null);
+    setExpandedSteps({});
+    handleGenerateRoadmap(true);
+  };
+
+  const formatCachedTime = (dateStr) => {
+    if (!dateStr) return null;
+    const d = new Date(dateStr);
+    const now = new Date();
+    const diff = Math.floor((now - d) / 1000);
+    if (diff < 60) return "just now";
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    return `${Math.floor(diff / 86400)}d ago`;
   };
 
   const toggleStep = (stepIndex) => {
@@ -153,73 +233,22 @@ export default function RoadmapPage() {
           transition={{ duration: 0.3 }}
         >
           {!roadmaps && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-white rounded-2xl shadow-xl p-8 md:p-12 text-center"
-            >
-              <div className="max-w-2xl mx-auto">
-                <div className="mb-8">
-                  <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mx-auto mb-6 flex items-center justify-center">
-                    <svg
-                      className="w-12 h-12 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
-                      />
-                    </svg>
-                  </div>
-                  <h2 className="text-2xl font-bold text-gray-800 mb-3">
-                    {t("roadmapPage.readyTitle")}
-                  </h2>
-                  <p className="text-gray-600 mb-2">
-                    {t("roadmapPage.readySubtitle")}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {t("roadmapPage.readyCaption")}
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => handleGenerateRoadmap(false)}
-                  disabled={loading}
-                  className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+            <AnimatePresence mode="wait">
+              {loading && progressData ? (
+                <RoadmapProgressBar key="progress" progress={progressData} />
+              ) : (
+                <motion.div
+                  key="generate"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="bg-white rounded-2xl shadow-xl p-8 md:p-12 text-center"
                 >
-                  <span className="relative z-10 flex items-center gap-3">
-                    {loading ? (
-                      <>
+                  <div className="max-w-2xl mx-auto">
+                    <div className="mb-8">
+                      <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mx-auto mb-6 flex items-center justify-center">
                         <svg
-                          className="animate-spin h-6 w-6"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          />
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          />
-                        </svg>
-                        {t("roadmapPage.generating")}
-                      </>
-                    ) : (
-                      <>
-                        <svg
-                          className="w-6 h-6"
+                          className="w-12 h-12 text-white"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -228,27 +257,86 @@ export default function RoadmapPage() {
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             strokeWidth={2}
-                            d="M13 10V3L4 14h7v7l9-11h-7z"
+                            d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
                           />
                         </svg>
-                        {t("roadmapPage.generateRoadmap")}
-                      </>
-                    )}
-                  </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                </button>
+                      </div>
+                      <h2 className="text-2xl font-bold text-gray-800 mb-3">
+                        {t("roadmapPage.readyTitle")}
+                      </h2>
+                      <p className="text-gray-600 mb-2">
+                        {t("roadmapPage.readySubtitle")}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {t("roadmapPage.readyCaption")}
+                      </p>
+                    </div>
 
-                {error && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg"
-                  >
-                    <p className="text-red-600 text-sm">{error}</p>
-                  </motion.div>
-                )}
-              </div>
-            </motion.div>
+                    <button
+                      onClick={() => handleGenerateRoadmap(false)}
+                      disabled={loading}
+                      className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    >
+                      <span className="relative z-10 flex items-center gap-3">
+                        {loading ? (
+                          <>
+                            <svg
+                              className="animate-spin h-6 w-6"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              />
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              />
+                            </svg>
+                            {t("roadmapPage.generating")}
+                          </>
+                        ) : (
+                          <>
+                            <svg
+                              className="w-6 h-6"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M13 10V3L4 14h7v7l9-11h-7z"
+                              />
+                            </svg>
+                            {t("roadmapPage.generateRoadmap")}
+                          </>
+                        )}
+                      </span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    </button>
+
+                    {error && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg"
+                      >
+                        <p className="text-red-600 text-sm">{error}</p>
+                      </motion.div>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           )}
 
           {roadmaps && (
@@ -301,17 +389,54 @@ export default function RoadmapPage() {
                     })}
                   </div>
                   <button
-                    onClick={() => {
-                      setRoadmaps(null);
-                      setSelectedJob(null);
-                      setExpandedSteps({});
-                      handleGenerateRoadmap(true);
-                    }}
+                    onClick={() => setShowRegenConfirm(true)}
                     disabled={loading}
-                    className="mt-6 w-full px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
+                    className="mt-6 w-full px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                   >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
                     {loading ? t("roadmapPage.regenerating") : t("roadmapPage.generateNew")}
                   </button>
+
+                  {cachedAt && (
+                    <p className="mt-3 text-xs text-gray-400 text-center flex items-center justify-center gap-1">
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Generated {formatCachedTime(cachedAt)}
+                    </p>
+                  )}
+
+                  {/* Regeneration confirmation dialog */}
+                  <AnimatePresence>
+                    {showRegenConfirm && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg"
+                      >
+                        <p className="text-sm text-amber-800 mb-3">
+                          This will regenerate all roadmaps. This may take a few minutes.
+                        </p>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={handleRegenerate}
+                            className="flex-1 px-3 py-1.5 text-xs font-medium text-white bg-amber-500 rounded-md hover:bg-amber-600 transition-colors"
+                          >
+                            Yes, regenerate
+                          </button>
+                          <button
+                            onClick={() => setShowRegenConfirm(false)}
+                            className="flex-1 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </motion.div>
 

@@ -53,7 +53,7 @@ const platforms = [
   { name: "LeetCode", key: "leetcode" },
   { name: "Naukri", key: "naukri" },
   { name: "Glassdoor", key: "glassdoor" },
-  { name: "Career AI", key: "us", highlight: true },
+  { name: "NextStep", key: "us", highlight: true },
 ];
 
 const Comparison = () => {

@@ -3,6 +3,48 @@ import {TavilySearch} from '@langchain/tavily'
 import OpenAI from "openai";
 import { parse as parseJsonC } from 'jsonc-parser';
 
+const SERP_API_BASE_URL = 'https://serpapi.com/search.json';
+const TRUSTED_DOMAIN_SCORES = {
+  'youtube.com': 4,
+  'youtu.be': 4,
+  'developer.mozilla.org': 5,
+  'learn.microsoft.com': 5,
+  'docs.aws.amazon.com': 5,
+  'cloud.google.com': 5,
+  'freecodecamp.org': 4,
+  'coursera.org': 4,
+  'edx.org': 4,
+  'udemy.com': 3,
+  'geeksforgeeks.org': 3,
+  'medium.com': 2,
+  'towardsdatascience.com': 3,
+  'stackoverflow.com': 3,
+  'github.com': 4,
+};
+
+const BLOCKED_HOSTS = ['google.com', 'www.google.com', 'bing.com', 'search.yahoo.com'];
+
+const DEFAULT_RESOURCE_FALLBACKS = [
+  {
+    title: 'freeCodeCamp - Learn to Code',
+    url: 'https://www.freecodecamp.org/learn',
+    description: 'Project-based learning paths and full tutorials',
+    type: 'course',
+  },
+  {
+    title: 'MDN Web Docs - Learn',
+    url: 'https://developer.mozilla.org/en-US/docs/Learn',
+    description: 'High-quality official web development documentation',
+    type: 'docs',
+  },
+  {
+    title: 'freeCodeCamp YouTube Channel',
+    url: 'https://www.youtube.com/@freecodecamp',
+    description: 'Long-form, beginner-to-advanced technical tutorials',
+    type: 'video',
+  },
+];
+
 const llmClient = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
   apiKey: process.env.OPENROUTER_API_KEY,
@@ -81,6 +123,165 @@ const webSearchTool = new TavilySearch({
   apiKey: process.env.TAVILY_API_KEY,
 });
 
+function getHostname(url) {
+  try {
+    return new URL(url).hostname.toLowerCase();
+  } catch {
+    return '';
+  }
+}
+
+function isBlockedUrl(url) {
+  const host = getHostname(url);
+  if (!host) return true;
+  return BLOCKED_HOSTS.some(blocked => host === blocked || host.endsWith(`.${blocked}`));
+}
+
+function classifyResource(url, title = '') {
+  const host = getHostname(url);
+  const t = title.toLowerCase();
+  if (host.includes('youtube.com') || host.includes('youtu.be')) return 'video';
+  if (host.includes('docs.') || t.includes('documentation') || t.includes('official')) return 'docs';
+  if (host.includes('coursera') || host.includes('edx') || host.includes('udemy')) return 'course';
+  return 'blog';
+}
+
+function domainAuthorityScore(url) {
+  const host = getHostname(url);
+  if (!host) return 0;
+
+  const exact = TRUSTED_DOMAIN_SCORES[host];
+  if (typeof exact === 'number') return exact;
+
+  for (const [domain, score] of Object.entries(TRUSTED_DOMAIN_SCORES)) {
+    if (host.endsWith(`.${domain}`)) return score;
+  }
+  return 1;
+}
+
+function relevanceScore(text, skill, requiredSkills = []) {
+  const haystack = String(text || '').toLowerCase();
+  const skillTokens = String(skill || '')
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  let score = 0;
+  for (const token of skillTokens) {
+    if (haystack.includes(token)) score += 2;
+  }
+
+  for (const req of requiredSkills.slice(0, 5)) {
+    const reqToken = String(req || '').toLowerCase();
+    if (reqToken && haystack.includes(reqToken)) score += 1;
+  }
+
+  return score;
+}
+
+async function searchWithSerpApi(query, num = 8) {
+  const apiKey = process.env.SERPAPI_KEY;
+  if (!apiKey) return [];
+
+  try {
+    const url = `${SERP_API_BASE_URL}?engine=google&q=${encodeURIComponent(query)}&num=${num}&api_key=${apiKey}`;
+    const response = await fetch(url, { method: 'GET' });
+
+    if (!response.ok) {
+      console.warn(`SerpAPI request failed (${response.status}) for query: ${query}`);
+      return [];
+    }
+
+    const data = await response.json();
+    return Array.isArray(data?.organic_results) ? data.organic_results : [];
+  } catch (err) {
+    console.error(`SerpAPI error for query "${query}":`, err);
+    return [];
+  }
+}
+
+function normalizeResourceCandidate(item, fallbackTitle = 'Learning Resource') {
+  const url = item?.url || item?.link || '';
+  if (!url || isBlockedUrl(url)) return null;
+
+  const title = item?.title || fallbackTitle;
+  const description = item?.description || item?.snippet || item?.content || '';
+  return {
+    title,
+    url,
+    description: String(description).slice(0, 180),
+    type: classifyResource(url, title),
+  };
+}
+
+function dedupeByUrl(resources) {
+  const seen = new Set();
+  const output = [];
+
+  for (const resource of resources) {
+    if (!resource?.url) continue;
+    const key = resource.url.split('#')[0];
+    if (seen.has(key)) continue;
+    seen.add(key);
+    output.push(resource);
+  }
+
+  return output;
+}
+
+function rankResources(resources, skill, requiredSkills = []) {
+  return resources
+    .map(resource => {
+      const authority = domainAuthorityScore(resource.url);
+      const relevance = relevanceScore(`${resource.title} ${resource.description}`, skill, requiredSkills);
+      const videoBonus = resource.type === 'video' ? 1 : 0;
+      const docsBonus = resource.type === 'docs' ? 1 : 0;
+      const score = authority * 2 + relevance + videoBonus + docsBonus;
+      return { ...resource, score };
+    })
+    .sort((a, b) => b.score - a.score);
+}
+
+function selectDiverseResources(rankedResources, limit = 4) {
+  const selected = [];
+  const usedUrls = new Set();
+
+  const pickNext = predicate => {
+    const candidate = rankedResources.find(resource => {
+      if (!resource?.url) return false;
+      if (usedUrls.has(resource.url)) return false;
+      return predicate(resource);
+    });
+
+    if (!candidate) return;
+    usedUrls.add(candidate.url);
+    selected.push(candidate);
+  };
+
+  // Ensure at least one documentation link when available.
+  pickNext(resource => resource.type === 'docs');
+
+  // Ensure at least one non-video website/course link when available.
+  pickNext(resource => resource.type === 'blog' || resource.type === 'course');
+
+  // Keep one video if available.
+  pickNext(resource => resource.type === 'video');
+
+  // Fill remaining slots by score, while capping videos to avoid all-YouTube output.
+  for (const resource of rankedResources) {
+    if (selected.length >= limit) break;
+    if (!resource?.url || usedUrls.has(resource.url)) continue;
+
+    const currentVideoCount = selected.filter(item => item.type === 'video').length;
+    if (resource.type === 'video' && currentVideoCount >= 2) continue;
+
+    usedUrls.add(resource.url);
+    selected.push(resource);
+  }
+
+  return selected.slice(0, limit);
+}
+
 
 async function analyzeJobRequirements(state) {
   const { bookmarkedJobs, userSkills, currentJobIndex } = state;
@@ -155,18 +356,58 @@ Return as JSON with this format:
 }
 
 
-async function fetchLearningResources(skill) {
+async function fetchLearningResources(skill, jobContext = {}) {
+  const requiredSkills = Array.isArray(jobContext.requiredSkills) ? jobContext.requiredSkills : [];
+  const role = jobContext.jobTitle || '';
+
   try {
-    const query = `best courses tutorials learn ${skill} 2025`;
-    const results = await webSearchTool.invoke(query);
-    if (Array.isArray(results)) {
-      return results.slice(0, 3).map(result => ({
-        title: extractTitle(result.content) || `Learn ${skill}`,
-        url: result.url,
-        description: result.content.substring(0, 150)
-      }));
+    const queries = [
+      `${skill} tutorial for ${role} role`,
+      `site:youtube.com ${skill} tutorial ${role}`,
+      `${skill} official documentation best practices`,
+    ];
+
+    const serpResults = await Promise.all(queries.map(query => searchWithSerpApi(query, 8)));
+    const flattened = serpResults.flat();
+
+    const serpResources = flattened
+      .map(item =>
+        normalizeResourceCandidate(
+          {
+            title: item?.title,
+            link: item?.link,
+            snippet: item?.snippet,
+          },
+          `Learn ${skill}`
+        )
+      )
+      .filter(Boolean);
+
+    if (serpResources.length > 0) {
+      const ranked = rankResources(dedupeByUrl(serpResources), skill, requiredSkills);
+      return selectDiverseResources(ranked, 4).map(({ score, ...resource }) => resource);
     }
-    
+
+    const query = `best courses tutorials learn ${skill} 2025`;
+    const tavilyResults = await webSearchTool.invoke(query);
+    if (Array.isArray(tavilyResults)) {
+      const resources = tavilyResults
+        .map(result =>
+          normalizeResourceCandidate(
+            {
+              title: extractTitle(result.content) || `Learn ${skill}`,
+              url: result.url,
+              description: result.content,
+            },
+            `Learn ${skill}`
+          )
+        )
+        .filter(Boolean);
+
+      const ranked = rankResources(dedupeByUrl(resources), skill, requiredSkills);
+      return selectDiverseResources(ranked, 4).map(({ score, ...resource }) => resource);
+    }
+
     return [];
   } catch (err) {
     console.error(`Error fetching resources for ${skill}:`, err);
@@ -268,19 +509,21 @@ Return ONLY the JSON array, no additional text.
       const allResources = [];
 
       for (const skill of stepSkills.slice(0, 2)) { 
-        const resources = await fetchLearningResources(skill);
+        const resources = await fetchLearningResources(skill, {
+          jobTitle: currentJob.title,
+          requiredSkills: jobAnalysis.requiredSkills || [],
+        });
         allResources.push(...resources);
       }
-      step.resources = allResources.slice(0, 4);
+      const mergedRanked = rankResources(
+        dedupeByUrl(allResources),
+        stepSkills[0] || currentJob.title,
+        jobAnalysis.requiredSkills || []
+      );
+      step.resources = selectDiverseResources(mergedRanked, 4).map(({ score, ...resource }) => resource);
       
       if (step.resources.length === 0) {
-        step.resources = [
-          {
-            title: `Search for ${stepSkills[0] || 'relevant'} tutorials`,
-            url: `https://www.google.com/search?q=learn+${encodeURIComponent(stepSkills[0] || currentJob.title)}`,
-            description: "Explore online courses and documentation"
-          }
-        ];
+        step.resources = DEFAULT_RESOURCE_FALLBACKS;
       }
     }
 
@@ -331,13 +574,7 @@ function createFallbackRoadmap(job, analysis) {
     step: index + 1,
     title: `Learn ${skill}`,
     description: `Master ${skill} to meet the requirements for ${job.title} at ${job.company}`,
-    resources: [
-      {
-        title: `${skill} Learning Resources`,
-        url: `https://www.google.com/search?q=learn+${encodeURIComponent(skill)}`,
-        description: `Find courses and tutorials for ${skill}`
-      }
-    ],
+    resources: DEFAULT_RESOURCE_FALLBACKS,
     estimatedDuration: "1-2 months",
     skills: [skill]
   }));
@@ -379,11 +616,13 @@ const workflow = new StateGraph(RoadmapState)
 const graph = workflow.compile();
 
 
-export async function generateRoadmaps(bookmarkedJobs = [], userSkills = []) {
+export async function generateRoadmaps(bookmarkedJobs = [], userSkills = [], onProgress = null) {
   if (!bookmarkedJobs || bookmarkedJobs.length === 0) {
     return { error: "No bookmarked jobs provided" };
   }
 
+  const totalJobs = bookmarkedJobs.length;
+  const stageWeights = { analyzeJob: 0.2, generateRoadmap: 0.7, incrementIndex: 0.05, finalize: 0.05 };
 
   const initialState = {
     bookmarkedJobs,
@@ -394,12 +633,42 @@ export async function generateRoadmaps(bookmarkedJobs = [], userSkills = []) {
     finalOutput: {}
   };
 
-
   try {
-    const resultState = await graph.invoke(initialState);
-    return resultState.finalOutput || {};
+    let lastState = initialState;
+    const stream = await graph.stream(initialState);
+
+    for await (const event of stream) {
+      const nodeName = Object.keys(event)[0];
+      const nodeState = event[nodeName];
+      lastState = { ...lastState, ...nodeState };
+
+      if (onProgress && nodeName) {
+        const jobIndex = lastState.currentJobIndex ?? 0;
+        const currentJob = bookmarkedJobs[Math.min(jobIndex, totalJobs - 1)];
+        const stageWeight = stageWeights[nodeName] || 0;
+
+        const baseProgress = (nodeName === 'finalize')
+          ? 0.95
+          : (jobIndex / totalJobs) + (stageWeight / totalJobs);
+
+        const progress = Math.min(Math.round(baseProgress * 100), 100);
+
+        onProgress({
+          stage: nodeName,
+          jobIndex: jobIndex,
+          totalJobs,
+          jobTitle: currentJob?.title || 'Unknown',
+          company: currentJob?.company || '',
+          progress,
+        });
+      }
+    }
+
+    if (onProgress) onProgress({ stage: 'done', progress: 100, totalJobs });
+    return lastState.finalOutput || lastState.roadmaps || {};
   } catch (error) {
     console.error("Error in generateRoadmaps:", error);
+    if (onProgress) onProgress({ stage: 'error', error: error.message });
     return { error: error.message };
   }
 }
