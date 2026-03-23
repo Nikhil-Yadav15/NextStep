@@ -6,6 +6,103 @@ import { useRouter } from "next/navigation";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import RoadmapProgressBar from "@/components/dashboard/RoadmapProgressBar";
 
+function LoadingExperience({ progressData }) {
+  return (
+    <div className="relative overflow-hidden rounded-3xl border border-cyan-400/20 bg-slate-900/80 p-8 md:p-10 shadow-[0_20px_80px_-20px_rgba(56,189,248,0.45)]">
+      <motion.div
+        className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(34,211,238,0.12),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(59,130,246,0.12),transparent_30%),radial-gradient(circle_at_50%_100%,rgba(59,130,246,0.08),transparent_40%)]"
+        animate={{ opacity: [0.8, 1, 0.8] }}
+        transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+      />
+
+      <div className="relative grid gap-8 md:grid-cols-[1.2fr_1fr] items-center">
+        <div className="space-y-4">
+          <p className="inline-flex items-center gap-2 rounded-full bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-200">
+            Live generation
+          </p>
+          <h2 className="text-2xl md:text-3xl font-bold text-slate-50">
+            Crafting your personalized roadmap
+          </h2>
+          <p className="text-slate-300 max-w-xl">
+            We are analyzing your profile, skills, and goals to assemble a step-by-step plan. This usually takes under a minute.
+          </p>
+          <p className="text-xs text-slate-400">Streaming results… keep this tab open while we finish.</p>
+        </div>
+
+        <div className="relative h-56 md:h-64 flex items-center justify-center">
+          <motion.div
+            className="absolute inset-0 blur-3xl bg-[radial-gradient(circle_at_30%_30%,rgba(34,211,238,0.18),transparent_35%),radial-gradient(circle_at_70%_40%,rgba(59,130,246,0.16),transparent_32%)]"
+            animate={{ opacity: [0.7, 1, 0.7], scale: [0.98, 1.02, 0.98] }}
+            transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
+          />
+          <div className="relative w-64 h-64 rounded-3xl border border-cyan-500/25 bg-slate-950/60 p-4 shadow-2xl shadow-cyan-500/20">
+            <div className="relative w-full h-full rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 overflow-hidden border border-slate-800/60">
+              <motion.div
+                className="absolute -left-10 -bottom-6 w-48 h-48 rounded-full bg-cyan-500/15"
+                animate={{ y: [0, -6, 0], x: [0, 6, 0] }}
+                transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+              />
+              <motion.div
+                className="absolute -right-8 -top-6 w-40 h-40 rounded-full bg-blue-500/10"
+                animate={{ y: [0, 8, 0], x: [0, -6, 0] }}
+                transition={{ repeat: Infinity, duration: 7, ease: "easeInOut" }}
+              />
+              <div className="relative z-10 flex h-full items-center justify-center">
+                <motion.svg
+                  viewBox="0 0 200 200"
+                  className="w-52 h-52 text-slate-50"
+                  initial={{ rotate: -2 }}
+                  animate={{ rotate: [ -2, 2, -2 ] }}
+                  transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
+                >
+                  <defs>
+                    <linearGradient id="astro-suit" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#67e8f9" />
+                      <stop offset="100%" stopColor="#3b82f6" />
+                    </linearGradient>
+                  </defs>
+                  <circle cx="100" cy="100" r="92" fill="#0f172a" stroke="#334155" strokeWidth="6" />
+                  <path d="M70 140c0-12 12-18 30-18s30 6 30 18v10H70z" fill="url(#astro-suit)" stroke="#0ea5e9" strokeWidth="3" />
+                  <rect x="72" y="88" width="56" height="46" rx="12" fill="#0b1a2e" stroke="#38bdf8" strokeWidth="3" />
+                  <circle cx="100" cy="74" r="28" fill="#0f172a" stroke="#38bdf8" strokeWidth="4" />
+                  <circle cx="100" cy="74" r="20" fill="#020617" stroke="#bae6fd" strokeWidth="3" />
+                  <circle cx="92" cy="70" r="5" fill="#e0f2fe" />
+                  <circle cx="108" cy="78" r="4" fill="#38bdf8" />
+                  <path d="M75 116h50" stroke="#bae6fd" strokeWidth="3" strokeLinecap="round" />
+                  <path d="M85 126h10" stroke="#bae6fd" strokeWidth="3" strokeLinecap="round" />
+                  <rect x="118" y="120" width="10" height="12" rx="2" fill="#0ea5e9" />
+                  <motion.g
+                    animate={{ y: [0, -4, 0] }}
+                    transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                  >
+                    <path d="M54 122c-8-4-8-16 0-20" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
+                    <circle cx="52" cy="112" r="5" fill="#38bdf8" />
+                  </motion.g>
+                  <motion.g
+                    animate={{ y: [0, 4, 0] }}
+                    transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+                  >
+                    <path d="M146 122c8-4 8-16 0-20" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" />
+                    <circle cx="148" cy="112" r="5" fill="#38bdf8" />
+                  </motion.g>
+                  <motion.circle
+                    cx="100"
+                    cy="170"
+                    r="10"
+                    fill="#38bdf8"
+                    animate={{ scale: [0.9, 1.05, 0.9] }}
+                    transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+                  />
+                </motion.svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function RoadmapPage() {
   const { t } = useLanguage();
   const router = useRouter();
@@ -234,8 +331,8 @@ export default function RoadmapPage() {
         >
           {!roadmaps ? (
             <AnimatePresence mode="wait">
-              {loading && progressData ? (
-                <RoadmapProgressBar key="progress" progress={progressData} />
+              {loading ? (
+                <LoadingExperience progressData={progressData || { stage: "starting", progress: 15 }} />
               ) : (
                 <motion.div
                   key="generate"
