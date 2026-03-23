@@ -24,16 +24,21 @@ import {
   PolarRadiusAxis,
 } from "recharts";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { format, parseISO, startOfWeek } from "date-fns";
 
-const COLORS = ["#22c55e", "#3b82f6", "#f97316", "#ef4444", "#a855f7", "#06b6d4", "#ec4899"];
+const COLORS = ["#22d3ee", "#38bdf8", "#60a5fa", "#0ea5e9", "#0284c7", "#0891b2", "#67e8f9"];
 
-const cardClass = "bg-slate-900/70 backdrop-blur-xl border border-slate-800/50 rounded-2xl shadow-lg";
+const cardClass = "bg-slate-900/75 backdrop-blur-xl border border-slate-800/70 rounded-2xl shadow-lg";
+const toFiniteNumber = (value) => {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+};
 
 function CustomTooltip({ active, payload, label, labelFormatter, valueFormatter }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-slate-800/95 backdrop-blur-md border border-slate-700/80 rounded-xl px-4 py-3 shadow-2xl">
+    <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700/80 rounded-xl px-4 py-3 shadow-2xl">
       {label && (
         <p className="text-xs text-slate-400 mb-1.5 font-medium">
           {labelFormatter ? labelFormatter(label) : label}
@@ -51,6 +56,7 @@ function CustomTooltip({ active, payload, label, labelFormatter, valueFormatter 
 const axisStyle = { fill: "#94a3b8", fontSize: 12 };
 
 export default function Analytics({ interviews = [] }) {
+  const { t } = useLanguage();
   const uniquePresence = (() => {
     if (typeof window === "undefined") return null;
     const match = document.cookie
@@ -117,7 +123,9 @@ export default function Analytics({ interviews = [] }) {
 
   const stats = useMemo(() => {
     if (data.length === 0) return null;
-    const scores = data.map((d) => d.percentage).filter((p) => typeof p === "number");
+    const scores = data
+      .map((d) => toFiniteNumber(d?.percentage))
+      .filter((p) => p !== null);
     const avg = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
     const latest = scores.length > 0 ? scores[scores.length - 1] : 0;
     const trending = scores.length >= 2 ? latest >= scores[scores.length - 2] : true;
@@ -132,7 +140,8 @@ export default function Analytics({ interviews = [] }) {
     if (data.length === 0) return [];
     const buckets = { "0–20": 0, "21–40": 0, "41–60": 0, "61–80": 0, "81–100": 0 };
     data.forEach((d) => {
-      const p = d.percentage;
+      const p = toFiniteNumber(d?.percentage);
+      if (p === null) return;
       if (p <= 20) buckets["0–20"]++;
       else if (p <= 40) buckets["21–40"]++;
       else if (p <= 60) buckets["41–60"]++;
@@ -147,15 +156,17 @@ export default function Analytics({ interviews = [] }) {
     if (data.length === 0) return [];
     const topicScores = {};
     data.forEach((d) => {
+      const score = toFiniteNumber(d?.percentage);
+      if (score === null) return;
       const topic = d.topic || "General";
       if (!topicScores[topic]) topicScores[topic] = { sum: 0, count: 0 };
-      topicScores[topic].sum += d.percentage;
+      topicScores[topic].sum += score;
       topicScores[topic].count++;
     });
     return Object.entries(topicScores).map(([topic, { sum, count }]) => ({
       topic: topic.length > 14 ? topic.slice(0, 12) + "…" : topic,
-      avgScore: Math.round(sum / count),
-    }));
+      avgScore: count > 0 ? Math.round(sum / count) : 0,
+    })).filter((row) => Number.isFinite(row.avgScore));
   }, [data]);
 
   // Interview completion stats
@@ -171,16 +182,16 @@ export default function Analytics({ interviews = [] }) {
 
   if (!hasData) {
     return (
-      <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-10 mt-6">
+      <div className="bg-slate-900/70 backdrop-blur-xl border border-slate-800/70 rounded-2xl p-10 mt-6">
         <div className="flex flex-col items-center justify-center text-center py-8 gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-slate-800/80 flex items-center justify-center">
+          <div className="w-16 h-16 rounded-2xl bg-slate-800/90 flex items-center justify-center">
             <svg className="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
             </svg>
           </div>
           <div>
-            <p className="text-lg font-semibold text-slate-300">No progress data yet</p>
-            <p className="text-sm text-slate-500 mt-1">Take your first test to see your progress report here</p>
+            <p className="text-lg font-semibold text-slate-300">{t("dashboardAnalytics.emptyTitle")}</p>
+            <p className="text-sm text-slate-500 mt-1">{t("dashboardAnalytics.emptySubtitle")}</p>
           </div>
         </div>
       </div>
@@ -188,15 +199,15 @@ export default function Analytics({ interviews = [] }) {
   }
 
   return (
-    <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-6 md:p-8 mt-6 space-y-6">
+    <div className="bg-slate-900/70 backdrop-blur-xl border border-slate-800/70 rounded-2xl p-6 md:p-8 mt-6 space-y-6">
       {/* Section header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl md:text-2xl font-bold text-white">Progress Report</h2>
-          <p className="text-sm text-slate-400 mt-1">Track your learning journey and test performance</p>
+          <h2 className="text-xl md:text-2xl font-bold text-white">{t("dashboardAnalytics.title")}</h2>
+          <p className="text-sm text-slate-400 mt-1">{t("dashboardAnalytics.subtitle")}</p>
         </div>
-        <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
-          <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="w-10 h-10 rounded-xl bg-cyan-500/15 flex items-center justify-center">
+          <svg className="w-5 h-5 text-cyan-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
           </svg>
         </div>
@@ -204,21 +215,21 @@ export default function Analytics({ interviews = [] }) {
 
       {/* KPI summary row */}
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="bg-slate-800/60 border border-slate-700/40 rounded-xl px-4 py-3">
-            <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Avg Score</p>
+        <div className="grid grid-cols-2 md:grid-cols-12 gap-3">
+          <div className="bg-slate-800/60 border border-slate-700/40 rounded-xl px-4 py-3 md:col-span-3">
+            <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">{t("dashboardAnalytics.avgScore")}</p>
             <p className="text-2xl font-bold text-white mt-1">{stats.avg}<span className="text-sm text-slate-400 font-normal">%</span></p>
           </div>
-          <div className="bg-slate-800/60 border border-slate-700/40 rounded-xl px-4 py-3">
-            <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Tests</p>
+          <div className="bg-slate-800/60 border border-slate-700/40 rounded-xl px-4 py-3 md:col-span-2">
+            <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">{t("dashboardAnalytics.totalTests")}</p>
             <p className="text-2xl font-bold text-white mt-1">{stats.total}</p>
           </div>
-          <div className="bg-slate-800/60 border border-slate-700/40 rounded-xl px-4 py-3">
-            <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Best Topic</p>
+          <div className="bg-slate-800/60 border border-slate-700/40 rounded-xl px-4 py-3 md:col-span-4">
+            <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">{t("dashboardAnalytics.bestTopic")}</p>
             <p className="text-lg font-bold text-white mt-1 truncate">{stats.bestTopic}</p>
           </div>
-          <div className="bg-slate-800/60 border border-slate-700/40 rounded-xl px-4 py-3">
-            <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Trend</p>
+          <div className="bg-slate-800/60 border border-slate-700/40 rounded-xl px-4 py-3 md:col-span-3">
+            <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">{t("dashboardAnalytics.trend")}</p>
             <div className="flex items-center gap-2 mt-1">
               <span className="text-2xl font-bold text-white">{stats.latest}%</span>
               {stats.trending ? (
@@ -236,21 +247,21 @@ export default function Analytics({ interviews = [] }) {
       )}
 
       {/* Charts grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 auto-rows-[minmax(180px,auto)]">
         {/* Performance Trend — Area chart with gradient */}
         {data.length > 0 && (
-          <Card className={`lg:col-span-2 ${cardClass}`}>
+          <Card className={`md:order-1 md:col-span-8 md:row-span-2 ${cardClass}`}>
             <CardHeader>
-              <CardTitle className="text-white">Performance Trend</CardTitle>
-              <CardDescription className="text-slate-400">Your test scores over time</CardDescription>
+              <CardTitle className="text-white">{t("dashboardAnalytics.performanceTrend")}</CardTitle>
+              <CardDescription className="text-slate-400">{t("dashboardAnalytics.performanceTrendDesc")}</CardDescription>
             </CardHeader>
-            <CardContent className="h-72">
+            <CardContent className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={data}>
                   <defs>
                     <linearGradient id="scoreGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#22c55e" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                      <stop offset="0%" stopColor="#22d3ee" stopOpacity={0.35} />
+                      <stop offset="95%" stopColor="#22d3ee" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.06} stroke="#94a3b8" />
@@ -279,11 +290,11 @@ export default function Analytics({ interviews = [] }) {
                   <Area
                     type="monotone"
                     dataKey="percentage"
-                    stroke="#22c55e"
+                    stroke="#22d3ee"
                     strokeWidth={2.5}
                     fill="url(#scoreGradient)"
-                    dot={{ r: 4, fill: "#22c55e", stroke: "#0f172a", strokeWidth: 2 }}
-                    activeDot={{ r: 6, fill: "#22c55e", stroke: "#bbf7d0", strokeWidth: 3 }}
+                    dot={{ r: 4, fill: "#22d3ee", stroke: "#0f172a", strokeWidth: 2 }}
+                    activeDot={{ r: 6, fill: "#22d3ee", stroke: "#67e8f9", strokeWidth: 3 }}
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -293,12 +304,12 @@ export default function Analytics({ interviews = [] }) {
 
         {/* Topic Distribution — Donut chart */}
         {topicData.length > 0 && (
-          <Card className={`lg:col-span-1 ${cardClass}`}>
+          <Card className={`md:order-2 md:col-span-4 md:row-span-2 ${cardClass}`}>
             <CardHeader>
-              <CardTitle className="text-white">Topic Distribution</CardTitle>
-              <CardDescription className="text-slate-400">Topics covered across tests</CardDescription>
+              <CardTitle className="text-white">{t("dashboardAnalytics.topicDistribution")}</CardTitle>
+              <CardDescription className="text-slate-400">{t("dashboardAnalytics.topicDistributionDesc")}</CardDescription>
             </CardHeader>
-            <CardContent className="h-72 flex flex-col">
+            <CardContent className="h-[300px] flex flex-col">
               <div className="flex-1 min-h-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -345,18 +356,18 @@ export default function Analytics({ interviews = [] }) {
 
         {/* Weekly Test Frequency — Bar chart with gradient */}
         {weeklyData.length > 0 && (
-          <Card className={`lg:col-span-2 ${cardClass}`}>
+          <Card className={`md:order-4 md:col-span-8 md:row-span-2 ${cardClass}`}>
             <CardHeader>
-              <CardTitle className="text-white">Weekly Test Frequency</CardTitle>
-              <CardDescription className="text-slate-400">Number of tests taken each week</CardDescription>
+              <CardTitle className="text-white">{t("dashboardAnalytics.weeklyFrequency")}</CardTitle>
+              <CardDescription className="text-slate-400">{t("dashboardAnalytics.weeklyFrequencyDesc")}</CardDescription>
             </CardHeader>
-            <CardContent className="h-72">
+            <CardContent className="h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={weeklyData}>
                   <defs>
                     <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#3b82f6" stopOpacity={1} />
-                      <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.4} />
+                      <stop offset="0%" stopColor="#38bdf8" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#38bdf8" stopOpacity={0.45} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.06} stroke="#94a3b8" />
@@ -388,18 +399,18 @@ export default function Analytics({ interviews = [] }) {
 
         {/* Score Distribution — Histogram */}
         {distributionData.length > 0 && (
-          <Card className={`lg:col-span-1 ${cardClass}`}>
+          <Card className={`md:order-3 md:col-span-4 md:row-span-2 ${cardClass}`}>
             <CardHeader>
-              <CardTitle className="text-white">Score Distribution</CardTitle>
-              <CardDescription className="text-slate-400">How your scores are spread</CardDescription>
+              <CardTitle className="text-white">{t("dashboardAnalytics.scoreDistribution")}</CardTitle>
+              <CardDescription className="text-slate-400">{t("dashboardAnalytics.scoreDistributionDesc")}</CardDescription>
             </CardHeader>
-            <CardContent className="h-72">
+            <CardContent className="h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={distributionData} barCategoryGap="20%">
                   <defs>
                     <linearGradient id="histGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#a855f7" stopOpacity={1} />
-                      <stop offset="100%" stopColor="#a855f7" stopOpacity={0.4} />
+                      <stop offset="0%" stopColor="#60a5fa" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#60a5fa" stopOpacity={0.45} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.06} stroke="#94a3b8" />
@@ -431,12 +442,12 @@ export default function Analytics({ interviews = [] }) {
 
         {/* Topic-wise Avg Score — Radar Chart */}
         {radarData.length >= 3 && (
-          <Card className={`lg:col-span-2 ${cardClass}`}>
+          <Card className={`md:order-6 md:col-span-8 md:row-span-2 ${cardClass}`}>
             <CardHeader>
-              <CardTitle className="text-white">Strengths & Weaknesses</CardTitle>
-              <CardDescription className="text-slate-400">Average score by topic</CardDescription>
+              <CardTitle className="text-white">{t("dashboardAnalytics.strengthsWeaknesses")}</CardTitle>
+              <CardDescription className="text-slate-400">{t("dashboardAnalytics.strengthsWeaknessesDesc")}</CardDescription>
             </CardHeader>
-            <CardContent className="h-72">
+            <CardContent className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="70%">
                   <PolarGrid stroke="#334155" strokeOpacity={0.5} />
@@ -456,11 +467,11 @@ export default function Analytics({ interviews = [] }) {
                   />
                   <Radar
                     dataKey="avgScore"
-                    stroke="#06b6d4"
+                    stroke="#22d3ee"
                     strokeWidth={2}
-                    fill="#06b6d4"
+                    fill="#22d3ee"
                     fillOpacity={0.2}
-                    dot={{ r: 4, fill: "#06b6d4", stroke: "#0f172a", strokeWidth: 2 }}
+                    dot={{ r: 4, fill: "#22d3ee", stroke: "#0f172a", strokeWidth: 2 }}
                   />
                 </RadarChart>
               </ResponsiveContainer>
@@ -470,12 +481,12 @@ export default function Analytics({ interviews = [] }) {
 
         {/* Interview Completion — Progress Ring */}
         {interviewStats && (
-          <Card className={`lg:col-span-1 ${cardClass}`}>
+          <Card className={`md:order-5 md:col-span-4 md:row-span-2 ${cardClass}`}>
             <CardHeader>
-              <CardTitle className="text-white">Interview Completion</CardTitle>
-              <CardDescription className="text-slate-400">Completed vs total interviews</CardDescription>
+              <CardTitle className="text-white">{t("dashboardAnalytics.interviewCompletion")}</CardTitle>
+              <CardDescription className="text-slate-400">{t("dashboardAnalytics.interviewCompletionDesc")}</CardDescription>
             </CardHeader>
-            <CardContent className="h-72 flex flex-col items-center justify-center">
+            <CardContent className="h-[300px] flex flex-col items-center justify-center">
               <div className="relative w-40 h-40">
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
                   {/* Background ring */}
@@ -496,25 +507,25 @@ export default function Analytics({ interviews = [] }) {
                   />
                   <defs>
                     <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#22c55e" />
-                      <stop offset="100%" stopColor="#06b6d4" />
+                      <stop offset="0%" stopColor="#22d3ee" />
+                      <stop offset="100%" stopColor="#60a5fa" />
                     </linearGradient>
                   </defs>
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                   <span className="text-3xl font-bold text-white">{interviewStats.pct}%</span>
-                  <span className="text-xs text-slate-400">completed</span>
+                  <span className="text-xs text-slate-400">{t("dashboardAnalytics.completed")}</span>
                 </div>
               </div>
               <div className="flex gap-6 mt-4 text-center">
                 <div>
                   <p className="text-lg font-bold text-white">{interviewStats.completed}</p>
-                  <p className="text-xs text-slate-400">Completed</p>
+                  <p className="text-xs text-slate-400">{t("dashboardAnalytics.completed")}</p>
                 </div>
                 <div className="w-px bg-slate-700" />
                 <div>
                   <p className="text-lg font-bold text-white">{interviewStats.total}</p>
-                  <p className="text-xs text-slate-400">Total</p>
+                  <p className="text-xs text-slate-400">{t("dashboardAnalytics.total")}</p>
                 </div>
               </div>
             </CardContent>

@@ -121,7 +121,7 @@ export default function RoadmapPage() {
   const currentRoadmap = selectedJob && roadmaps ? roadmaps[selectedJob] : null;
 
   return (
-    <section className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6 md:p-8">
+    <section className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6 md:p-8 text-slate-100">
       <div className="max-w-7xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -130,17 +130,17 @@ export default function RoadmapPage() {
         >
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 mb-4 transition-colors cursor-pointer"
+            className="flex items-center gap-2 text-sm text-slate-400 hover:text-slate-100 mb-4 transition-colors cursor-pointer"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             {t("roadmapPage.back")}
           </button>
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent mb-2">
             {t("roadmapPage.title")}
           </h1>
-          <p className="text-gray-600 text-lg">
+          <p className="text-slate-400 text-lg">
             {t("roadmapPage.subtitle")}
           </p>
         </motion.div>
@@ -156,11 +156,11 @@ export default function RoadmapPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-white rounded-2xl shadow-xl p-8 md:p-12 text-center"
+              className="bg-slate-900/70 border border-slate-800/70 rounded-2xl shadow-xl p-8 md:p-12 text-center"
             >
               <div className="max-w-2xl mx-auto">
                 <div className="mb-8">
-                  <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mx-auto mb-6 flex items-center justify-center">
+                  <div className="w-24 h-24 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-full mx-auto mb-6 flex items-center justify-center">
                     <svg
                       className="w-12 h-12 text-white"
                       fill="none"
@@ -175,13 +175,13 @@ export default function RoadmapPage() {
                       />
                     </svg>
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-800 mb-3">
+                  <h2 className="text-2xl font-bold text-slate-100 mb-3">
                     {t("roadmapPage.readyTitle")}
                   </h2>
-                  <p className="text-gray-600 mb-2">
+                  <p className="text-slate-300 mb-2">
                     {t("roadmapPage.readySubtitle")}
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-slate-400">
                     {t("roadmapPage.readyCaption")}
                   </p>
                 </div>
@@ -189,7 +189,7 @@ export default function RoadmapPage() {
                 <button
                   onClick={() => handleGenerateRoadmap(false)}
                   disabled={loading}
-                  className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-slate-950 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   <span className="relative z-10 flex items-center gap-3">
                     {loading ? (
@@ -235,16 +235,16 @@ export default function RoadmapPage() {
                       </>
                     )}
                   </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </button>
 
                 {error && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg"
+                    className="mt-6 p-4 bg-red-900/20 border border-red-500/30 rounded-lg"
                   >
-                    <p className="text-red-600 text-sm">{error}</p>
+                    <p className="text-red-300 text-sm">{error}</p>
                   </motion.div>
                 )}
               </div>
@@ -259,10 +259,10 @@ export default function RoadmapPage() {
                 animate={{ opacity: 1, x: 0 }}
                 className="lg:col-span-1"
               >
-                <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <div className="bg-slate-900/70 border border-slate-800/70 rounded-2xl shadow-lg p-6 sticky top-6">
+                  <h3 className="text-lg font-semibold text-slate-100 mb-4 flex items-center gap-2">
                     <svg
-                      className="w-5 h-5 text-blue-600"
+                      className="w-5 h-5 text-cyan-300"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -286,14 +286,14 @@ export default function RoadmapPage() {
                           onClick={() => setSelectedJob(jobId)}
                           className={`w-full text-left p-4 rounded-xl transition-all duration-200 ${
                             isSelected
-                              ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg scale-105'
-                              : 'bg-gray-50 hover:bg-gray-100 text-gray-700'
+                              ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 shadow-lg scale-105'
+                              : 'bg-slate-800/50 hover:bg-slate-800 text-slate-200'
                           }`}
                         >
                           <div className="font-medium text-sm mb-1 line-clamp-2">
                             {title}
                           </div>
-                          <div className={`text-xs ${isSelected ? 'text-blue-100' : 'text-gray-500'}`}>
+                          <div className={`text-xs ${isSelected ? 'text-slate-900/70' : 'text-slate-400'}`}>
                             {company}
                           </div>
                         </button>
@@ -308,7 +308,7 @@ export default function RoadmapPage() {
                       handleGenerateRoadmap(true);
                     }}
                     disabled={loading}
-                    className="mt-6 w-full px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
+                    className="mt-6 w-full px-4 py-2 text-sm font-medium text-slate-200 bg-slate-800/60 border border-slate-700 rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50"
                   >
                     {loading ? t("roadmapPage.regenerating") : t("roadmapPage.generateNew")}
                   </button>
@@ -324,9 +324,9 @@ export default function RoadmapPage() {
                 {currentRoadmap && Array.isArray(currentRoadmap) && (
                   <div className="space-y-6">
                     {/* Header */}
-                    <div className="bg-white rounded-2xl shadow-lg p-6">
+                    <div className="bg-slate-900/70 border border-slate-800/70 rounded-2xl shadow-lg p-6">
                       <div className="flex items-start gap-4">
-                        <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                        <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center">
                           <svg
                             className="w-6 h-6 text-white"
                             fill="none"
@@ -342,10 +342,10 @@ export default function RoadmapPage() {
                           </svg>
                         </div>
                         <div className="flex-1">
-                          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                          <h2 className="text-2xl font-bold text-slate-100 mb-2">
                             {formatJobTitle(selectedJob).title}
                           </h2>
-                          <p className="text-gray-600">
+                          <p className="text-slate-400">
                             {formatJobTitle(selectedJob).company} • {currentRoadmap.length} {t("roadmapPage.learningSteps")}
                           </p>
                         </div>
@@ -360,26 +360,26 @@ export default function RoadmapPage() {
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: index * 0.1 }}
-                          className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
+                          className="bg-slate-900/70 border border-slate-800/70 rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
                         >
                           <button
                             onClick={() => toggleStep(index)}
-                            className="w-full p-6 flex items-start gap-4 text-left hover:bg-gray-50 transition-colors"
+                            className="w-full p-6 flex items-start gap-4 text-left hover:bg-slate-800/35 transition-colors"
                           >
                             <div className="flex-shrink-0">
-                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold">
+                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center text-slate-950 font-bold">
                                 {step.step || index + 1}
                               </div>
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                              <h3 className="text-lg font-semibold text-slate-100 mb-2">
                                 {step.title}
                               </h3>
-                              <p className="text-gray-600 text-sm mb-3">
+                              <p className="text-slate-400 text-sm mb-3">
                                 {step.description}
                               </p>
                               <div className="flex flex-wrap gap-2">
-                                <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium">
+                                <span className="inline-flex items-center gap-1 px-3 py-1 bg-cyan-500/15 text-cyan-200 border border-cyan-500/20 rounded-full text-xs font-medium">
                                   <svg
                                     className="w-3 h-3"
                                     fill="none"
@@ -395,7 +395,7 @@ export default function RoadmapPage() {
                                   </svg>
                                   {step.estimatedDuration}
                                 </span>
-                                <span className="inline-flex items-center gap-1 px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium">
+                                <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-500/15 text-blue-200 border border-blue-500/20 rounded-full text-xs font-medium">
                                   <svg
                                     className="w-3 h-3"
                                     fill="none"
@@ -412,7 +412,7 @@ export default function RoadmapPage() {
                                   {step.skills?.length || 0} skills
                                 </span>
                                 {step.resources?.length > 0 && (
-                                  <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-medium">
+                                  <span className="inline-flex items-center gap-1 px-3 py-1 bg-sky-500/15 text-sky-200 border border-sky-500/20 rounded-full text-xs font-medium">
                                     <svg
                                       className="w-3 h-3"
                                       fill="none"
@@ -437,7 +437,7 @@ export default function RoadmapPage() {
                               className="flex-shrink-0"
                             >
                               <svg
-                                className="w-6 h-6 text-gray-400"
+                                className="w-6 h-6 text-slate-500"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -460,9 +460,9 @@ export default function RoadmapPage() {
                                 animate={{ height: 'auto', opacity: 1 }}
                                 exit={{ height: 0, opacity: 0 }}
                                 transition={{ duration: 0.3 }}
-                                className="border-t border-gray-100"
+                                className="border-t border-slate-800/80"
                               >
-                                <div className="p-6 bg-gray-50 space-y-4">
+                                <div className="p-6 bg-slate-900/50 space-y-4">
                                   {/* Skills Section */}
                                   {step.skills && step.skills.length > 0 && (
                                     <div>

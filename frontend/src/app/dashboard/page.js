@@ -1,84 +1,31 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { LogOut, Upload, Target, FileText, CheckCircle, Sparkles } from "lucide-react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { Sphere, Float } from "@react-three/drei";
+import {
+  Upload,
+  Target,
+  FileText,
+  CheckCircle,
+  Sparkles,
+  Briefcase,
+  Map,
+  Video,
+  FileQuestion,
+  ArrowUpRight,
+} from "lucide-react";
 import DashboardNav from "@/components/layout/Dashboardnav";
 import ChatbotButton from "@/components/dashboard/Chatbot";
 import Analytics from "@/components/dashboard/Analytics";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
-function AnimatedSphere({ position, color, speed }) {
-  const meshRef = useRef(null);
-  
-  useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.x = state.clock.getElapsedTime() * speed;
-      meshRef.current.rotation.y = state.clock.getElapsedTime() * speed * 0.5;
-    }
-  });
-
-  return (
-    <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
-      <Sphere ref={meshRef} args={[1, 32, 32]} position={position}>
-        <meshStandardMaterial
-          color={color}
-          roughness={0.4}
-          metalness={0.8}
-          transparent
-          opacity={0.6}
-        />
-      </Sphere>
-    </Float>
-  );
-}
-
-function Stars() {
-  const count = 200;
-  const positions = new Float32Array(count * 3);
-  
-  for (let i = 0; i < count * 3; i++) {
-    positions[i] = (Math.random() - 0.5) * 20;
-  }
-
-  return (
-    <points>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={count}
-          array={positions}
-          itemSize={3}
-        />
-      </bufferGeometry>
-      <pointsMaterial size={0.05} color="#ffffff" transparent opacity={0.6} />
-    </points>
-  );
-}
-
-function Background3D() {
-  return (
-    <div className="fixed inset-0 -z-10">
-      <Canvas camera={{ position: [0, 0, 5], fov: 75 }}>
-        <ambientLight intensity={0.3} />
-        <directionalLight position={[10, 10, 5]} intensity={0.5} />
-        <pointLight position={[-10, -10, -5]} intensity={0.3} color="#a855f7" />
-        
-        <AnimatedSphere position={[-2, 1, 0]} color="#8b5cf6" speed={0.2} />
-        <AnimatedSphere position={[2, -1, -1]} color="#ec4899" speed={0.15} />
-        <AnimatedSphere position={[0, 0, -2]} color="#3b82f6" speed={0.25} />
-        
-        <Stars />
-      </Canvas>
-    </div>
-  );
-}
-
 export default function DashboardPage() {
   const { t } = useLanguage();
   const backendApiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+  const toFiniteNumber = (value) => {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : null;
+  };
   const [file, setFile] = useState(null);
   const [goals, setGoals] = useState('');
   const [jobDescription, setJobDescription] = useState('');
@@ -165,70 +112,80 @@ export default function DashboardPage() {
   ];
 
   const completedInterviews= interviews.filter(i => i.reports && i.reports.length > 0).length;
-  const avgQuizScore = quizScores.length > 0
-    ? Math.round(quizScores.reduce((sum, s) => sum + (s.percentage || 0), 0) / quizScores.length)
+  const numericQuizScores = quizScores
+    .map((s) => toFiniteNumber(s?.percentage))
+    .filter((n) => n !== null);
+  const avgQuizScore = numericQuizScores.length > 0
+    ? Math.round(numericQuizScores.reduce((sum, n) => sum + n, 0) / numericQuizScores.length)
     : 0;
+
+  const spotlightCards = [
+    {
+      title: t("dashboardHome.spotlightJobsTitle"),
+      description: t("dashboardHome.spotlightJobsDesc"),
+      metric: `${skills.length > 0 ? skills.length : 0} ${t("dashboardHome.skillSignalsMetric")}`,
+      link: "/dashboard/jobs",
+      icon: <Briefcase className="h-5 w-5" />,
+    },
+    {
+      title: t("dashboardHome.spotlightRoadmapTitle"),
+      description: t("dashboardHome.spotlightRoadmapDesc"),
+      metric: goals.trim() ? t("dashboardHome.goalsDetected") : t("dashboardHome.setGoals"),
+      link: "/dashboard/roadmap",
+      icon: <Map className="h-5 w-5" />,
+    },
+    {
+      title: t("dashboardHome.spotlightInterviewTitle"),
+      description: t("dashboardHome.spotlightInterviewDesc"),
+      metric: `${completedInterviews}/${interviews.length} ${t("dashboardHome.completed")}`,
+      link: "/dashboard/interview",
+      icon: <Video className="h-5 w-5" />,
+    },
+    {
+      title: t("dashboardHome.spotlightQuizTitle"),
+      description: t("dashboardHome.spotlightQuizDesc"),
+      metric: quizScores.length > 0 ? `${avgQuizScore}% ${t("dashboardHome.avgScore")}` : t("dashboardHome.noAttemptsYet"),
+      link: "/dashboard/quiz",
+      icon: <FileQuestion className="h-5 w-5" />,
+    },
+  ];
 
   const features = [
     {
       title: t("dashboardHome.featureJobsTitle"),
       description: t("dashboardHome.featureJobsDesc"),
       link: "/dashboard/jobs",
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-        </svg>
-      ),
+      icon: <Briefcase className="w-5 h-5" />,
     },
     {
       title: t("dashboardHome.featureRoadmapTitle"),
       description: t("dashboardHome.featureRoadmapDesc"),
       link: "/dashboard/roadmap",
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-        </svg>
-      ),
+      icon: <Map className="w-5 h-5" />,
     },
     {
       title: t("dashboardHome.featureInterviewTitle"),
       description: t("dashboardHome.featureInterviewDesc"),
       link: "/dashboard/interview",
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-        </svg>
-      ),
+      icon: <Video className="w-5 h-5" />,
     },
     {
       title: t("dashboardHome.featureQuizTitle"),
       description: t("dashboardHome.featureQuizDesc"),
       link: "/dashboard/quiz",
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-        </svg>
-      ),
+      icon: <FileQuestion className="w-5 h-5" />,
     },
     {
       title: t("dashboardHome.featureResumeTitle"),
       description: t("dashboardHome.featureResumeDesc"),
       link: "/dashboard/resume",
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      ),
+      icon: <FileText className="w-5 h-5" />,
     },
      {
       title: t("dashboardHome.featureChatTitle"),
       description: t("dashboardHome.featureChatDesc"),
       link: "/dashboard/chat",
-      icon: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      ),
+      icon: <Sparkles className="w-5 h-5" />,
     }
   ];
 
@@ -388,21 +345,10 @@ export default function DashboardPage() {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      localStorage.removeItem("user_id");
-      localStorage.removeItem("role");
-      await fetch("/api/auth/logout", { method: "POST" });
-    } catch (e) {
-      console.error("Logout error:", e);
-    } finally {
-      window.location.href = "/auth/login";
-    }
-  };
-
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
-      <Background3D />
+    <div className="relative min-h-screen overflow-hidden bg-[#070a12] text-slate-100">
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_15%,rgba(56,189,248,0.22),transparent_38%),radial-gradient(circle_at_80%_0%,rgba(59,130,246,0.2),transparent_30%),radial-gradient(circle_at_50%_100%,rgba(15,23,42,0.9),transparent_45%)]" />
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(120deg,rgba(148,163,184,0.05)_1px,transparent_1px),linear-gradient(210deg,rgba(148,163,184,0.04)_1px,transparent_1px)] bg-[size:44px_44px] opacity-25" />
       <ChatbotButton />
 
       {/* Toast notification */}
@@ -428,70 +374,154 @@ export default function DashboardPage() {
       
       <div className="relative z-10 container mx-auto px-4 py-8 space-y-8">
         <DashboardNav />
-        
-        <div className="text-center space-y-3 py-6">
-          <h1 className="text-4xl md:text-5xl font-bold font-serif text-white">
-            {t("dashboardHome.welcome")}
-          </h1>
-          <p className="text-lg text-slate-400 max-w-2xl mx-auto">
-            {t("dashboardHome.subtitle")}
-          </p>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-6 shadow-lg hover:shadow-primary/10 transition-all duration-300 hover:scale-105">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-semibold text-slate-400">{t("dashboardHome.cardQuizzes")}</p>
-              <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                <FileText className="w-5 h-5 text-primary" />
+        <div className="rounded-3xl border border-slate-800/70 bg-slate-950/70 p-7 shadow-[0_18px_60px_-25px_rgba(2,132,199,0.45)] backdrop-blur-xl">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+            <div className="space-y-3">
+              <p className="inline-flex items-center rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1 text-xs font-semibold tracking-[0.14em] text-cyan-300">
+                {t("dashboardHome.commandCenter")}
+              </p>
+              <h1 className="text-3xl font-semibold leading-tight text-white md:text-5xl">
+                {t("dashboardHome.welcome")}
+              </h1>
+              <p className="max-w-3xl text-sm text-slate-300 md:text-base">
+                {t("dashboardHome.subtitle")}
+              </p>
+            </div>
+            <div className="grid w-full gap-3 sm:grid-cols-2 lg:w-auto lg:min-w-[360px]">
+              <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+                <p className="text-xs uppercase tracking-[0.12em] text-slate-400">{t("dashboardHome.profileActivity")}</p>
+                <p className="mt-2 text-2xl font-semibold text-white">{quizScores.length + interviews.length}</p>
+                <p className="mt-1 text-xs text-slate-400">{t("dashboardHome.totalTrackedSessions")}</p>
+              </div>
+              <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+                <p className="text-xs uppercase tracking-[0.12em] text-slate-400">{t("dashboardHome.skillSignals")}</p>
+                <p className="mt-2 text-2xl font-semibold text-white">{skills.length}</p>
+                <p className="mt-1 text-xs text-slate-400">{t("dashboardHome.skillsCaptured")}</p>
               </div>
             </div>
-            <p className="text-3xl font-bold text-white">{quizScores.length}</p>
-            <p className="text-sm text-slate-500 mt-1">{quizScores.length > 0 ? `${avgQuizScore}% ${t("dashboardHome.avgScore")}` : t("dashboardHome.noQuizzes")}</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="rounded-2xl border border-slate-800/80 bg-slate-900/65 p-5 shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan-400/40">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">{t("dashboardHome.cardQuizzes")}</p>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/15">
+                <FileText className="h-5 w-5 text-cyan-300" />
+              </div>
+            </div>
+            <p className="text-3xl font-semibold text-white">{quizScores.length}</p>
+            <p className="mt-1 text-sm text-slate-400">{quizScores.length > 0 ? `${avgQuizScore}% ${t("dashboardHome.avgScore")}` : t("dashboardHome.noQuizzes")}</p>
           </div>
 
-          <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-6 shadow-lg hover:shadow-primary/10 transition-all duration-300 hover:scale-105">
+          <div className="rounded-2xl border border-slate-800/80 bg-slate-900/65 p-5 shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan-400/40">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-semibold text-slate-400">{t("dashboardHome.cardInterviews")}</p>
-              <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">{t("dashboardHome.cardInterviews")}</p>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/15">
+                <svg className="h-5 w-5 text-cyan-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
             </div>
-            <p className="text-3xl font-bold text-white">{interviews.length}</p>
-            <p className="text-sm text-slate-500 mt-1">{completedInterviews} {t("dashboardHome.completed")}</p>
+            <p className="text-3xl font-semibold text-white">{interviews.length}</p>
+            <p className="mt-1 text-sm text-slate-400">{completedInterviews} {t("dashboardHome.completed")}</p>
           </div>
 
-          <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-6 shadow-lg hover:shadow-primary/10 transition-all duration-300 hover:scale-105">
+          <div className="rounded-2xl border border-slate-800/80 bg-slate-900/65 p-5 shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan-400/40">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-semibold text-slate-400">{t("dashboardHome.cardSkills")}</p>
-              <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                <CheckCircle className="w-5 h-5 text-primary" />
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">{t("dashboardHome.cardSkills")}</p>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/15">
+                <CheckCircle className="h-5 w-5 text-cyan-300" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-white">{skills.length}</p>
-            <p className="text-sm text-slate-500 mt-1">{skills.length > 0 ? `${skills.slice(0, 3).join(', ')}` : t("dashboardHome.noSkills")}</p>
+            <p className="text-3xl font-semibold text-white">{skills.length}</p>
+            <p className="mt-1 text-sm text-slate-400">{skills.length > 0 ? `${skills.slice(0, 3).join(', ')}` : t("dashboardHome.noSkills")}</p>
+          </div>
+
+          <div className="rounded-2xl border border-slate-800/80 bg-slate-900/65 p-5 shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan-400/40">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">{t("dashboardHome.platformModules")}</p>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/15">
+                <Sparkles className="h-5 w-5 text-cyan-300" />
+              </div>
+            </div>
+            <p className="text-3xl font-semibold text-white">{features.length}</p>
+            <p className="mt-1 text-sm text-slate-400">{t("dashboardHome.activeAiFeatures")}</p>
           </div>
         </div>
 
-        <Analytics interviews={interviews} />
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <div className="rounded-3xl border border-slate-800/80 bg-slate-900/70 p-6 backdrop-blur-xl">
+              <div className="mb-5 flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-semibold text-white">{t("dashboardHome.workflowModules")}</h2>
+                  <p className="mt-1 text-sm text-slate-400">{t("dashboardHome.workflowModulesSubtitle")}</p>
+                </div>
+                <span className="rounded-full border border-cyan-400/25 bg-cyan-400/10 px-3 py-1 text-xs font-semibold text-cyan-300">
+                  {t("dashboardHome.live")}
+                </span>
+              </div>
 
-        <div 
-  className="relative bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-8 shadow-2xl overflow-hidden"
-  onMouseEnter={() => setShowUploadSection(true)}
-  onMouseLeave={() => { if (!isProcessing) setShowUploadSection(false); }}
->
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {spotlightCards.map((card) => (
+                  <Link
+                    key={card.title}
+                    href={card.link}
+                    className="group rounded-2xl border border-slate-800/80 bg-slate-950/55 p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-cyan-400/40"
+                  >
+                    <div className="mb-4 flex items-center justify-between">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/15 text-cyan-300">
+                        {card.icon}
+                      </div>
+                      <ArrowUpRight className="h-4 w-4 text-slate-500 transition-colors group-hover:text-cyan-300" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-white">{card.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-400">{card.description}</p>
+                    <p className="mt-3 text-xs font-semibold uppercase tracking-[0.11em] text-cyan-300">{card.metric}</p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <aside className="rounded-3xl border border-slate-800/80 bg-slate-900/70 p-5 backdrop-blur-xl">
+            <h3 className="text-lg font-semibold text-white">{t("dashboardHome.additionalLinks")}</h3>
+            <p className="mt-1 text-sm text-slate-400">{t("dashboardHome.additionalLinksSubtitle")}</p>
+
+            <div className="mt-4 space-y-2.5">
+              {features.map((feature) => (
+                <Link
+                  key={feature.link}
+                  href={feature.link}
+                  className="group flex items-center gap-3 rounded-xl border border-slate-800/70 bg-slate-950/50 px-3 py-3 transition-all hover:border-cyan-400/30"
+                >
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-cyan-500/15 text-cyan-300">
+                    {feature.icon}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-slate-100">{feature.title}</p>
+                    <p className="truncate text-xs text-slate-400">{feature.description}</p>
+                  </div>
+                  <ArrowUpRight className="h-4 w-4 text-slate-500 transition-colors group-hover:text-cyan-300" />
+                </Link>
+              ))}
+            </div>
+          </aside>
+        </div>
+
+        <div className="relative overflow-hidden rounded-3xl border border-slate-800/80 bg-slate-900/70 p-7 shadow-2xl backdrop-blur-xl">
   {/* Processing overlay */}
   {isProcessing && (
-    <div className="absolute inset-0 z-20 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center gap-8 animate-fade-in-up rounded-2xl">
+    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-8 rounded-3xl bg-slate-950/92 backdrop-blur-md animate-fade-in-up">
       {/* Orbiting dots around a central icon */}
       <div className="relative w-24 h-24 flex items-center justify-center">
-        <div className="absolute inset-0 rounded-full border-2 border-primary/20 animate-pulse-ring" />
-        <div className="absolute inset-[-8px] rounded-full border border-dashed border-primary/30 animate-spin" style={{ animationDuration: '6s' }} />
+        <div className="absolute inset-0 rounded-full border-2 border-cyan-300/20 animate-pulse-ring" />
+        <div className="absolute inset-[-8px] rounded-full border border-dashed border-cyan-300/30 animate-spin" style={{ animationDuration: '6s' }} />
         <div className="absolute w-3 h-3 rounded-full bg-blue-400 shadow-lg shadow-blue-400/50 animate-orbit" />
         <div className="absolute w-2 h-2 rounded-full bg-cyan-400 shadow-lg shadow-cyan-400/50 animate-orbit-reverse" />
-        <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-cyan-500 flex items-center justify-center shadow-xl shadow-primary/30">
+        <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-500 shadow-xl shadow-cyan-500/30">
           <Sparkles className="w-7 h-7 text-white animate-pulse" />
         </div>
       </div>
@@ -500,7 +530,7 @@ export default function DashboardPage() {
       <div className="w-64 space-y-3">
         <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-primary via-cyan-400 to-primary transition-all duration-700 ease-out relative"
+            className="relative h-full rounded-full bg-gradient-to-r from-cyan-500 via-blue-400 to-cyan-500 transition-all duration-700 ease-out"
             style={{ width: `${((processingStep + 1) / processingSteps.length) * 100}%` }}
           >
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
@@ -520,7 +550,7 @@ export default function DashboardPage() {
               i < processingStep
                 ? 'bg-green-500/10 border border-green-500/20'
                 : i === processingStep
-                  ? 'bg-primary/10 border border-primary/30 shadow-lg shadow-primary/10'
+                  ? 'bg-cyan-500/10 border border-cyan-400/30 shadow-lg shadow-cyan-400/10'
                   : 'bg-slate-800/30 border border-slate-800/50 opacity-40'
             }`}
             style={i <= processingStep ? { animationDelay: `${i * 150}ms` } : {}}
@@ -539,9 +569,9 @@ export default function DashboardPage() {
             </span>
             {i === processingStep && (
               <div className="ml-auto flex gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }} />
-                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }} />
-                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-300 animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-300 animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-300 animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
             )}
           </div>
@@ -550,16 +580,22 @@ export default function DashboardPage() {
     </div>
   )}
 
-  <div className="flex items-center justify-between mb-6">
+  <div className="mb-6 flex items-center justify-between gap-3">
     <div className="flex items-center gap-3">
-      <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-primary to-primary/80 flex items-center justify-center">
-        <Upload className="w-6 h-6 text-white" />
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/15">
+        <FileText className="h-5 w-5 text-cyan-300" />
       </div>
       <div>
-        <h2 className="text-2xl font-bold text-white">{t("dashboardHome.docTitle")}</h2>
+        <h2 className="text-2xl font-semibold text-white">{t("dashboardHome.docTitle")}</h2>
         <p className="text-slate-400">{t("dashboardHome.docSubtitle")}</p>
       </div>
     </div>
+    <button
+      onClick={() => setShowUploadSection((prev) => !prev)}
+      className="rounded-xl border border-slate-700/80 bg-slate-900/80 px-4 py-2 text-sm font-medium text-slate-300 transition-colors hover:border-cyan-400/40 hover:text-cyan-300"
+    >
+      {showUploadSection ? t("dashboardHome.hide") : t("dashboardHome.open")}
+    </button>
   </div>
 
   <div className={`space-y-6 transition-all duration-800 overflow-hidden ${
@@ -580,16 +616,16 @@ export default function DashboardPage() {
           file:mr-4 file:py-3 file:px-6
           file:rounded-lg file:border-0
           file:text-sm file:font-semibold
-          file:bg-primary file:text-white
-          hover:file:bg-primary/80
+          file:bg-cyan-500 file:text-slate-950
+          hover:file:bg-cyan-400
           border border-slate-800 rounded-lg
           bg-slate-950/50
-          focus:outline-none focus:border-primary transition-colors"
+          focus:outline-none focus:border-cyan-400 transition-colors"
       />
       {file && (
-        <div className="mt-3 p-3 bg-primary/10 border border-primary/30 rounded-lg">
+        <div className="mt-3 rounded-lg border border-cyan-400/30 bg-cyan-500/10 p-3">
           <p className="text-sm text-slate-300">
-            <span className="font-semibold text-primary">{t("dashboardHome.selected")}</span> {file.name}
+            <span className="font-semibold text-cyan-300">{t("dashboardHome.selected")}</span> {file.name}
             <span className="text-slate-500 ml-2">({(file.size / 1024).toFixed(2)} KB)</span>
           </p>
         </div>
@@ -608,7 +644,7 @@ export default function DashboardPage() {
         rows={4}
         className="w-full px-4 py-3 border border-slate-800 rounded-lg
           bg-slate-950/50 text-white placeholder-slate-500
-          focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none"
+          focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-colors resize-none"
       />
     </div>
 
@@ -624,7 +660,7 @@ export default function DashboardPage() {
         rows={5}
         className="w-full px-4 py-3 border border-slate-800 rounded-lg
           bg-slate-950/50 text-white placeholder-slate-500
-          focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none"
+          focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-colors resize-none"
       />
       {file && jobDescription.trim() && (
         <p className="mt-3 text-sm text-green-400 flex items-center gap-2">
@@ -637,8 +673,8 @@ export default function DashboardPage() {
     <button
       onClick={handleProcess}
       disabled={isProcessing}
-      className="w-full py-4 px-6 bg-gradient-to-r from-primary to-primary/80 text-white font-bold rounded-lg
-        hover:shadow-lg hover:shadow-primary/25 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-slate-900
+      className="w-full rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 px-6 py-4 font-bold text-slate-950
+        hover:shadow-lg hover:shadow-cyan-500/20 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-slate-900
         transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed
         transform hover:scale-[1.02] active:scale-[0.98]"
     >
@@ -647,38 +683,8 @@ export default function DashboardPage() {
   </div>
 </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((feature, index) => (
-            <Link
-              key={index}
-              href={feature.link}
-              className="group relative overflow-hidden rounded-2xl border border-slate-800/50 bg-slate-900/50 backdrop-blur-xl p-8 shadow-lg hover:shadow-primary/20 hover:border-primary/50 transform hover:scale-105 transition-all duration-300 cursor-pointer"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="relative z-10 space-y-4">
-                <div className="w-16 h-16 rounded-xl bg-gradient-to-r from-primary to-primary/80 flex items-center justify-center text-white shadow-lg group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
-                  {feature.icon}
-                </div>
+        <Analytics interviews={interviews} />
 
-                <div>
-                  <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-primary transition-colors">
-                    {feature.title}
-                  </h3>
-                  <p className="text-slate-400 leading-relaxed">
-                    {feature.description}
-                  </p>
-                </div>
-
-                <div className="flex items-center text-primary font-semibold group-hover:gap-3 gap-2 transition-all">
-                  <span>{t("dashboardHome.getStarted")}</span>
-                  <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
       </div>
     </div>
   );
