@@ -217,9 +217,11 @@ function JobsContent() {
           </h1>
           <button
             onClick={() => setShowSaved(!showSaved)}
-            className="flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 text-white hover:shadow-lg hover:shadow-cyan-500/25 transition-all transform hover:scale-105"
+            className="flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 hover:shadow-lg hover:shadow-cyan-500/25 transition-all transform hover:scale-105"
           >
-            <Bookmark size={18} />
+            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-slate-950/15">
+              <Bookmark size={16} />
+            </span>
             {t("jobsPage.myGoals")} ({savedJobs.length})
           </button>
         </div>
@@ -237,7 +239,9 @@ function JobsContent() {
             </div>
             {savedJobs.length === 0 ? (
               <div className="text-center py-16 bg-slate-900/50 backdrop-blur-xl border border-slate-800/50 rounded-2xl">
-                <Bookmark size={48} className="mx-auto mb-3 opacity-30 text-slate-500" />
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-500/10 border border-cyan-500/20">
+                  <Bookmark size={24} className="text-cyan-300" />
+                </div>
                 <p className="text-slate-400">{t("jobsPage.noSavedJobs")}</p>
               </div>
             ) : (
