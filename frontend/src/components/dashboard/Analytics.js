@@ -55,7 +55,7 @@ function CustomTooltip({ active, payload, label, labelFormatter, valueFormatter 
 
 const axisStyle = { fill: "#94a3b8", fontSize: 12 };
 
-export default function Analytics({ interviews = [] }) {
+export default function Analytics({ interviews = [], skills = [] }) {
   const { t } = useLanguage();
   const uniquePresence = (() => {
     if (typeof window === "undefined") return null;
@@ -169,16 +169,9 @@ export default function Analytics({ interviews = [] }) {
     })).filter((row) => Number.isFinite(row.avgScore));
   }, [data]);
 
-  // Interview completion stats
-  const interviewStats = useMemo(() => {
-    if (!interviews || interviews.length === 0) return null;
-    const completed = interviews.filter((i) => i.reports && i.reports.length > 0).length;
-    const total = interviews.length;
-    const pct = Math.round((completed / total) * 100);
-    return { completed, total, pct };
-  }, [interviews]);
 
-  const hasData = data.length > 0 || weeklyData.length > 0 || topicData.length > 0 || interviews.length > 0;
+
+  const hasData = data.length > 0 || weeklyData.length > 0 || topicData.length > 0 || interviews.length > 0 || skills.length > 0;
 
   if (!hasData) {
     return (
@@ -246,11 +239,11 @@ export default function Analytics({ interviews = [] }) {
         </div>
       )}
 
-      {/* Charts grid */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 auto-rows-[minmax(180px,auto)]">
+      {/* Charts bento grid — 2 cols × 3 rows */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Performance Trend — Area chart with gradient */}
         {data.length > 0 && (
-          <Card className={`md:order-1 md:col-span-8 md:row-span-2 ${cardClass}`}>
+          <Card className={`md:order-1 ${cardClass}`}>
             <CardHeader>
               <CardTitle className="text-white">{t("dashboardAnalytics.performanceTrend")}</CardTitle>
               <CardDescription className="text-slate-400">{t("dashboardAnalytics.performanceTrendDesc")}</CardDescription>
@@ -304,7 +297,7 @@ export default function Analytics({ interviews = [] }) {
 
         {/* Topic Distribution — Donut chart */}
         {topicData.length > 0 && (
-          <Card className={`md:order-2 md:col-span-4 md:row-span-2 ${cardClass}`}>
+          <Card className={`md:order-2 ${cardClass}`}>
             <CardHeader>
               <CardTitle className="text-white">{t("dashboardAnalytics.topicDistribution")}</CardTitle>
               <CardDescription className="text-slate-400">{t("dashboardAnalytics.topicDistributionDesc")}</CardDescription>
@@ -356,7 +349,7 @@ export default function Analytics({ interviews = [] }) {
 
         {/* Weekly Test Frequency — Bar chart with gradient */}
         {weeklyData.length > 0 && (
-          <Card className={`md:order-4 md:col-span-8 md:row-span-2 ${cardClass}`}>
+          <Card className={`md:order-3 ${cardClass}`}>
             <CardHeader>
               <CardTitle className="text-white">{t("dashboardAnalytics.weeklyFrequency")}</CardTitle>
               <CardDescription className="text-slate-400">{t("dashboardAnalytics.weeklyFrequencyDesc")}</CardDescription>
@@ -399,7 +392,7 @@ export default function Analytics({ interviews = [] }) {
 
         {/* Score Distribution — Histogram */}
         {distributionData.length > 0 && (
-          <Card className={`md:order-3 md:col-span-4 md:row-span-2 ${cardClass}`}>
+          <Card className={`md:order-4 ${cardClass}`}>
             <CardHeader>
               <CardTitle className="text-white">{t("dashboardAnalytics.scoreDistribution")}</CardTitle>
               <CardDescription className="text-slate-400">{t("dashboardAnalytics.scoreDistributionDesc")}</CardDescription>
@@ -442,7 +435,7 @@ export default function Analytics({ interviews = [] }) {
 
         {/* Topic-wise Avg Score — Radar Chart */}
         {radarData.length >= 3 && (
-          <Card className={`md:order-6 md:col-span-8 md:row-span-2 ${cardClass}`}>
+          <Card className={`md:order-5 ${cardClass}`}>
             <CardHeader>
               <CardTitle className="text-white">{t("dashboardAnalytics.strengthsWeaknesses")}</CardTitle>
               <CardDescription className="text-slate-400">{t("dashboardAnalytics.strengthsWeaknessesDesc")}</CardDescription>
@@ -479,58 +472,52 @@ export default function Analytics({ interviews = [] }) {
           </Card>
         )}
 
-        {/* Interview Completion — Progress Ring */}
-        {interviewStats && (
-          <Card className={`md:order-5 md:col-span-4 md:row-span-2 ${cardClass}`}>
+        {/* Topic Attempts — Horizontal bar chart */}
+        {topicData.length > 0 && (
+          <Card className={`md:order-6 ${cardClass}`}>
             <CardHeader>
-              <CardTitle className="text-white">{t("dashboardAnalytics.interviewCompletion")}</CardTitle>
-              <CardDescription className="text-slate-400">{t("dashboardAnalytics.interviewCompletionDesc")}</CardDescription>
+              <CardTitle className="text-white">{t("dashboardAnalytics.topicAttempts")}</CardTitle>
+              <CardDescription className="text-slate-400">{t("dashboardAnalytics.topicAttemptsDesc")}</CardDescription>
             </CardHeader>
-            <CardContent className="h-[300px] flex flex-col items-center justify-center">
-              <div className="relative w-40 h-40">
-                <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
-                  {/* Background ring */}
-                  <circle
-                    cx="60" cy="60" r="50"
-                    fill="none"
-                    stroke="#334155"
-                    strokeWidth="10"
-                  />
-                  {/* Progress ring */}
-                  <circle
-                    cx="60" cy="60" r="50"
-                    fill="none"
-                    stroke="url(#ringGradient)"
-                    strokeWidth="10"
-                    strokeLinecap="round"
-                    strokeDasharray={`${interviewStats.pct * 3.14} ${314 - interviewStats.pct * 3.14}`}
-                  />
+            <CardContent className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={topicData} layout="vertical" margin={{ left: 10, right: 20 }}>
                   <defs>
-                    <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#22d3ee" />
-                      <stop offset="100%" stopColor="#60a5fa" />
+                    <linearGradient id="topicBarGradient" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#0891b2" stopOpacity={0.6} />
+                      <stop offset="100%" stopColor="#22d3ee" stopOpacity={1} />
                     </linearGradient>
                   </defs>
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-3xl font-bold text-white">{interviewStats.pct}%</span>
-                  <span className="text-xs text-slate-400">{t("dashboardAnalytics.completed")}</span>
-                </div>
-              </div>
-              <div className="flex gap-6 mt-4 text-center">
-                <div>
-                  <p className="text-lg font-bold text-white">{interviewStats.completed}</p>
-                  <p className="text-xs text-slate-400">{t("dashboardAnalytics.completed")}</p>
-                </div>
-                <div className="w-px bg-slate-700" />
-                <div>
-                  <p className="text-lg font-bold text-white">{interviewStats.total}</p>
-                  <p className="text-xs text-slate-400">{t("dashboardAnalytics.total")}</p>
-                </div>
-              </div>
+                  <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.06} stroke="#94a3b8" horizontal={false} />
+                  <XAxis
+                    type="number"
+                    allowDecimals={false}
+                    tick={axisStyle}
+                    axisLine={{ stroke: "#334155" }}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    type="category"
+                    dataKey="topic"
+                    tick={{ ...axisStyle, fontSize: 11 }}
+                    axisLine={{ stroke: "#334155" }}
+                    tickLine={false}
+                    width={80}
+                  />
+                  <Tooltip
+                    content={
+                      <CustomTooltip
+                        valueFormatter={(val) => `${val} test${val !== 1 ? "s" : ""}`}
+                      />
+                    }
+                  />
+                  <Bar dataKey="value" fill="url(#topicBarGradient)" radius={[0, 6, 6, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
         )}
+
       </div>
     </div>
   );

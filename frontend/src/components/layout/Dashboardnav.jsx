@@ -6,19 +6,12 @@ import { usePathname } from "next/navigation";
 import LanguageSwitcher from "@/components/common/LanguageSwitcher";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { 
-  Briefcase, 
-  Map, 
-  Video, 
-  FileQuestion, 
   Menu, 
   X, 
   ChevronDown,
   User,
   LogOut,
-  Settings,
-  Users,
-  Shield,
-  GraduationCap
+  Settings
 } from "lucide-react";
 
 export default function DashboardNav() {
@@ -79,31 +72,26 @@ export default function DashboardNav() {
     {
       name: t("navbar.jobs"),
       path: "/dashboard/jobs",
-      icon: <Briefcase className="w-5 h-5" />,
       description: t("navbar.jobsDesc")
     },
     {
       name: t("navbar.roadmap"),
       path: "/dashboard/roadmap",
-      icon: <Map className="w-5 h-5" />,
       description: t("navbar.roadmapDesc")
     },
     {
       name: t("navbar.interview"),
       path: "/dashboard/interview",
-      icon: <Video className="w-5 h-5" />,
       description: t("navbar.interviewDesc")
     },
     {
       name: t("navbar.quiz"),
       path: "/dashboard/quiz",
-      icon: <FileQuestion className="w-5 h-5" />,
       description: t("navbar.quizDesc")
     },
     {
       name: "Counselling",
       path: "/dashboard/counselling",
-      icon: <Users className="w-5 h-5" />,
       description: "1:1 personalized mentorship"
     }
   ];
@@ -136,16 +124,8 @@ export default function DashboardNav() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-xl blur-md opacity-45 group-hover:opacity-75 transition-opacity"></div>
-              <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center shadow-lg">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-            </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent hidden sm:block">
+          <Link href="/" className="flex items-center group">
+            <span className="text-xl font-bold text-white">
               NextStep
             </span>
           </Link>
@@ -162,9 +142,6 @@ export default function DashboardNav() {
                     : "text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent"
                 }`}
               >
-                <span className={`transition-transform duration-200 ${isActive(link.path) ? "text-cyan-300" : "group-hover:scale-110"}`}>
-                  {link.icon}
-                </span>
                 <span>{link.name}</span>
               </Link>
             ))}
@@ -193,7 +170,7 @@ export default function DashboardNav() {
               {/* Dropdown Menu */}
               {isProfileOpen && (
                 <div className="absolute right-0 mt-2 w-56 bg-slate-900/95 backdrop-blur-xl rounded-xl shadow-2xl border border-slate-800/50 overflow-hidden animate-fadeIn">
-                  <div className="p-3 border-b border-slate-800/50 bg-gradient-to-r from-cyan-900/20 to-blue-900/20">
+                  <div className="p-3 border-b border-slate-800/50">
                     <p className="text-sm font-semibold text-white">{userData.name}</p>
                     <p className="text-xs text-slate-400">{userData.email}</p>
                   </div>
@@ -256,9 +233,6 @@ export default function DashboardNav() {
                   }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  <span className={isActive(link.path) ? "text-cyan-300" : ""}>
-                    {link.icon}
-                  </span>
                   <div>
                     <p className="font-medium">{link.name}</p>
                     <p className="text-xs opacity-75">{link.description}</p>
