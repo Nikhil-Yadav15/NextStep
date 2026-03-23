@@ -191,7 +191,9 @@ export default function SessionPage() {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-500 shadow-xl shadow-cyan-500/30">
+            <div className="w-7 h-7 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+          </div>
           <p className="text-slate-400">Connecting to session...</p>
         </div>
       </div>
@@ -228,8 +230,8 @@ export default function SessionPage() {
           {!remotePeer && (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center">
-                <div className="w-20 h-20 rounded-full bg-slate-800 flex items-center justify-center mx-auto mb-3">
-                  <VideoIcon className="w-8 h-8 text-slate-600" />
+                <div className="w-20 h-20 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mx-auto mb-3">
+                  <VideoIcon className="w-8 h-8 text-cyan-300" />
                 </div>
                 <p className="text-slate-500">Waiting for the other participant to join...</p>
               </div>
@@ -248,7 +250,7 @@ export default function SessionPage() {
           />
           {isVideoOff && (
             <div className="w-full h-full flex items-center justify-center">
-              <VideoOff className="w-6 h-6 text-slate-600" />
+              <VideoOff className="w-6 h-6 text-cyan-300" />
             </div>
           )}
         </div>
@@ -281,9 +283,9 @@ export default function SessionPage() {
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
                 placeholder="Type a message..."
-                className="flex-1 bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50"
+                  className="flex-1 bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50"
               />
-              <button type="submit" className="p-2 rounded-lg bg-blue-600 text-white hover:bg-blue-500 transition-colors">
+              <button type="submit" className="p-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 hover:from-cyan-400 hover:to-blue-400 transition-colors">
                 <Send className="w-4 h-4" />
               </button>
             </form>
@@ -314,7 +316,7 @@ export default function SessionPage() {
         <button
           onClick={() => setShowChat(!showChat)}
           className={`p-4 rounded-full transition-all ${
-            showChat ? "bg-blue-500/20 text-blue-400 border border-blue-500/30" : "bg-slate-800 text-white border border-slate-700 hover:bg-slate-700"
+            showChat ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30" : "bg-slate-800 text-white border border-slate-700 hover:bg-slate-700"
           }`}
         >
           <MessageSquare className="w-5 h-5" />

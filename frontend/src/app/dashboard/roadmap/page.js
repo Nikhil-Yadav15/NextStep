@@ -343,7 +343,7 @@ export default function RoadmapPage() {
                 >
                   <div className="max-w-2xl mx-auto">
                     <div className="mb-8">
-                      <div className="w-24 h-24 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-full mx-auto mb-6 flex items-center justify-center">
+                      <div className="w-24 h-24 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-xl shadow-cyan-500/30">
                         <svg
                           className="w-12 h-12 text-white"
                           fill="none"

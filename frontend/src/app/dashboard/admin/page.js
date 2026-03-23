@@ -230,7 +230,9 @@ export default function AdminPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <RefreshCw className="w-8 h-8 text-blue-400 animate-spin" />
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-500 shadow-xl shadow-cyan-500/30">
+          <RefreshCw className="w-7 h-7 text-white animate-spin" />
+        </div>
       </div>
     );
   }
@@ -243,11 +245,11 @@ export default function AdminPage() {
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header */}
         <div className="flex items-center gap-3 mb-8">
-          <div className="p-2.5 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600">
+          <div className="p-2.5 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-500 shadow-xl shadow-cyan-500/30">
             <Shield className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">
               Admin Panel
             </h1>
             <p className="text-slate-400 text-sm">Manage mentors and booking requests</p>
@@ -258,13 +260,13 @@ export default function AdminPage() {
         <div className="flex gap-2 mb-6">
           <button onClick={() => setActiveTab("bookings")}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all border ${
-              activeTab === "bookings" ? "bg-purple-600/20 text-purple-400 border-purple-500/40" : "bg-slate-900/40 text-slate-400 border-slate-800/50 hover:text-white"
+              activeTab === "bookings" ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40" : "bg-slate-900/40 text-slate-400 border-slate-800/50 hover:text-white"
             }`}>
             <Calendar className="w-4 h-4" /> Bookings
           </button>
           <button onClick={() => setActiveTab("mentors")}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all border ${
-              activeTab === "mentors" ? "bg-purple-600/20 text-purple-400 border-purple-500/40" : "bg-slate-900/40 text-slate-400 border-slate-800/50 hover:text-white"
+              activeTab === "mentors" ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40" : "bg-slate-900/40 text-slate-400 border-slate-800/50 hover:text-white"
             }`}>
             <Users className="w-4 h-4" /> Mentors
           </button>
@@ -278,7 +280,7 @@ export default function AdminPage() {
               {["pending", "approved", "rejected", "completed", ""].map((s) => (
                 <button key={s} onClick={() => setStatusFilter(s)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
-                    statusFilter === s ? "bg-purple-600/20 text-purple-400 border-purple-500/40" : "bg-slate-900/40 text-slate-500 border-slate-800/50 hover:text-white"
+                    statusFilter === s ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40" : "bg-slate-900/40 text-slate-500 border-slate-800/50 hover:text-white"
                   }`}>
                   {s || "All"}
                 </button>
@@ -318,7 +320,7 @@ export default function AdminPage() {
         {activeTab === "mentors" && (
           <div className="space-y-4">
             <button onClick={() => { setShowMentorForm(true); setEditingMentor(null); }}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-500 hover:to-pink-500 transition-all shadow-lg">
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 hover:from-cyan-400 hover:to-blue-400 transition-all shadow-lg shadow-cyan-500/30">
               <Plus className="w-4 h-4" /> Add Mentor
             </button>
 

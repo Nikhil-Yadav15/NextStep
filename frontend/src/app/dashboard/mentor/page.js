@@ -73,7 +73,9 @@ export default function MentorDashboard() {
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <RefreshCw className="w-8 h-8 text-blue-400 animate-spin" />
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-500 shadow-xl shadow-cyan-500/30">
+          <RefreshCw className="w-7 h-7 text-white animate-spin" />
+        </div>
       </div>
     );
   }
@@ -85,15 +87,15 @@ export default function MentorDashboard() {
   const completedSessions = sessions.filter((s) => s.status === "completed");
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
       <div className="container mx-auto px-4 py-8 max-w-5xl">
         {/* Header */}
         <div className="flex items-center gap-3 mb-8">
-          <div className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-600">
+          <div className="p-2.5 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-500 shadow-xl shadow-cyan-500/30">
             <GraduationCap className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">
               Mentor Dashboard
             </h1>
             <p className="text-slate-400 text-sm">Welcome back, {mentor?.name}</p>
@@ -103,22 +105,30 @@ export default function MentorDashboard() {
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           <div className="bg-slate-900/60 border border-slate-800/50 rounded-xl p-4 text-center">
-            <Users className="w-5 h-5 text-blue-400 mx-auto mb-1" />
+            <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/15 border border-cyan-500/25">
+              <Users className="w-5 h-5 text-cyan-300" />
+            </div>
             <p className="text-2xl font-bold text-white">{mentor?.totalSessions || 0}</p>
             <p className="text-xs text-slate-400">Total Sessions</p>
           </div>
           <div className="bg-slate-900/60 border border-slate-800/50 rounded-xl p-4 text-center">
-            <Star className="w-5 h-5 text-amber-400 mx-auto mb-1" />
+            <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/15 border border-cyan-500/25">
+              <Star className="w-5 h-5 text-cyan-300" />
+            </div>
             <p className="text-2xl font-bold text-white">{mentor?.rating || "N/A"}</p>
             <p className="text-xs text-slate-400">Rating</p>
           </div>
           <div className="bg-slate-900/60 border border-slate-800/50 rounded-xl p-4 text-center">
-            <Calendar className="w-5 h-5 text-emerald-400 mx-auto mb-1" />
+            <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/15 border border-cyan-500/25">
+              <Calendar className="w-5 h-5 text-cyan-300" />
+            </div>
             <p className="text-2xl font-bold text-white">{upcomingSessions.length}</p>
             <p className="text-xs text-slate-400">Upcoming</p>
           </div>
           <div className="bg-slate-900/60 border border-slate-800/50 rounded-xl p-4 text-center">
-            <Clock className="w-5 h-5 text-purple-400 mx-auto mb-1" />
+            <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/15 border border-cyan-500/25">
+              <Clock className="w-5 h-5 text-cyan-300" />
+            </div>
             <p className="text-2xl font-bold text-white">{completedSessions.length}</p>
             <p className="text-xs text-slate-400">Completed</p>
           </div>
@@ -138,7 +148,7 @@ export default function MentorDashboard() {
                   </div>
                   {canJoin ? (
                     <button onClick={() => handleJoin(s)}
-                      className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-500 hover:to-teal-500 transition-all shadow-lg shadow-emerald-500/20">
+                      className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 hover:from-cyan-400 hover:to-blue-400 transition-all shadow-lg shadow-cyan-500/30">
                       <Video className="w-4 h-4" /> Join Session
                     </button>
                   ) : (

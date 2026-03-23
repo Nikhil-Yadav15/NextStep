@@ -141,9 +141,11 @@ export default function CounsellingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <RefreshCw className="w-8 h-8 text-blue-400 animate-spin" />
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-500 shadow-xl shadow-cyan-500/30">
+            <RefreshCw className="w-7 h-7 text-white animate-spin" />
+          </div>
           <p className="text-slate-400">Loading counselling...</p>
         </div>
       </div>
@@ -151,15 +153,15 @@ export default function CounsellingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-600">
+            <div className="p-2.5 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500">
               <Sparkles className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">
               1:1 Personalized Counselling
             </h1>
           </div>
@@ -174,8 +176,8 @@ export default function CounsellingPage() {
             onClick={() => setActiveTab("mentors")}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all border ${
               activeTab === "mentors"
-                ? "bg-blue-600/20 text-blue-400 border-blue-500/40"
-                : "bg-slate-900/40 text-slate-400 border-slate-800/50 hover:text-white"
+                ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40"
+                : "bg-slate-900/60 text-slate-400 border-slate-800/70 hover:text-slate-200"
             }`}
           >
             <Users className="w-4 h-4" /> Browse Mentors
@@ -184,8 +186,8 @@ export default function CounsellingPage() {
             onClick={() => setActiveTab("bookings")}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all border ${
               activeTab === "bookings"
-                ? "bg-blue-600/20 text-blue-400 border-blue-500/40"
-                : "bg-slate-900/40 text-slate-400 border-slate-800/50 hover:text-white"
+                ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40"
+                : "bg-slate-900/60 text-slate-400 border-slate-800/70 hover:text-slate-200"
             }`}
           >
             <Calendar className="w-4 h-4" /> My Bookings
@@ -209,7 +211,7 @@ export default function CounsellingPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search mentors by name or expertise..."
-                  className="w-full bg-slate-900/60 border border-slate-800/50 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-colors"
+                  className="w-full bg-slate-900/70 border border-slate-800/70 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-colors"
                 />
               </div>
             </div>
@@ -230,7 +232,9 @@ export default function CounsellingPage() {
               </div>
             ) : (
               <div className="text-center py-16">
-                <Users className="w-12 h-12 text-slate-700 mx-auto mb-3" />
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-500/10 border border-cyan-500/20">
+                  <Users className="w-6 h-6 text-cyan-300" />
+                </div>
                 <p className="text-slate-500 text-lg">No mentors found</p>
                 <p className="text-slate-600 text-sm mt-1">Try adjusting your search or filter</p>
               </div>
@@ -252,7 +256,9 @@ export default function CounsellingPage() {
               ))
             ) : (
               <div className="text-center py-16">
-                <Calendar className="w-12 h-12 text-slate-700 mx-auto mb-3" />
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-500/10 border border-cyan-500/20">
+                  <Calendar className="w-6 h-6 text-cyan-300" />
+                </div>
                 <p className="text-slate-500 text-lg">No bookings yet</p>
                 <p className="text-slate-600 text-sm mt-1">Browse mentors and book your first session!</p>
               </div>
