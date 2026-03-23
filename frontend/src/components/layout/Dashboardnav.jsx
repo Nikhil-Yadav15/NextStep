@@ -132,20 +132,20 @@ export default function DashboardNav() {
   const isActive = (path) => pathname === path;
 
   return (
-    <nav className="sticky top-0 z-50 bg-slate-950/95 backdrop-blur-xl border-b border-slate-800/50 shadow-2xl">
+    <nav className="sticky top-0 z-50 bg-slate-950/95 backdrop-blur-xl border-b border-slate-800/70 shadow-2xl">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-xl blur-md opacity-50 group-hover:opacity-75 transition-opacity"></div>
-              <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center shadow-lg">
+              <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-xl blur-md opacity-45 group-hover:opacity-75 transition-opacity"></div>
+              <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center shadow-lg">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent hidden sm:block">
+            <span className="text-xl font-bold bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent hidden sm:block">
               NextStep
             </span>
           </Link>
@@ -158,11 +158,11 @@ export default function DashboardNav() {
                 href={link.path}
                 className={`relative px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center gap-2 group ${
                   isActive(link.path)
-                    ? "text-white bg-blue-600/20 border border-blue-500/30 shadow-lg shadow-blue-500/10"
+                    ? "text-white bg-cyan-500/15 border border-cyan-400/35 shadow-lg shadow-cyan-500/10"
                     : "text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent"
                 }`}
               >
-                <span className={`transition-transform duration-200 ${isActive(link.path) ? "text-blue-400" : "group-hover:scale-110"}`}>
+                <span className={`transition-transform duration-200 ${isActive(link.path) ? "text-cyan-300" : "group-hover:scale-110"}`}>
                   {link.icon}
                 </span>
                 <span>{link.name}</span>
@@ -176,7 +176,7 @@ export default function DashboardNav() {
             <div className="relative">
               <button
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className="flex items-center gap-3 px-3 py-2 rounded-xl bg-slate-900/50 hover:bg-slate-800/50 transition-all duration-200 border border-slate-800/50 hover:border-blue-500/30 group"
+                className="flex items-center gap-3 px-3 py-2 rounded-xl bg-slate-900/55 hover:bg-slate-800/60 transition-all duration-200 border border-slate-800/60 hover:border-cyan-400/30 group"
               >
                 <img 
                   src={userData.profileImage || "/profile_default.jpg"} 
@@ -193,7 +193,7 @@ export default function DashboardNav() {
               {/* Dropdown Menu */}
               {isProfileOpen && (
                 <div className="absolute right-0 mt-2 w-56 bg-slate-900/95 backdrop-blur-xl rounded-xl shadow-2xl border border-slate-800/50 overflow-hidden animate-fadeIn">
-                  <div className="p-3 border-b border-slate-800/50 bg-gradient-to-r from-blue-900/20 to-cyan-900/20">
+                  <div className="p-3 border-b border-slate-800/50 bg-gradient-to-r from-cyan-900/20 to-blue-900/20">
                     <p className="text-sm font-semibold text-white">{userData.name}</p>
                     <p className="text-xs text-slate-400">{userData.email}</p>
                   </div>
@@ -251,12 +251,12 @@ export default function DashboardNav() {
                   href={link.path}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                     isActive(link.path)
-                      ? "bg-blue-600/20 border border-blue-500/30 text-white shadow-lg"
+                      ? "bg-cyan-500/15 border border-cyan-400/35 text-white shadow-lg"
                       : "text-slate-400 hover:text-white hover:bg-slate-800/50 border border-transparent"
                   }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  <span className={isActive(link.path) ? "text-blue-400" : ""}>
+                  <span className={isActive(link.path) ? "text-cyan-300" : ""}>
                     {link.icon}
                   </span>
                   <div>

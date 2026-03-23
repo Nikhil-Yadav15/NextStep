@@ -335,7 +335,7 @@ export default function ResumeEditor() {
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
           </button>
-          <h1 className="text-2xl text-zinc-100 font-bold bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">Resume Editor</h1>
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-300 via-blue-300 to-cyan-200 bg-clip-text text-transparent">Resume Editor</h1>
         </div>
         
         {error && (
@@ -352,7 +352,7 @@ export default function ResumeEditor() {
         
         <button 
           onClick={loadSample} 
-          className="w-full py-2.5 bg-zinc-800/50 backdrop-blur-xl text-zinc-300 border border-zinc-900/80 rounded-lg cursor-pointer mb-4 text-sm font-medium hover:bg-zinc-800/80 hover:border-zinc-700 hover:text-zinc-100 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/5"
+          className="w-full py-2.5 bg-zinc-800/50 backdrop-blur-xl text-zinc-300 border border-zinc-900/80 rounded-lg cursor-pointer mb-4 text-sm font-medium hover:bg-zinc-800/80 hover:border-zinc-700 hover:text-zinc-100 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-cyan-500/10"
         >
           Load Sample Data
         </button>
@@ -363,26 +363,26 @@ export default function ResumeEditor() {
             placeholder="Full Name *" 
             value={form.name} 
             onChange={(e) => setForm({...form, name: e.target.value})} 
-            className="w-full p-2 mb-2 bg-black/50 border border-zinc-900/80 rounded-lg text-sm text-zinc-200 placeholder:text-zinc-700 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300 hover:border-zinc-800" 
+            className="w-full p-2 mb-2 bg-black/50 border border-zinc-900/80 rounded-lg text-sm text-zinc-200 placeholder:text-zinc-700 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition-all duration-300 hover:border-zinc-800" 
           />
           <input 
             placeholder="Job Title" 
             value={form.title} 
             onChange={(e) => setForm({...form, title: e.target.value})} 
-            className="w-full p-2 mb-2 bg-black/50 border border-zinc-900/80 rounded-lg text-sm text-zinc-200 placeholder:text-zinc-700 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300 hover:border-zinc-800" 
+            className="w-full p-2 mb-2 bg-black/50 border border-zinc-900/80 rounded-lg text-sm text-zinc-200 placeholder:text-zinc-700 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition-all duration-300 hover:border-zinc-800" 
           />
           <input 
             type="email" 
             placeholder="Email *" 
             value={form.email} 
             onChange={(e) => setForm({...form, email: e.target.value})} 
-            className="w-full p-2 mb-2 bg-black/50 border border-zinc-900/80 rounded-lg text-sm text-zinc-200 placeholder:text-zinc-700 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300 hover:border-zinc-800" 
+            className="w-full p-2 mb-2 bg-black/50 border border-zinc-900/80 rounded-lg text-sm text-zinc-200 placeholder:text-zinc-700 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition-all duration-300 hover:border-zinc-800" 
           />
           <input 
             placeholder="Phone" 
             value={form.phone} 
             onChange={(e) => setForm({...form, phone: e.target.value})} 
-            className="w-full p-2 mb-2 bg-black/50 border border-zinc-900/80 rounded-lg text-sm text-zinc-200 placeholder:text-zinc-700 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300 hover:border-zinc-800" 
+            className="w-full p-2 mb-2 bg-black/50 border border-zinc-900/80 rounded-lg text-sm text-zinc-200 placeholder:text-zinc-700 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition-all duration-300 hover:border-zinc-800" 
           />
         </div>
 
@@ -393,7 +393,7 @@ export default function ResumeEditor() {
             value={form.summary} 
             onChange={(e) => setForm({...form, summary: e.target.value})} 
             rows={3} 
-            className="w-full p-2 bg-black/50 border border-zinc-900/80 rounded-lg font-sans text-xs text-zinc-200 placeholder:text-zinc-700 resize-y focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300 hover:border-zinc-800" 
+            className="w-full p-2 bg-black/50 border border-zinc-900/80 rounded-lg font-sans text-xs text-zinc-200 placeholder:text-zinc-700 resize-y focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition-all duration-300 hover:border-zinc-800" 
           />
         </div>
 
@@ -404,7 +404,7 @@ export default function ResumeEditor() {
             value={form.jobs} 
             onChange={(e) => setForm({...form, jobs: e.target.value})} 
             rows={4} 
-            className="w-full p-2 bg-black/50 border border-zinc-900/80 rounded-lg font-mono text-xs text-zinc-200 placeholder:text-zinc-700 resize-y focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300 hover:border-zinc-800" 
+            className="w-full p-2 bg-black/50 border border-zinc-900/80 rounded-lg font-mono text-xs text-zinc-200 placeholder:text-zinc-700 resize-y focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition-all duration-300 hover:border-zinc-800" 
           />
         </div>
 
@@ -415,7 +415,7 @@ export default function ResumeEditor() {
             value={form.projects} 
             onChange={(e) => setForm({...form, projects: e.target.value})} 
             rows={3} 
-            className="w-full p-2 bg-black/50 border border-zinc-900/80 rounded-lg font-mono text-xs text-zinc-200 placeholder:text-zinc-700 resize-y focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300 hover:border-zinc-800" 
+            className="w-full p-2 bg-black/50 border border-zinc-900/80 rounded-lg font-mono text-xs text-zinc-200 placeholder:text-zinc-700 resize-y focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition-all duration-300 hover:border-zinc-800" 
           />
         </div>
 
@@ -426,45 +426,45 @@ export default function ResumeEditor() {
             value={form.skills} 
             onChange={(e) => setForm({...form, skills: e.target.value})} 
             rows={2} 
-            className="w-full p-2 bg-black/50 border border-zinc-900/80 rounded-lg font-sans text-xs text-zinc-200 placeholder:text-zinc-700 resize-y focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300 hover:border-zinc-800" 
+            className="w-full p-2 bg-black/50 border border-zinc-900/80 rounded-lg font-sans text-xs text-zinc-200 placeholder:text-zinc-700 resize-y focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition-all duration-300 hover:border-zinc-800" 
           />
         </div>
 
         <button 
           onClick={generateLatex} 
           disabled={loading} 
-          className="w-full py-3 bg-gradient-to-r from-blue-600 via-blue-600 to-blue-500 text-white border-0 rounded-lg font-semibold text-sm mb-2 disabled:from-zinc-900 disabled:to-zinc-900 disabled:text-zinc-700 disabled:cursor-not-allowed hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-0.5 disabled:transform-none relative overflow-hidden group"
+          className="w-full py-3 bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-500 text-slate-950 border-0 rounded-lg font-semibold text-sm mb-2 disabled:from-zinc-900 disabled:to-zinc-900 disabled:text-zinc-700 disabled:cursor-not-allowed hover:shadow-xl hover:shadow-cyan-500/30 transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-0.5 disabled:transform-none relative overflow-hidden group"
         >
-          <span className="relative z-10 text-white">{loading ? 'Generating...' : 'Generate LaTeX'}</span>
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/0 via-white/20 to-blue-600/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+          <span className="relative z-10 text-slate-950">{loading ? 'Generating...' : 'Generate LaTeX'}</span>
+          <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-white/20 to-cyan-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
         </button>
 
         <button 
           onClick={generatePreview} 
           disabled={!latex || !latexChanged}
-          className="w-full py-3 bg-emerald-700 text-white border-0 rounded-lg font-semibold text-sm mb-2 disabled:from-zinc-900 disabled:to-zinc-900 disabled:text-zinc-700 disabled:cursor-not-allowed hover:shadow-xl hover:shadow-emerald-500/30 transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-0.5 disabled:transform-none relative overflow-hidden group"
+          className="w-full py-3 bg-gradient-to-r from-sky-500 to-blue-500 text-slate-950 border-0 rounded-lg font-semibold text-sm mb-2 disabled:from-zinc-900 disabled:to-zinc-900 disabled:text-zinc-700 disabled:cursor-not-allowed hover:shadow-xl hover:shadow-sky-500/30 transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-0.5 disabled:transform-none relative overflow-hidden group"
         >
-          <span className="relative z-10 text-white"> Generate Resume Preview</span>
-          <div className="absolute inset-0 bg-gradient-to-r from-emerald-600/0 via-white/20 to-emerald-600/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+          <span className="relative z-10 text-slate-950"> Generate Resume Preview</span>
+          <div className="absolute inset-0 bg-gradient-to-r from-sky-500/0 via-white/20 to-sky-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
         </button>
 
         {latex && (
           <button 
             onClick={downloadLatex} 
-            className="w-full py-3 bg-gradient-to-r from-violet-600 via-violet-600 to-violet-500 text-white border-0 rounded-lg font-semibold text-sm mb-2 hover:shadow-xl hover:shadow-violet-500/30 transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-0.5 relative overflow-hidden group"
+            className="w-full py-3 bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-500 text-slate-950 border-0 rounded-lg font-semibold text-sm mb-2 hover:shadow-xl hover:shadow-cyan-500/30 transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-0.5 relative overflow-hidden group"
           >
             <span className="relative z-10"> Download LaTeX (.tex)</span>
-            <div className="absolute inset-0 bg-gradient-to-r from-violet-600/0 via-white/20 to-violet-600/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-white/20 to-cyan-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
           </button>
         )}
 
         {parsedData && (
           <button 
             onClick={downloadPdf} 
-            className="w-full py-3 bg-gradient-to-r from-pink-600 via-pink-600 to-pink-500 text-white border-0 rounded-lg font-semibold text-sm hover:shadow-xl hover:shadow-pink-500/30 transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-0.5 relative overflow-hidden group"
+            className="w-full py-3 bg-gradient-to-r from-sky-500 to-blue-500 text-slate-950 border-0 rounded-lg font-semibold text-sm hover:shadow-xl hover:shadow-sky-500/30 transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-0.5 relative overflow-hidden group"
           >
             <span className="relative z-10">Download as PDF</span>
-            <div className="absolute inset-0 bg-gradient-to-r from-pink-600/0 via-white/20 to-pink-600/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-sky-500/0 via-white/20 to-sky-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
           </button>
         )}
       </aside>

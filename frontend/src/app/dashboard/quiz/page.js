@@ -174,28 +174,28 @@ function QuizPageContent() {
     <div className="min-h-screen bg-black text-white relative overflow-hidden">
       {/* Animated background gradient orbs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 -left-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 -right-40 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse delay-700"></div>
-        <div className="absolute top-1/2 left-1/2 w-72 h-72 bg-primary/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-0 -left-40 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 -right-40 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl animate-pulse delay-700"></div>
+        <div className="absolute top-1/2 left-1/2 w-72 h-72 bg-cyan-500/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
       </div>
 
       <button
         onClick={() => router.back()}
-        className="fixed top-6 left-6 z-40 px-5 py-2.5 rounded-lg bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/80 hover:bg-zinc-800/80 hover:border-zinc-700 text-sm font-medium text-zinc-400 hover:text-zinc-100 transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-primary/10 cursor-pointer"
+        className="fixed top-6 left-6 z-40 px-5 py-2.5 rounded-lg bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/80 hover:bg-zinc-800/80 hover:border-zinc-700 text-sm font-medium text-zinc-400 hover:text-zinc-100 transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-cyan-500/10 cursor-pointer"
       >
         ← {t("quizPage.back")}
       </button>
 
       <button
         onClick={openScoresModal}
-        className="fixed top-6 right-6 z-40 px-5 py-2.5 rounded-lg bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/80 hover:bg-zinc-800/80 hover:border-zinc-700 text-sm font-medium text-zinc-400 hover:text-zinc-100 transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-primary/10"
+        className="fixed top-6 right-6 z-40 px-5 py-2.5 rounded-lg bg-zinc-900/60 backdrop-blur-xl border border-zinc-800/80 hover:bg-zinc-800/80 hover:border-zinc-700 text-sm font-medium text-zinc-400 hover:text-zinc-100 transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-cyan-500/10"
       >
         {t("quizPage.previousScores")}
       </button>
 
       <div className="max-w-5xl mx-auto px-6 py-12 relative z-10">
         <div className="text-center mb-12 animate-fade-in">
-          <h1 className="text-6xl font-bold mb-3 bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent animate-gradient">
+          <h1 className="text-6xl font-bold mb-3 bg-gradient-to-r from-cyan-500 via-cyan-400/80 to-cyan-400 bg-clip-text text-transparent animate-gradient">
             {t("quizPage.title")}
           </h1>
           <p className="text-zinc-500 text-lg">{t("quizPage.subtitle")}</p>
@@ -209,7 +209,7 @@ function QuizPageContent() {
             <input
               type="text"
               placeholder={t("quizPage.topicPlaceholder")}
-              className="w-full bg-black/50 border border-zinc-900/80 rounded-lg px-6 py-4 text-zinc-100 placeholder:text-zinc-700 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all duration-300 mb-4 hover:border-zinc-800"
+              className="w-full bg-black/50 border border-zinc-900/80 rounded-lg px-6 py-4 text-zinc-100 placeholder:text-zinc-700 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 focus:outline-none transition-all duration-300 mb-4 hover:border-zinc-800"
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && generateQuiz()}
@@ -217,10 +217,10 @@ function QuizPageContent() {
             <button
               onClick={generateQuiz}
               disabled={loading}
-              className="w-full bg-gradient-to-r from-primary via-primary to-primary/80 text-white hover:shadow-2xl hover:shadow-primary/30 disabled:from-zinc-900 disabled:to-zinc-900 disabled:text-zinc-700 disabled:shadow-none py-4 rounded-lg transition-all duration-300 font-semibold transform hover:scale-[1.02] hover:-translate-y-0.5 disabled:transform-none relative overflow-hidden group"
+              className="w-full bg-gradient-to-r from-cyan-500 via-cyan-400 to-blue-500 text-white hover:shadow-2xl hover:shadow-cyan-400/30 disabled:from-zinc-900 disabled:to-zinc-900 disabled:text-zinc-700 disabled:shadow-none py-4 rounded-lg transition-all duration-300 font-semibold transform hover:scale-[1.02] hover:-translate-y-0.5 disabled:transform-none relative overflow-hidden group"
             >
               <span className="relative z-10">{loading ? t("quizPage.generating") : t("quizPage.generateQuiz")}</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-white/20 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-white/20 to-blue-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
             </button>
           </div>
         ) : null}
@@ -236,7 +236,7 @@ function QuizPageContent() {
               </div>
               <div className="w-full bg-zinc-900 rounded-full h-2 overflow-hidden">
                 <div
-                  className="bg-gradient-to-r from-primary via-primary to-primary/80 h-2 transition-all duration-700 rounded-full relative overflow-hidden"
+                  className="bg-gradient-to-r from-cyan-500 via-cyan-400 to-blue-500 h-2 transition-all duration-700 rounded-full relative overflow-hidden"
                   style={{ width: `${((currentQuestion + 1) / quiz.length) * 100}%` }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
@@ -246,7 +246,7 @@ function QuizPageContent() {
 
             <div className="bg-zinc-950/80 backdrop-blur-xl border border-zinc-900/80 rounded-2xl p-8 hover:border-zinc-800/80 transition-all duration-500 shadow-2xl animate-slide-up">
               <div className="text-xs text-zinc-600 uppercase tracking-wider mb-4 flex items-center gap-2">
-                <span className="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
+                <span className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse"></span>
                 {t("quizPage.question")} {currentQuestion + 1}
               </div>
               <h3 className="text-2xl font-semibold mb-8 text-zinc-100 leading-relaxed">
@@ -261,13 +261,13 @@ function QuizPageContent() {
                       onClick={() => handleAnswer(currentQuestion, opt)}
                       className={`w-full text-left p-5 rounded-xl border-2 transition-all duration-300 relative overflow-hidden group ${
                         isSelected
-                          ? "bg-gradient-to-r from-primary to-primary/80 text-white border-primary shadow-xl shadow-primary/30 scale-[1.02]"
-                          : "bg-black/50 border-zinc-900/80 hover:border-zinc-700 hover:bg-zinc-900/50 text-zinc-200 hover:scale-[1.01] hover:shadow-lg hover:shadow-primary/5"
+                          ? "bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-cyan-500 shadow-xl shadow-cyan-400/30 scale-[1.02]"
+                          : "bg-black/50 border-zinc-900/80 hover:border-zinc-700 hover:bg-zinc-900/50 text-zinc-200 hover:scale-[1.01] hover:shadow-lg hover:shadow-cyan-400/5"
                       }`}
                     >
                       <span className="relative z-10">{opt}</span>
                       {!isSelected && (
-                        <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-400/5 to-blue-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
                       )}
                     </button>
                   );
@@ -279,25 +279,25 @@ function QuizPageContent() {
               <button
                 onClick={prevQuestion}
                 disabled={currentQuestion === 0}
-                className="bg-zinc-950/80 backdrop-blur-xl hover:bg-zinc-900/80 disabled:bg-zinc-950/50 disabled:text-zinc-800 border border-zinc-900/80 hover:border-zinc-800 px-6 py-3 rounded-lg font-medium transition-all duration-300 disabled:cursor-not-allowed text-zinc-400 hover:text-zinc-200 hover:scale-105 hover:shadow-lg hover:shadow-primary/5 disabled:hover:scale-100"
+                className="bg-zinc-950/80 backdrop-blur-xl hover:bg-zinc-900/80 disabled:bg-zinc-950/50 disabled:text-zinc-800 border border-zinc-900/80 hover:border-zinc-800 px-6 py-3 rounded-lg font-medium transition-all duration-300 disabled:cursor-not-allowed text-zinc-400 hover:text-zinc-200 hover:scale-105 hover:shadow-lg hover:shadow-cyan-400/5 disabled:hover:scale-100"
               >
                 ← {t("quizPage.previous")}
               </button>
               {currentQuestion === quiz.length - 1 ? (
                 <button
                   onClick={submitQuiz}
-                  className="bg-gradient-to-r from-primary via-primary to-primary/80 text-white hover:shadow-2xl hover:shadow-primary/40 px-8 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 hover:-translate-y-0.5 relative overflow-hidden group"
+                  className="bg-gradient-to-r from-cyan-500 via-cyan-400 to-blue-500 text-white hover:shadow-2xl hover:shadow-cyan-400/40 px-8 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 hover:-translate-y-0.5 relative overflow-hidden group"
                 >
                   <span className="relative z-10">{t("quizPage.submitQuiz")}</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-white/20 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-white/20 to-blue-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
                 </button>
               ) : (
                 <button
                   onClick={nextQuestion}
-                  className="bg-gradient-to-r from-primary via-primary to-primary/80 text-white hover:shadow-2xl hover:shadow-primary/40 px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 hover:-translate-y-0.5 relative overflow-hidden group"
+                  className="bg-gradient-to-r from-cyan-500 via-cyan-400 to-blue-500 text-white hover:shadow-2xl hover:shadow-cyan-400/40 px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 hover:-translate-y-0.5 relative overflow-hidden group"
                 >
                   <span className="relative z-10">{t("quizPage.next")} →</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-white/20 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-white/20 to-blue-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
                 </button>
               )}
             </div>
@@ -310,7 +310,7 @@ function QuizPageContent() {
               showScoreAnimation ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
             }`}>
               <div className="text-sm text-zinc-600 uppercase tracking-wider mb-4">{t("quizPage.finalScore")}</div>
-              <div className={`text-8xl font-bold mb-6 bg-gradient-to-r from-primary via-primary/90 to-primary/70 bg-clip-text text-transparent transition-all duration-1000 delay-300 ${
+              <div className={`text-8xl font-bold mb-6 bg-gradient-to-r from-cyan-500 via-cyan-400/90 to-blue-500/70 bg-clip-text text-transparent transition-all duration-1000 delay-300 ${
                 showScoreAnimation ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
               }`}>
                 {score}/{quiz.length}
@@ -387,10 +387,10 @@ function QuizPageContent() {
 
             <button
               onClick={resetQuiz}
-              className="w-full bg-gradient-to-r from-primary via-primary to-primary/80 text-white hover:shadow-2xl hover:shadow-primary/40 px-6 py-4 rounded-lg font-semibold text-lg transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-1 relative overflow-hidden group"
+              className="w-full bg-gradient-to-r from-cyan-500 via-cyan-400 to-blue-500 text-white hover:shadow-2xl hover:shadow-cyan-400/40 px-6 py-4 rounded-lg font-semibold text-lg transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-1 relative overflow-hidden group"
             >
               <span className="relative z-10">{t("quizPage.startNewQuiz")}</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-white/20 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-white/20 to-blue-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
             </button>
           </div>
         ) : null}
@@ -408,7 +408,7 @@ function QuizPageContent() {
             <h2 className="text-2xl font-semibold mb-6 text-zinc-200">{t("quizPage.previousScores")}</h2>
             {loadingScores ? (
               <div className="text-center py-8">
-                <div className="inline-block w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-3"></div>
+                <div className="inline-block w-10 h-10 border-4 border-cyan-500/30 border-t-cyan-400 rounded-full animate-spin mb-3"></div>
                 <p className="text-zinc-500 text-sm">{t("quizPage.loading")}</p>
               </div>
             ) : prevScores.length === 0 ? (
@@ -419,11 +419,11 @@ function QuizPageContent() {
                   <li
                     key={i}
                     style={{ animationDelay: `${i * 50}ms` }}
-                    className="border border-zinc-900/80 p-4 rounded-xl bg-black/50 hover:border-zinc-800 hover:bg-zinc-900/50 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/5 animate-slide-up"
+                    className="border border-zinc-900/80 p-4 rounded-xl bg-black/50 hover:border-zinc-800 hover:bg-zinc-900/50 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-cyan-400/5 animate-slide-up"
                   >
                     <div className="font-medium text-zinc-200 mb-2">{item.topic}</div>
                     <div className="text-zinc-500 text-sm mb-1">
-                      {t("quizPage.score")}: <span className="font-semibold text-primary">{item.score}/{item.total}</span> <span className="text-zinc-600">({item.percentage}%)</span>
+                      {t("quizPage.score")}: <span className="font-semibold text-cyan-300">{item.score}/{item.total}</span> <span className="text-zinc-600">({item.percentage}%)</span>
                     </div>
                     <div className="text-zinc-700 text-xs">
                       {new Date(item.createdAt).toLocaleString()}
