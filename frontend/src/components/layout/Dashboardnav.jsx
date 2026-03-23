@@ -108,22 +108,7 @@ export default function DashboardNav() {
     }
   ];
 
-  const roleNavLinks = [
-    {
-      name: "Admin",
-      path: "/dashboard/admin",
-      icon: <Shield className="w-5 h-5" />,
-      description: "Manage mentors & bookings"
-    },
-    {
-      name: "Mentor Hub",
-      path: "/dashboard/mentor",
-      icon: <GraduationCap className="w-5 h-5" />,
-      description: "Your mentoring sessions"
-    }
-  ];
-
-  const navLinks = [...baseNavLinks, ...roleNavLinks];
+  const navLinks = [...baseNavLinks];
 
   const handleLogout = async () => {
     try {
