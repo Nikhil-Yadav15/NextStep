@@ -223,7 +223,7 @@ export default function Analytics({ interviews = [], skills = [] }) {
       </div>
 
       {/* ── BENTO GRID ── */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-3 auto-rows-[160px]">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3 auto-rows-[160px]">
 
         {data.length > 0 && (
           <BentoCell className="col-span-2 md:col-span-4 md:row-span-2" glow="rgba(34,211,238,0.12)">
@@ -278,7 +278,7 @@ export default function Analytics({ interviews = [], skills = [] }) {
             <p className="text-xl font-bold text-white mt-1 truncate">{stats.bestTopic}</p>
             <div className="flex flex-wrap gap-1.5 mt-3">
               {topicData.slice(0, 3).map((entry, i) => (
-                <span key={entry.topic} className="px-2 py-0.5 text-[10px] font-medium rounded-md border" style={{ color: COLORS[i], borderColor: `${COLORS[i]}33`, backgroundColor: `${COLORS[i]}11` }}>
+                <span key={entry.topic} className="px-2 py-0.5 text-xs md:text-[10px] font-medium rounded-md border" style={{ color: COLORS[i], borderColor: `${COLORS[i]}33`, backgroundColor: `${COLORS[i]}11` }}>
                   {entry.topic}
                 </span>
               ))}
@@ -325,7 +325,7 @@ export default function Analytics({ interviews = [], skills = [] }) {
                 {topicData.map((entry, i) => (
                   <div key={entry.topic} className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                    <span className="text-[10px] text-slate-400 truncate max-w-[80px]">{entry.topic}</span>
+                    <span className="text-xs md:text-[10px] text-slate-400 truncate max-w-[120px] md:max-w-[80px]">{entry.topic}</span>
                   </div>
                 ))}
               </div>
@@ -422,12 +422,12 @@ export default function Analytics({ interviews = [], skills = [] }) {
             <div className="flex gap-4 text-center">
               <div>
                 <p className="text-lg font-bold text-white">{interviewStats.completed}</p>
-                <p className="text-[10px] text-slate-500">{t("dashboardAnalytics.completed")}</p>
+                <p className="text-xs md:text-[10px] text-slate-500">{t("dashboardAnalytics.completed")}</p>
               </div>
               <div className="w-px bg-slate-800" />
               <div>
                 <p className="text-lg font-bold text-white">{interviewStats.total}</p>
-                <p className="text-[10px] text-slate-500">{t("dashboardAnalytics.total")}</p>
+                <p className="text-xs md:text-[10px] text-slate-500">{t("dashboardAnalytics.total")}</p>
               </div>
             </div>
           </BentoCell>
@@ -441,7 +441,7 @@ export default function Analytics({ interviews = [], skills = [] }) {
             <div className="flex flex-col items-center gap-1.5">
               {funnelData.map((stage) => (
                 <div key={stage.label} className="w-full flex items-center gap-3 group">
-                  <span className="w-24 text-right text-[11px] font-medium text-slate-500 shrink-0 truncate">
+                  <span className="w-20 sm:w-24 text-right text-xs md:text-[11px] font-medium text-slate-500 shrink-0 truncate">
                     {stage.label}
                   </span>
                   <div className="flex-1 flex items-center justify-center">
@@ -464,7 +464,7 @@ export default function Analytics({ interviews = [], skills = [] }) {
               <svg className="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
               </svg>
-              <span className="text-[10px] text-slate-600">{t("dashboardAnalytics.funnelDirection")}</span>
+              <span className="text-xs md:text-[10px] text-slate-600">{t("dashboardAnalytics.funnelDirection")}</span>
             </div>
           </BentoCell>
         )}

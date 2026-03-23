@@ -15,6 +15,14 @@ function QuizPageContent() {
   const { t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const suggestedTopics = [
+    "Machine Learning",
+    "System Design",
+    "JavaScript",
+    "Data Structures",
+    "React",
+    "Operating Systems",
+  ];
   const [topic, setTopic] = useState("");
   const [quiz, setQuiz] = useState([]);
   const [answers, setAnswers] = useState({});
@@ -163,6 +171,36 @@ function QuizPageContent() {
     setShowScoreAnimation(false);
   };
 
+  const scorePercent = quiz.length > 0 && score !== null ? Math.round((score / quiz.length) * 100) : 0;
+
+  const performanceMessage =
+    scorePercent >= 85
+      ? t("quizPage.performanceExcellent")
+      : scorePercent >= 65
+      ? t("quizPage.performanceStrong")
+      : t("quizPage.performanceGrowing");
+
+  const handleShareResults = async () => {
+    const shareText = `${t("quizPage.sharePrefix")} ${score}/${quiz.length} (${scorePercent}%)`;
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: t("quizPage.title"),
+          text: shareText,
+        });
+        return;
+      }
+
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareText);
+        alert(t("quizPage.copiedShareText"));
+      }
+    } catch (error) {
+      console.error("Share failed:", error);
+    }
+  };
+
   const toggleExplanation = (index) => {
     setShowExplanations((prev) => ({
       ...prev,
@@ -193,35 +231,76 @@ function QuizPageContent() {
         {t("quizPage.previousScores")}
       </button>
 
-      <div className="max-w-5xl mx-auto px-6 py-12 relative z-10">
-        <div className="text-center mb-12 animate-fade-in">
-          <h1 className="text-6xl font-bold mb-3 bg-gradient-to-r from-cyan-500 via-cyan-400/80 to-cyan-400 bg-clip-text text-transparent animate-gradient">
+      <div className="max-w-6xl mx-auto px-6 py-12 relative z-10">
+        <div className="text-center mb-10 animate-fade-in">
+          <h1 className="text-5xl md:text-6xl font-bold mb-3 bg-gradient-to-r from-cyan-500 via-cyan-400/80 to-cyan-400 bg-clip-text text-transparent animate-gradient">
             {t("quizPage.title")}
           </h1>
-          <p className="text-zinc-500 text-lg">{t("quizPage.subtitle")}</p>
+          <p className="text-zinc-500 text-lg max-w-2xl mx-auto">{t("quizPage.subtitle")}</p>
         </div>
 
         {quiz.length === 0 && !submitted ? (
-          <div className="bg-zinc-950/80 backdrop-blur-xl border border-zinc-900/80 rounded-2xl p-8 hover:border-zinc-800/80 transition-all duration-500 animate-slide-up shadow-2xl">
-            <label className="block text-sm font-medium mb-4 text-zinc-400 uppercase tracking-wide">
-              {t("quizPage.enterTopic")}
-            </label>
-            <input
-              type="text"
-              placeholder={t("quizPage.topicPlaceholder")}
-              className="w-full bg-black/50 border border-zinc-900/80 rounded-lg px-6 py-4 text-zinc-100 placeholder:text-zinc-700 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 focus:outline-none transition-all duration-300 mb-4 hover:border-zinc-800"
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && generateQuiz()}
-            />
-            <button
-              onClick={generateQuiz}
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-cyan-500 via-cyan-400 to-blue-500 text-white hover:shadow-2xl hover:shadow-cyan-400/30 disabled:from-zinc-900 disabled:to-zinc-900 disabled:text-zinc-700 disabled:shadow-none py-4 rounded-lg transition-all duration-300 font-semibold transform hover:scale-[1.02] hover:-translate-y-0.5 disabled:transform-none relative overflow-hidden group"
-            >
-              <span className="relative z-10">{loading ? t("quizPage.generating") : t("quizPage.generateQuiz")}</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-white/20 to-blue-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-            </button>
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 animate-slide-up">
+            <div className="lg:col-span-3 bg-zinc-950/80 backdrop-blur-xl border border-zinc-900/80 rounded-2xl p-8 hover:border-zinc-800/80 transition-all duration-500 shadow-2xl">
+              <p className="text-xs tracking-[0.22em] uppercase text-cyan-400/70 mb-4">
+                {t("quizPage.setupLabel")}
+              </p>
+              <h2 className="text-3xl font-semibold text-zinc-100 mb-3">{t("quizPage.setupHeading")}</h2>
+              <p className="text-zinc-500 mb-6">{t("quizPage.setupHint")}</p>
+
+              <label className="block text-sm font-medium mb-3 text-zinc-400 uppercase tracking-wide">
+                {t("quizPage.enterTopic")}
+              </label>
+              <input
+                type="text"
+                placeholder={t("quizPage.topicPlaceholder")}
+                className="w-full bg-black/50 border border-zinc-900/80 rounded-lg px-6 py-4 text-zinc-100 placeholder:text-zinc-700 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 focus:outline-none transition-all duration-300 mb-4 hover:border-zinc-800"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && generateQuiz()}
+              />
+
+              <div className="flex flex-wrap gap-2 mb-6">
+                {suggestedTopics.map((item) => (
+                  <button
+                    key={item}
+                    onClick={() => setTopic(item)}
+                    className="px-3 py-1.5 rounded-full border border-zinc-800 bg-zinc-900/40 hover:bg-zinc-800/70 text-xs text-zinc-300 transition-all duration-300"
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={generateQuiz}
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-cyan-500 via-cyan-400 to-blue-500 text-white hover:shadow-2xl hover:shadow-cyan-400/30 disabled:from-zinc-900 disabled:to-zinc-900 disabled:text-zinc-700 disabled:shadow-none py-4 rounded-lg transition-all duration-300 font-semibold transform hover:scale-[1.02] hover:-translate-y-0.5 disabled:transform-none relative overflow-hidden group"
+              >
+                <span className="relative z-10">{loading ? t("quizPage.generating") : t("quizPage.generateQuiz")}</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-white/20 to-blue-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+              </button>
+            </div>
+
+            <div className="lg:col-span-2 space-y-4">
+              <div className="bg-zinc-950/80 border border-zinc-900/80 rounded-2xl p-5">
+                <p className="text-xs uppercase tracking-widest text-zinc-500 mb-3">{t("quizPage.quickTipsTitle")}</p>
+                <ul className="space-y-2 text-sm text-zinc-300">
+                  <li>{t("quizPage.tipOne")}</li>
+                  <li>{t("quizPage.tipTwo")}</li>
+                  <li>{t("quizPage.tipThree")}</li>
+                </ul>
+              </div>
+
+              <div className="bg-zinc-950/80 border border-zinc-900/80 rounded-2xl p-5">
+                <p className="text-xs uppercase tracking-widest text-zinc-500 mb-3">{t("quizPage.flowTitle")}</p>
+                <div className="space-y-3 text-sm text-zinc-300">
+                  <div className="rounded-lg border border-zinc-900/80 bg-black/40 px-3 py-2">1. {t("quizPage.flowOne")}</div>
+                  <div className="rounded-lg border border-zinc-900/80 bg-black/40 px-3 py-2">2. {t("quizPage.flowTwo")}</div>
+                  <div className="rounded-lg border border-zinc-900/80 bg-black/40 px-3 py-2">3. {t("quizPage.flowThree")}</div>
+                </div>
+              </div>
+            </div>
           </div>
         ) : null}
 
@@ -306,23 +385,62 @@ function QuizPageContent() {
 
         {submitted && quiz.length > 0 ? (
           <div className="space-y-6 animate-fade-in">
-            <div className={`bg-zinc-950/80 backdrop-blur-xl border border-zinc-900/80 rounded-2xl p-12 text-center transition-all duration-1000 shadow-2xl ${
+            <div className={`bg-zinc-950/85 backdrop-blur-xl border border-zinc-900/80 rounded-2xl p-8 md:p-10 transition-all duration-1000 shadow-2xl ${
               showScoreAnimation ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
             }`}>
-              <div className="text-sm text-zinc-600 uppercase tracking-wider mb-4">{t("quizPage.finalScore")}</div>
-              <div className={`text-8xl font-bold mb-6 bg-gradient-to-r from-cyan-500 via-cyan-400/90 to-blue-500/70 bg-clip-text text-transparent transition-all duration-1000 delay-300 ${
-                showScoreAnimation ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-              }`}>
-                {score}/{quiz.length}
+              <p className="text-[11px] tracking-[0.24em] uppercase text-cyan-400/70 mb-3">{t("quizPage.assessmentLabel")}</p>
+              <h2 className="text-3xl md:text-4xl font-semibold text-zinc-100 mb-3">{t("quizPage.assessmentComplete")}</h2>
+              <p className="text-zinc-400 max-w-3xl mb-6">
+                {performanceMessage}
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-7">
+                <div className="rounded-xl border border-zinc-900/80 bg-black/40 p-4">
+                  <p className="text-xs uppercase tracking-wider text-zinc-500 mb-1">{t("quizPage.finalScore")}</p>
+                  <p className="text-3xl font-semibold text-zinc-100">{score}/{quiz.length}</p>
+                </div>
+                <div className="rounded-xl border border-zinc-900/80 bg-black/40 p-4">
+                  <p className="text-xs uppercase tracking-wider text-zinc-500 mb-1">{t("quizPage.accuracy")}</p>
+                  <p className="text-3xl font-semibold text-zinc-100">{scorePercent}%</p>
+                </div>
+                <div className="rounded-xl border border-zinc-900/80 bg-black/40 p-4">
+                  <p className="text-xs uppercase tracking-wider text-zinc-500 mb-1">{t("quizPage.verifiedStatus")}</p>
+                  <p className="text-3xl font-semibold text-emerald-400">{t("quizPage.verified")}</p>
+                </div>
               </div>
-              <div className={`text-xl text-zinc-500 transition-all duration-1000 delay-500 ${
-                showScoreAnimation ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-              }`}>
-                {score === quiz.length ? t("quizPage.perfect") : score >= quiz.length / 2 ? t("quizPage.wellDone") : t("quizPage.keepLearning")}
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <button
+                  onClick={() => {
+                    const element = document.getElementById("quiz-answer-review");
+                    element?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }}
+                  className="rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/70 transition-all duration-300"
+                >
+                  {t("quizPage.reviewAnswers")}
+                </button>
+                <button
+                  onClick={resetQuiz}
+                  className="rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/70 transition-all duration-300"
+                >
+                  {t("quizPage.retakeQuiz")}
+                </button>
+                <button
+                  onClick={() => router.push("/dashboard")}
+                  className="rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/70 transition-all duration-300"
+                >
+                  {t("quizPage.dashboard")}
+                </button>
+                <button
+                  onClick={handleShareResults}
+                  className="rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3 text-sm text-zinc-200 hover:bg-zinc-800/70 transition-all duration-300"
+                >
+                  {t("quizPage.share")}
+                </button>
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div id="quiz-answer-review" className="space-y-4">
               {quiz.map((q, i) => {
                 const isCorrect = answers[i] === q.answer;
                 return (

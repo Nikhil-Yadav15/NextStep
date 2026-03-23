@@ -13,10 +13,10 @@ const CTA = () => {
     <section className="py-24 relative overflow-hidden">
       {/* Background Effects */}
       <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/3 to-background" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-3xl" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vw] h-[120vw] md:w-[800px] md:h-[800px] bg-primary/5 rounded-full blur-3xl" />
 
       <div className="container mx-auto px-4 relative z-10">
-        <div className="max-w-4xl mx-auto text-center space-y-8 glass-card p-12 rounded-2xl">
+        <div className="max-w-4xl mx-auto text-center space-y-8 glass-card p-6 sm:p-8 md:p-12 rounded-2xl">
           {/* Icon */}
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/20 animate-glow">
             <Sparkles className="h-8 w-8 text-primary" />

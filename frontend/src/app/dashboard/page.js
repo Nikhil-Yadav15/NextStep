@@ -388,7 +388,7 @@ export default function DashboardPage() {
                 {t("dashboardHome.subtitle")}
               </p>
             </div>
-            <div className="grid w-full gap-3 sm:grid-cols-2 lg:w-auto lg:min-w-[360px]">
+            <div className="grid w-full gap-3 sm:grid-cols-2 lg:w-auto lg:min-w-0">
               <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
                 <p className="text-xs uppercase tracking-[0.12em] text-slate-400">{t("dashboardHome.profileActivity")}</p>
                 <p className="mt-2 text-2xl font-semibold text-white">{quizScores.length + interviews.length}</p>
