@@ -159,11 +159,6 @@ export default function Analytics({ interviews = [], skills = [] }) {
     })).filter((row) => Number.isFinite(row.avgScore));
   }, [data]);
 
-<<<<<<< HEAD
-
-
-  const hasData = data.length > 0 || weeklyData.length > 0 || topicData.length > 0 || interviews.length > 0 || skills.length > 0;
-=======
   const interviewStats = useMemo(() => {
     if (!interviews || interviews.length === 0) return null;
     const completed = interviews.filter((i) => i.reports && i.reports.length > 0).length;
@@ -188,7 +183,6 @@ export default function Analytics({ interviews = [], skills = [] }) {
     const maxVal = Math.max(...stages.map((s) => s.value), 1);
     return stages.map((s) => ({ ...s, pct: Math.max((s.value / maxVal) * 100, 12) }));
   }, [skills, data, interviews, t]);
->>>>>>> 665a649d6b5631db2fd5583a11ff1679b5ec62e4
 
   const hasData = data.length > 0 || weeklyData.length > 0 || topicData.length > 0 || interviews.length > 0 || skills.length > 0;
 
@@ -231,25 +225,11 @@ export default function Analytics({ interviews = [], skills = [] }) {
       {/* ── BENTO GRID ── */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-3 auto-rows-[160px]">
 
-<<<<<<< HEAD
-      {/* Charts bento grid — 2 cols × 3 rows */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Performance Trend — Area chart with gradient */}
-        {data.length > 0 && (
-          <Card className={`md:order-1 ${cardClass}`}>
-            <CardHeader>
-              <CardTitle className="text-white">{t("dashboardAnalytics.performanceTrend")}</CardTitle>
-              <CardDescription className="text-slate-400">{t("dashboardAnalytics.performanceTrendDesc")}</CardDescription>
-            </CardHeader>
-            <CardContent className="h-[300px]">
-=======
-        {/* ─── ROW 1-2: Performance Trend (hero) + KPI pills ─── */}
         {data.length > 0 && (
           <BentoCell className="col-span-2 md:col-span-4 md:row-span-2" glow="rgba(34,211,238,0.12)">
             <BentoLabel>{t("dashboardAnalytics.performanceTrend")}</BentoLabel>
             <p className="text-xs text-slate-500 mb-2">{t("dashboardAnalytics.performanceTrendDesc")}</p>
             <div className="h-[calc(100%-48px)]">
->>>>>>> 665a649d6b5631db2fd5583a11ff1679b5ec62e4
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={data}>
                   <defs>
@@ -328,18 +308,9 @@ export default function Analytics({ interviews = [], skills = [] }) {
 
         {/* Topic Distribution — Donut */}
         {topicData.length > 0 && (
-<<<<<<< HEAD
-          <Card className={`md:order-2 ${cardClass}`}>
-            <CardHeader>
-              <CardTitle className="text-white">{t("dashboardAnalytics.topicDistribution")}</CardTitle>
-              <CardDescription className="text-slate-400">{t("dashboardAnalytics.topicDistributionDesc")}</CardDescription>
-            </CardHeader>
-            <CardContent className="h-[300px] flex flex-col">
-=======
           <BentoCell className="col-span-2 md:col-span-3 md:row-span-2" glow="rgba(56,189,248,0.1)">
             <BentoLabel>{t("dashboardAnalytics.topicDistribution")}</BentoLabel>
             <div className="h-[calc(100%-32px)] flex flex-col">
->>>>>>> 665a649d6b5631db2fd5583a11ff1679b5ec62e4
               <div className="flex-1 min-h-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -364,19 +335,10 @@ export default function Analytics({ interviews = [], skills = [] }) {
 
         {/* ─── ROW 5-6: Weekly Frequency + Score Distribution ─── */}
         {weeklyData.length > 0 && (
-<<<<<<< HEAD
-          <Card className={`md:order-3 ${cardClass}`}>
-            <CardHeader>
-              <CardTitle className="text-white">{t("dashboardAnalytics.weeklyFrequency")}</CardTitle>
-              <CardDescription className="text-slate-400">{t("dashboardAnalytics.weeklyFrequencyDesc")}</CardDescription>
-            </CardHeader>
-            <CardContent className="h-[280px]">
-=======
           <BentoCell className="col-span-2 md:col-span-3 md:row-span-2">
             <BentoLabel>{t("dashboardAnalytics.weeklyFrequency")}</BentoLabel>
             <p className="text-xs text-slate-500 mb-2">{t("dashboardAnalytics.weeklyFrequencyDesc")}</p>
             <div className="h-[calc(100%-48px)]">
->>>>>>> 665a649d6b5631db2fd5583a11ff1679b5ec62e4
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={weeklyData}>
                   <defs>
@@ -397,19 +359,10 @@ export default function Analytics({ interviews = [], skills = [] }) {
         )}
 
         {distributionData.length > 0 && (
-<<<<<<< HEAD
-          <Card className={`md:order-4 ${cardClass}`}>
-            <CardHeader>
-              <CardTitle className="text-white">{t("dashboardAnalytics.scoreDistribution")}</CardTitle>
-              <CardDescription className="text-slate-400">{t("dashboardAnalytics.scoreDistributionDesc")}</CardDescription>
-            </CardHeader>
-            <CardContent className="h-[280px]">
-=======
           <BentoCell className="col-span-2 md:col-span-3 md:row-span-2">
             <BentoLabel>{t("dashboardAnalytics.scoreDistribution")}</BentoLabel>
             <p className="text-xs text-slate-500 mb-2">{t("dashboardAnalytics.scoreDistributionDesc")}</p>
             <div className="h-[calc(100%-48px)]">
->>>>>>> 665a649d6b5631db2fd5583a11ff1679b5ec62e4
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={distributionData} barCategoryGap="18%">
                   <defs>
@@ -431,19 +384,10 @@ export default function Analytics({ interviews = [], skills = [] }) {
 
         {/* ─── ROW 7-8: Radar + Interview Ring ─── */}
         {radarData.length >= 3 && (
-<<<<<<< HEAD
-          <Card className={`md:order-5 ${cardClass}`}>
-            <CardHeader>
-              <CardTitle className="text-white">{t("dashboardAnalytics.strengthsWeaknesses")}</CardTitle>
-              <CardDescription className="text-slate-400">{t("dashboardAnalytics.strengthsWeaknessesDesc")}</CardDescription>
-            </CardHeader>
-            <CardContent className="h-[300px]">
-=======
-          <BentoCell className="col-span-2 md:col-span-4 md:row-span-2" glow="rgba(34,211,238,0.08)">
+          <BentoCell className="col-span-2 md:col-span-6 md:row-span-2" glow="rgba(34,211,238,0.08)">
             <BentoLabel>{t("dashboardAnalytics.strengthsWeaknesses")}</BentoLabel>
             <p className="text-xs text-slate-500 mb-1">{t("dashboardAnalytics.strengthsWeaknessesDesc")}</p>
             <div className="h-[calc(100%-44px)]">
->>>>>>> 665a649d6b5631db2fd5583a11ff1679b5ec62e4
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="70%">
                   <PolarGrid stroke="#334155" strokeOpacity={0.5} />
@@ -457,52 +401,6 @@ export default function Analytics({ interviews = [], skills = [] }) {
           </BentoCell>
         )}
 
-<<<<<<< HEAD
-        {/* Topic Attempts — Horizontal bar chart */}
-        {topicData.length > 0 && (
-          <Card className={`md:order-6 ${cardClass}`}>
-            <CardHeader>
-              <CardTitle className="text-white">{t("dashboardAnalytics.topicAttempts")}</CardTitle>
-              <CardDescription className="text-slate-400">{t("dashboardAnalytics.topicAttemptsDesc")}</CardDescription>
-            </CardHeader>
-            <CardContent className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={topicData} layout="vertical" margin={{ left: 10, right: 20 }}>
-                  <defs>
-                    <linearGradient id="topicBarGradient" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="#0891b2" stopOpacity={0.6} />
-                      <stop offset="100%" stopColor="#22d3ee" stopOpacity={1} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.06} stroke="#94a3b8" horizontal={false} />
-                  <XAxis
-                    type="number"
-                    allowDecimals={false}
-                    tick={axisStyle}
-                    axisLine={{ stroke: "#334155" }}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    type="category"
-                    dataKey="topic"
-                    tick={{ ...axisStyle, fontSize: 11 }}
-                    axisLine={{ stroke: "#334155" }}
-                    tickLine={false}
-                    width={80}
-                  />
-                  <Tooltip
-                    content={
-                      <CustomTooltip
-                        valueFormatter={(val) => `${val} test${val !== 1 ? "s" : ""}`}
-                      />
-                    }
-                  />
-                  <Bar dataKey="value" fill="url(#topicBarGradient)" radius={[0, 6, 6, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-=======
         {interviewStats && (
           <BentoCell className="col-span-2 md:col-span-2 md:row-span-2 flex flex-col items-center justify-center text-center" glow="rgba(96,165,250,0.1)">
             <BentoLabel>{t("dashboardAnalytics.interviewCompletion")}</BentoLabel>
@@ -569,7 +467,6 @@ export default function Analytics({ interviews = [], skills = [] }) {
               <span className="text-[10px] text-slate-600">{t("dashboardAnalytics.funnelDirection")}</span>
             </div>
           </BentoCell>
->>>>>>> 665a649d6b5631db2fd5583a11ff1679b5ec62e4
         )}
 
       </div>
