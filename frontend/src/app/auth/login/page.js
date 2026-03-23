@@ -130,6 +130,15 @@ export default function LoginPage() {
                 {t("auth.signup")}
               </a>
             </p>
+
+            <div className="pt-2 border-t border-slate-800/50">
+              <a
+                href="/auth/mentor-login"
+                className="flex items-center justify-center gap-2 text-sm text-emerald-400 hover:text-emerald-300 transition-colors font-medium"
+              >
+                🎓 Login as Mentor
+              </a>
+            </div>
           </form>
         </div>
       </div>

@@ -246,6 +246,67 @@ export function initChatSocket(server) {
       }
     });
 
+    // ========== WebRTC Signaling for 1:1 Counselling ==========
+
+    socket.on("join-room", ({ roomId }) => {
+      if (!roomId) return;
+      socket.join(`session:${roomId}`);
+      // Notify other participants in the room
+      socket.to(`session:${roomId}`).emit("peer-joined", {
+        uniquePresence,
+        name: socket.data.user.name,
+        socketId: socket.id,
+      });
+      console.log(`🎥 ${socket.data.user.name} joined session room: ${roomId}`);
+    });
+
+    socket.on("leave-room", ({ roomId }) => {
+      if (!roomId) return;
+      socket.leave(`session:${roomId}`);
+      socket.to(`session:${roomId}`).emit("peer-left", {
+        uniquePresence,
+        name: socket.data.user.name,
+      });
+      console.log(`🎥 ${socket.data.user.name} left session room: ${roomId}`);
+    });
+
+    socket.on("webrtc-offer", ({ roomId, offer }) => {
+      if (!roomId || !offer) return;
+      socket.to(`session:${roomId}`).emit("webrtc-offer", {
+        offer,
+        from: socket.id,
+        name: socket.data.user.name,
+      });
+    });
+
+    socket.on("webrtc-answer", ({ roomId, answer }) => {
+      if (!roomId || !answer) return;
+      socket.to(`session:${roomId}`).emit("webrtc-answer", {
+        answer,
+        from: socket.id,
+      });
+    });
+
+    socket.on("webrtc-ice-candidate", ({ roomId, candidate }) => {
+      if (!roomId || !candidate) return;
+      socket.to(`session:${roomId}`).emit("webrtc-ice-candidate", {
+        candidate,
+        from: socket.id,
+      });
+    });
+
+    socket.on("session-chat", ({ roomId, message }) => {
+      if (!roomId || !message?.trim()) return;
+      io.to(`session:${roomId}`).emit("session-chat", {
+        senderId: uniquePresence,
+        senderName: socket.data.user.name,
+        message: message.trim(),
+        timestamp: new Date(),
+      });
+    });
+
+    // ========== End WebRTC Signaling ==========
+
     // --- Disconnect ---
     socket.on("disconnect", () => {
       console.log(`🔌 Socket disconnected: ${socket.data.user.name} (${socket.id})`);
