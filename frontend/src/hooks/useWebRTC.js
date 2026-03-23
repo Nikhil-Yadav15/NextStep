@@ -6,6 +6,41 @@ const ICE_SERVERS = {
   iceServers: [
     { urls: "stun:stun.l.google.com:19302" },
     { urls: "stun:stun1.l.google.com:19302" },
+    // TURN servers for cross-network connectivity
+    ...(process.env.NEXT_PUBLIC_TURN_URL
+      ? [
+          {
+            urls: process.env.NEXT_PUBLIC_TURN_URL,
+            username: process.env.NEXT_PUBLIC_TURN_USERNAME || "",
+            credential: process.env.NEXT_PUBLIC_TURN_CREDENTIAL || "",
+          },
+        ]
+      : [
+          // Free Metered TURN servers (works for dev/demo)
+          {
+            urls: "stun:stun.relay.metered.ca:80",
+          },
+          {
+            urls: "turn:global.relay.metered.ca:80",
+            username: "e8dd65b92f6ae982befefdab",
+            credential: "aV/V+kTH1yLNSJbr",
+          },
+          {
+            urls: "turn:global.relay.metered.ca:80?transport=tcp",
+            username: "e8dd65b92f6ae982befefdab",
+            credential: "aV/V+kTH1yLNSJbr",
+          },
+          {
+            urls: "turn:global.relay.metered.ca:443",
+            username: "e8dd65b92f6ae982befefdab",
+            credential: "aV/V+kTH1yLNSJbr",
+          },
+          {
+            urls: "turns:global.relay.metered.ca:443?transport=tcp",
+            username: "e8dd65b92f6ae982befefdab",
+            credential: "aV/V+kTH1yLNSJbr",
+          },
+        ]),
   ],
 };
 
