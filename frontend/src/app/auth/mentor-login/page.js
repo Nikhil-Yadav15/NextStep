@@ -90,6 +90,16 @@ export default function MentorLoginPage() {
               />
             </div>
 
+            {/* Password (dummy — not used for authentication) */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-200">Password</label>
+              <input
+                className="w-full bg-slate-950/50 border border-slate-800 rounded-lg px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none transition-all"
+                placeholder="••••••••"
+                type="password"
+              />
+            </div>
+
             {/* Submit */}
             <button
               type="submit"
