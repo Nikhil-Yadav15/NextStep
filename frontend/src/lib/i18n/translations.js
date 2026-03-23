@@ -81,7 +81,7 @@ export const translations = {
     },
     howItWorks: {
       headingPrefix: "How",
-      headingHighlight: "Career AI",
+      headingHighlight: "NextStep",
       headingSuffix: "Works",
       subtitle:
         "From scattered preparation to unified success - your journey in four simple steps",
@@ -110,7 +110,7 @@ export const translations = {
     },
     comparison: {
       headingPrefix: "Why Choose",
-      headingHighlight: "Career AI",
+      headingHighlight: "NextStep",
       subtitle: "See how we compare to other platforms in the market",
       featureCol: "Feature",
       comparisons: [
@@ -390,7 +390,7 @@ export const translations = {
     },
     howItWorks: {
       headingPrefix: "कैसे",
-      headingHighlight: "Career AI",
+      headingHighlight: "NextStep",
       headingSuffix: "काम करता है",
       subtitle: "बिखरी तैयारी से एकीकृत सफलता तक - सिर्फ 4 आसान कदम",
       steps: [
@@ -414,7 +414,7 @@ export const translations = {
     },
     comparison: {
       headingPrefix: "क्यों चुनें",
-      headingHighlight: "Career AI",
+      headingHighlight: "NextStep",
       subtitle: "देखें हम बाज़ार के अन्य प्लेटफ़ॉर्म्स से कैसे बेहतर हैं",
       featureCol: "फ़ीचर",
       comparisons: [
