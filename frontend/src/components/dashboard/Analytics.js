@@ -55,7 +55,7 @@ function CustomTooltip({ active, payload, label, labelFormatter, valueFormatter 
 
 const axisStyle = { fill: "#94a3b8", fontSize: 12 };
 
-export default function Analytics({ interviews = [] }) {
+export default function Analytics({ interviews = [], skills = [] }) {
   const { t } = useLanguage();
   const uniquePresence = (() => {
     if (typeof window === "undefined") return null;
@@ -131,22 +131,22 @@ export default function Analytics({ interviews = [] }) {
     const trending = scores.length >= 2 ? latest >= scores[scores.length - 2] : true;
     const bestTopic = topicData.length > 0
       ? topicData.reduce((max, t) => (t.value > max.value ? t : max), topicData[0]).topic
-      : "—";
+      : "\u2014";
     return { avg, total: data.length, bestTopic, trending, latest };
   }, [data, topicData]);
 
   // Score Distribution — bucket scores into ranges
   const distributionData = useMemo(() => {
     if (data.length === 0) return [];
-    const buckets = { "0–20": 0, "21–40": 0, "41–60": 0, "61–80": 0, "81–100": 0 };
+    const buckets = { "0\u201320": 0, "21\u201340": 0, "41\u201360": 0, "61\u201380": 0, "81\u2013100": 0 };
     data.forEach((d) => {
       const p = toFiniteNumber(d?.percentage);
       if (p === null) return;
-      if (p <= 20) buckets["0–20"]++;
-      else if (p <= 40) buckets["21–40"]++;
-      else if (p <= 60) buckets["41–60"]++;
-      else if (p <= 80) buckets["61–80"]++;
-      else buckets["81–100"]++;
+      if (p <= 20) buckets["0\u201320"]++;
+      else if (p <= 40) buckets["21\u201340"]++;
+      else if (p <= 60) buckets["41\u201360"]++;
+      else if (p <= 80) buckets["61\u201380"]++;
+      else buckets["81\u2013100"]++;
     });
     return Object.entries(buckets).map(([range, count]) => ({ range, count }));
   }, [data]);
@@ -164,7 +164,7 @@ export default function Analytics({ interviews = [] }) {
       topicScores[topic].count++;
     });
     return Object.entries(topicScores).map(([topic, { sum, count }]) => ({
-      topic: topic.length > 14 ? topic.slice(0, 12) + "…" : topic,
+      topic: topic.length > 14 ? topic.slice(0, 12) + "\u2026" : topic,
       avgScore: count > 0 ? Math.round(sum / count) : 0,
     })).filter((row) => Number.isFinite(row.avgScore));
   }, [data]);
@@ -178,7 +178,27 @@ export default function Analytics({ interviews = [] }) {
     return { completed, total, pct };
   }, [interviews]);
 
-  const hasData = data.length > 0 || weeklyData.length > 0 || topicData.length > 0 || interviews.length > 0;
+  // Learning Pipeline Funnel
+  const funnelData = useMemo(() => {
+    const skillCount = skills.length;
+    const quizCount = data.length;
+    const interviewCount = interviews.length;
+    const completedCount = interviews.filter((i) => i.reports && i.reports.length > 0).length;
+    const passedCount = data.filter((d) => toFiniteNumber(d?.percentage) >= 60).length;
+
+    const stages = [
+      { label: t("dashboardAnalytics.funnelSkills"), value: skillCount, color: "#22d3ee" },
+      { label: t("dashboardAnalytics.funnelQuizzes"), value: quizCount, color: "#38bdf8" },
+      { label: t("dashboardAnalytics.funnelPassed"), value: passedCount, color: "#0ea5e9" },
+      { label: t("dashboardAnalytics.funnelInterviews"), value: interviewCount, color: "#0284c7" },
+      { label: t("dashboardAnalytics.funnelCompleted"), value: completedCount, color: "#0891b2" },
+    ];
+
+    const maxVal = Math.max(...stages.map((s) => s.value), 1);
+    return stages.map((s) => ({ ...s, pct: Math.max((s.value / maxVal) * 100, 12) }));
+  }, [skills, data, interviews, t]);
+
+  const hasData = data.length > 0 || weeklyData.length > 0 || topicData.length > 0 || interviews.length > 0 || skills.length > 0;
 
   if (!hasData) {
     return (
@@ -527,6 +547,48 @@ export default function Analytics({ interviews = [] }) {
                   <p className="text-lg font-bold text-white">{interviewStats.total}</p>
                   <p className="text-xs text-slate-400">{t("dashboardAnalytics.total")}</p>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Learning Pipeline — Funnel Chart */}
+        {funnelData.some((s) => s.value > 0) && (
+          <Card className={`md:order-7 md:col-span-12 ${cardClass}`}>
+            <CardHeader>
+              <CardTitle className="text-white">{t("dashboardAnalytics.funnelTitle")}</CardTitle>
+              <CardDescription className="text-slate-400">{t("dashboardAnalytics.funnelDesc")}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col items-center gap-1.5 py-4">
+                {funnelData.map((stage, i) => (
+                  <div key={stage.label} className="w-full flex items-center gap-4 group">
+                    <span className="w-28 text-right text-xs font-medium text-slate-400 shrink-0 truncate">
+                      {stage.label}
+                    </span>
+                    <div className="flex-1 flex items-center justify-center">
+                      <div
+                        className="relative h-11 rounded-xl flex items-center justify-center transition-all duration-500 group-hover:scale-[1.02]"
+                        style={{
+                          width: `${stage.pct}%`,
+                          background: `linear-gradient(135deg, ${stage.color}33, ${stage.color}55)`,
+                          border: `1px solid ${stage.color}44`,
+                          boxShadow: `0 0 20px ${stage.color}15`,
+                        }}
+                      >
+                        <span className="text-sm font-bold text-white drop-shadow-md">
+                          {stage.value}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center justify-center gap-1.5 pt-2">
+                <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
+                <span className="text-xs text-slate-500">{t("dashboardAnalytics.funnelDirection")}</span>
               </div>
             </CardContent>
           </Card>
