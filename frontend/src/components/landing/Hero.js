@@ -36,13 +36,13 @@ const Hero = () => {
           </div>
 
           {/* Main Heading */}
-          <h1 className="text-5xl md:text-7xl font-bold leading-tight">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold leading-tight">
             {t("hero.titlePrefix")} <span className="text-primary">{t("hero.titleHighlight")}</span>{" "}
             {t("hero.titleSuffix")}
           </h1>
 
           {/* Subheading */}
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
             {t("hero.description")}
           </p>
 
@@ -62,7 +62,7 @@ const Hero = () => {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-8 pt-12 max-w-2xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 pt-12 max-w-2xl mx-auto">
             <div className="space-y-1">
               <div className="text-3xl font-bold text-primary">{t("hero.stat1Title")}</div>
               <div className="text-sm text-muted-foreground">{t("hero.stat1Text")}</div>

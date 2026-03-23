@@ -1524,10 +1524,10 @@ const InterviewPlatform = () => {
             </div>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4" style={{ height: 'calc(100vh - 2rem)' }}>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:h-[calc(100vh-2rem)]">
             
-            <div className="flex flex-col gap-4" style={{ height: 'calc(100vh - 2rem)' }}>
-              <div className="bg-black rounded-2xl overflow-hidden shadow-2xl" style={{ height: '60%', minHeight: '400px' }}>
+            <div className="flex flex-col gap-4 lg:h-[calc(100vh-2rem)]">
+              <div className="bg-black rounded-2xl overflow-hidden shadow-2xl h-[42vh] min-h-[260px] lg:h-[60%] lg:min-h-[400px]">
                 <AIInterviewerVideo 
                   isListening={isRecording} 
                   isSpeaking={isPlaying}
@@ -1535,7 +1535,7 @@ const InterviewPlatform = () => {
                 />
               </div>
 
-              <div className="bg-slate-900/70 border border-slate-800/70 rounded-xl shadow-lg p-4" style={{ height: '35%', minHeight: '250px' }}>
+              <div className="bg-slate-900/70 border border-slate-800/70 rounded-xl shadow-lg p-4 h-[34vh] min-h-[220px] lg:h-[35%] lg:min-h-[250px]">
                 <h3 className="text-sm font-semibold text-slate-300 mb-2">Your Video</h3>
                 <div className="bg-gray-900 rounded-lg overflow-hidden relative" style={{ height: 'calc(100% - 28px)' }}>
                   <img 

@@ -651,7 +651,7 @@ export default function ChatPage() {
       </div>
 
       {/* Users List Sidebar */}
-      <div className={`${showUserList ? 'w-full md:w-96' : 'hidden md:block md:w-96'} relative z-10 backdrop-blur-xl bg-white/[0.03] border-r border-white/[0.06] flex flex-col overflow-hidden transition-all duration-300`}>
+      <div className={`${showUserList ? 'w-full md:w-96' : 'hidden md:block md:w-96'} max-w-full lg:min-w-[384px] relative z-10 backdrop-blur-xl bg-white/[0.03] border-r border-white/[0.06] flex flex-col overflow-hidden transition-all duration-300`}>
         {/* Sidebar Header */}
         <div className="p-4 flex-shrink-0 border-b border-white/[0.06] bg-white/[0.02]">
           <div className="flex items-center gap-3">
@@ -921,7 +921,7 @@ export default function ChatPage() {
                         {msg.senderName?.charAt(0).toUpperCase() || '?'}
                       </div>
                     )}
-                    <div className="max-w-xs lg:max-w-md">
+                    <div className="max-w-[90%] sm:max-w-xs lg:max-w-md">
                       {!msg.isMine && (
                         <p className="text-[10px] text-gray-500 mb-1 ml-3 font-medium uppercase tracking-wider">
                           {msg.senderName}

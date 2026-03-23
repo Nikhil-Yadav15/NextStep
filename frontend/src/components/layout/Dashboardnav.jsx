@@ -169,7 +169,7 @@ export default function DashboardNav() {
 
               {/* Dropdown Menu */}
               {isProfileOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-slate-900/95 backdrop-blur-xl rounded-xl shadow-2xl border border-slate-800/50 overflow-hidden animate-fadeIn">
+                <div className="absolute right-0 mt-2 w-56 max-w-[calc(100vw-2rem)] bg-slate-900/95 backdrop-blur-xl rounded-xl shadow-2xl border border-slate-800/50 overflow-hidden animate-fadeIn">
                   <div className="p-3 border-b border-slate-800/50">
                     <p className="text-sm font-semibold text-white">{userData.name}</p>
                     <p className="text-xs text-slate-400">{userData.email}</p>

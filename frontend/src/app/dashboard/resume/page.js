@@ -316,7 +316,7 @@ export default function ResumeEditor() {
   }
 
   return (
-    <main className="flex h-screen overflow-hidden font-sans bg-black">
+    <main className="flex flex-col lg:flex-row min-h-screen lg:h-screen overflow-auto lg:overflow-hidden font-sans bg-black">
       {/* Animated background gradient orbs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 -left-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
@@ -324,7 +324,7 @@ export default function ResumeEditor() {
         <div className="absolute top-1/2 left-1/2 w-72 h-72 bg-primary/5 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1000ms'}}></div>
       </div>
 
-      <aside className="w-[340px] p-5 border-r border-zinc-900/80 overflow-auto bg-zinc-950/80 backdrop-blur-xl relative z-10 custom-scrollbar">
+      <aside className="w-full lg:w-[340px] p-5 border-b lg:border-b-0 lg:border-r border-zinc-900/80 overflow-auto bg-zinc-950/80 backdrop-blur-xl relative z-10 custom-scrollbar">
         <div className="flex items-center gap-3 mb-5">
           <button
             onClick={() => router.back()}
@@ -469,7 +469,7 @@ export default function ResumeEditor() {
         )}
       </aside>
 
-      <section className="flex-1 flex flex-col border-r border-zinc-900/80 bg-zinc-950/50 backdrop-blur-xl relative z-10">
+      <section className="w-full lg:flex-1 min-h-[50vh] lg:min-h-0 flex flex-col border-b lg:border-b-0 lg:border-r border-zinc-900/80 bg-zinc-950/50 backdrop-blur-xl relative z-10">
         <div className="py-3 px-4 text-zinc-200 bg-zinc-950/80 backdrop-blur-xl border-b border-zinc-900/80 font-medium text-sm flex justify-between items-center">
           <span>LaTeX Source Code (Editable)</span>
           {latexChanged && (
@@ -495,7 +495,7 @@ export default function ResumeEditor() {
         />
       </section>
       
-      <section className="w-1/2 flex flex-col bg-zinc-950/50 backdrop-blur-xl relative z-10">
+      <section className="w-full lg:w-1/2 min-h-[50vh] lg:min-h-0 flex flex-col bg-zinc-950/50 backdrop-blur-xl relative z-10">
         <div className="py-3 px-4 text-zinc-200 bg-zinc-950/80 backdrop-blur-xl border-b border-zinc-900/80 font-medium text-sm">
           Resume Preview
         </div>

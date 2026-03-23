@@ -430,7 +430,7 @@ export default function ChatbotUI() {
 
       {/* Slide-in Chat Panel */}
       <div
-        className={`fixed top-4 right-4 bottom-4 z-50 w-[calc(100%-2rem)] sm:w-[440px] md:w-[480px]
+        className={`fixed top-4 right-4 bottom-4 z-50 w-[calc(100%-2rem)] max-w-[95vw] sm:w-[440px] md:w-[480px]
                      bg-gray-900 text-gray-100
                      shadow-[-8px_0_30px_-12px_rgba(0,0,0,0.5)]
                      rounded-2xl flex flex-col overflow-hidden
@@ -465,7 +465,7 @@ export default function ChatbotUI() {
             return (
               <div
                 key={i}
-                className={`max-w-[85%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed shadow-sm ${
+                className={`max-w-[92%] sm:max-w-[85%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed shadow-sm break-words ${
                   isBot
                     ? isRedirect
                       ? "bg-amber-900/40 text-amber-200 border border-amber-700/50 self-start"

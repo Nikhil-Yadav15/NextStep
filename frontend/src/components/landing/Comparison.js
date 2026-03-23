@@ -86,7 +86,7 @@ const Comparison = () => {
 
         {/* Comparison Table */}
         <div className="max-w-5xl mx-auto">
-          <div className="overflow-x-auto">
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border">
@@ -134,10 +134,36 @@ const Comparison = () => {
               </tbody>
             </table>
           </div>
+
+          <div className="md:hidden space-y-3">
+            {comparisons.map((comparison, index) => (
+              <div key={index} className="rounded-xl border border-border/70 bg-card/40 p-4 space-y-3">
+                <p className="text-sm font-medium text-foreground/90">{comparisonLabels[index] || comparison.feature}</p>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="rounded-lg border border-border/60 p-2">
+                    <p className="text-xs text-muted-foreground mb-1">LeetCode</p>
+                    <div>{renderCell(comparison.leetcode)}</div>
+                  </div>
+                  <div className="rounded-lg border border-border/60 p-2">
+                    <p className="text-xs text-muted-foreground mb-1">Naukri</p>
+                    <div>{renderCell(comparison.naukri)}</div>
+                  </div>
+                  <div className="rounded-lg border border-border/60 p-2">
+                    <p className="text-xs text-muted-foreground mb-1">Glassdoor</p>
+                    <div>{renderCell(comparison.glassdoor)}</div>
+                  </div>
+                  <div className="rounded-lg border border-primary/30 bg-primary/5 p-2">
+                    <p className="text-xs text-muted-foreground mb-1">NextStep</p>
+                    <div>{renderCell(usValues[index] ?? comparison.us)}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Benefits Grid */}
-        <div className="grid md:grid-cols-3 gap-8 mt-16 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 max-w-4xl mx-auto">
           <div
             className="text-center space-y-2 animate-fade-in"
             style={{ animationDelay: "0.6s" }}
